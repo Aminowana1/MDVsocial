@@ -1,7 +1,13 @@
 # ==========================================================
-# MDVSocial 1.5.2
+# MDVSocial 1.6.3
 # Menu social + sistema de titulos cosmeticos para MDVCRAFT
 # ==========================================================
+
+storage:
+  player-data:
+    # Desde 1.6.2 los títulos/castigos persistentes usan SQLite.
+    # Si existe player-data.yml se migra automáticamente al iniciar.
+    database-file: 'player-data.db'
 
 messages:
   prefix: '&6&l[&5&lMDVSocial&6&l]&4> &r'
@@ -75,6 +81,19 @@ messages:
   friend-already: '&e{target} &aya forma parte de tu lista de amigos.'
   friend-request-sent: '&aSolicitud de amistad enviada a &e{target}&a.'
   friend-error: '&cNo se pudo enviar la solicitud de amistad.'
+  friend-target-not-found: '&cEse jugador no está conectado o el nombre no es válido.'
+  friend-request-accepted: '&aAceptaste la solicitud de amistad de &e{target}&a.'
+  friend-request-denied: '&eRechazaste la solicitud de amistad de &c{target}&e.'
+  party-target-not-found: '&cEse jugador no está conectado o el nombre no es válido.'
+  party-request-accepted: '&aAceptaste la invitación al grupo de &e{target}&a.'
+  party-request-denied: '&eRechazaste la invitación al grupo de &c{target}&e.'
+  social-request-expired: '&cEsa solicitud ya expiró.'
+  social-request-error: '&cNo se pudo procesar esa solicitud de MMOCore.'
+  friend-removed: '&eEliminaste a &c{target} &ede tu lista de amigos.'
+  friend-remove-error: '&cNo se pudo eliminar a &e{target} &cde tus amigos.'
+  party-left: '&eSaliste de tu Grupo de Aventura.'
+  party-not-in-party: '&cNo perteneces a ningún Grupo de Aventura.'
+  party-leave-error: '&cNo se pudo abandonar el Grupo de Aventura.'
   private-message-suggest: '&bHaz clic aquí para escribirle a &e{target}&b.'
 settings:
   # Menu inicial que abre /social.
@@ -94,7 +113,7 @@ settings:
 
   # Titulo base para jugadores nuevos o Forasteros.
   # Se muestra como prefijo mientras no tengan otro titulo activo.
-  # No hace falta desbloquearlo ni guardarlo en player-data.yml.
+  # No hace falta desbloquearlo ni guardarlo en player-data.db.
   default-title: forastero
 
   # Titulos desbloqueados para todos los jugadores sin necesidad de guardarlos en player-data.yml.
@@ -450,6 +469,38 @@ homes-menu:
 # Clic normal: abre Menus/jugador_opciones.yml
 # Shift + clic: inserta /msg <jugador> en la barra del chat.
 # ==========================================================
+# ==========================================================
+# COMPATIBILIDAD BEDROCK - Geyser + Floodgate
+# ==========================================================
+bedrock:
+  # Detecta automáticamente jugadores Floodgate.
+  enabled: true
+
+  # Los jugadores Bedrock usan Forms nativos cargados desde:
+  # plugins/MDVSocial/MenusBedrock/
+
+  # Si falta un archivo en MenusBedrock, permite abrir temporalmente
+  # el inventario Java equivalente para no dejar al jugador bloqueado.
+  fallback-to-java-menu: true
+
+  # Cantidad de entradas por página en listas dinámicas para PC/consola.
+  dynamic-page-size: 8
+
+  # Protecciones para Forms en móvil/táctil. Reducen dobles pulsaciones y
+  # evitan listas demasiado largas que algunos clientes Bedrock manejan mal.
+  mobile-safety:
+    enabled: true
+    click-debounce-ms: 200
+    action-delay-ticks: 4
+    dynamic-page-size: 5
+
+  party:
+    # El formulario de "Invitar jugador" usa el comando oficial de MMOCore.
+    # Así el jugador Java recibe una PartyInvite normal y /party accept|deny funciona.
+    direct-invite-command: 'party invite {target}'
+    # Si el receptor es Java, añade botones clickables explícitos como respaldo.
+    java-fallback-buttons: true
+
 interactive-chat:
   enabled: true
   options-menu: jugador_opciones

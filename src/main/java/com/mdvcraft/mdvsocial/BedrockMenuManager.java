@@ -49,8 +49,7 @@ final class BedrockMenuManager {
             "homes.yml",
             "titulos.yml",
             "titulos_lista.yml",
-            "rangos.yml"
-    );
+            "rangos.yml");
 
     private final MDVSocialPlugin plugin;
     private final Map<String, BedrockMenuDef> menus = new LinkedHashMap<>();
@@ -128,7 +127,7 @@ final class BedrockMenuManager {
     }
 
     boolean open(Player player, String rawMenuId, int page, String previousMenu, int previousPage,
-                 UUID targetUuid, String targetName, boolean targetOnline) {
+            UUID targetUuid, String targetName, boolean targetOnline) {
         if (!isBedrock(player))
             return false;
 
@@ -151,8 +150,7 @@ final class BedrockMenuManager {
                 Math.max(1, previousPage),
                 targetUuid,
                 targetName == null ? "" : targetName,
-                targetOnline
-        );
+                targetOnline);
 
         List<BedrockMenuButton> visible = new ArrayList<>();
         for (BedrockMenuButton button : def.pages.getOrDefault(safePage, Collections.emptyList())) {
@@ -165,8 +163,8 @@ final class BedrockMenuManager {
         }
 
         String title = plugin.bedrockText(def.title
-                        .replace("{page}", String.valueOf(safePage))
-                        .replace("{max_page}", String.valueOf(maxPage)),
+                .replace("{page}", String.valueOf(safePage))
+                .replace("{max_page}", String.valueOf(maxPage)),
                 player, targetUuid, targetName, targetOnline);
 
         StringBuilder content = new StringBuilder();
@@ -174,8 +172,8 @@ final class BedrockMenuManager {
             if (content.length() > 0)
                 content.append('\n');
             content.append(plugin.bedrockText(line
-                            .replace("{page}", String.valueOf(safePage))
-                            .replace("{max_page}", String.valueOf(maxPage)),
+                    .replace("{page}", String.valueOf(safePage))
+                    .replace("{max_page}", String.valueOf(maxPage)),
                     player, targetUuid, targetName, targetOnline));
         }
 
@@ -189,7 +187,8 @@ final class BedrockMenuManager {
                 builder.button(text);
             } else {
                 FormImage.Type type = button.imageType.equalsIgnoreCase("PATH")
-                        ? FormImage.Type.PATH : FormImage.Type.URL;
+                        ? FormImage.Type.PATH
+                        : FormImage.Type.URL;
                 builder.button(text, type, button.imageData);
             }
         }
@@ -253,13 +252,15 @@ final class BedrockMenuManager {
      */
     private void mergeMissingMenuDefaults(File target, String resourceName) {
         try (InputStream in = plugin.getResource("MenusBedrock/" + resourceName)) {
-            if (in == null) return;
+            if (in == null)
+                return;
             YamlConfiguration defaults = YamlConfiguration.loadConfiguration(
                     new InputStreamReader(in, StandardCharsets.UTF_8));
             YamlConfiguration current = YamlConfiguration.loadConfiguration(target);
             boolean changed = false;
             for (String path : defaults.getKeys(true)) {
-                if (defaults.isConfigurationSection(path)) continue;
+                if (defaults.isConfigurationSection(path))
+                    continue;
                 if (!current.contains(path)) {
                     current.set(path, defaults.get(path));
                     changed = true;
@@ -361,8 +362,7 @@ final class BedrockMenuManager {
                     sec.getString("permission", ""),
                     sec.getBoolean("hide-without-permission", sec.getBoolean("hide-no-permission", true)),
                     imageType == null ? "" : imageType,
-                    imageData == null ? "" : imageData
-            ));
+                    imageData == null ? "" : imageData));
         }
     }
 
@@ -390,7 +390,7 @@ final class BedrockMenuManager {
         final boolean targetOnline;
 
         BedrockMenuContext(String menuId, int page, String previousMenu, int previousPage,
-                           UUID targetUuid, String targetName, boolean targetOnline) {
+                UUID targetUuid, String targetName, boolean targetOnline) {
             this.menuId = menuId == null ? "" : menuId;
             this.page = page;
             this.previousMenu = previousMenu == null ? "" : previousMenu;
@@ -442,10 +442,10 @@ final class BedrockMenuManager {
         final String imageData;
 
         BedrockMenuButton(String id, String text, String action, String targetMenu, List<String> commands,
-                          boolean closeOnClick, String visibleWhen, String conditionPlaceholder,
-                          String conditionEquals, String trueMenu, String falseMenu, String clansMenu,
-                          String sound, String permission, boolean hideWithoutPermission,
-                          String imageType, String imageData) {
+                boolean closeOnClick, String visibleWhen, String conditionPlaceholder,
+                String conditionEquals, String trueMenu, String falseMenu, String clansMenu,
+                String sound, String permission, boolean hideWithoutPermission,
+                String imageType, String imageData) {
             this.id = id == null ? "" : id;
             this.text = text == null ? "" : text;
             this.action = action == null ? "" : action;

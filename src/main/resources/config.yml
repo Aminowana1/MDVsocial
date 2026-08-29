@@ -490,8 +490,8 @@ bedrock:
   # evitan listas demasiado largas que algunos clientes Bedrock manejan mal.
   mobile-safety:
     enabled: true
-    click-debounce-ms: 120
-    action-delay-ticks: 2
+    click-debounce-ms: 200
+    action-delay-ticks: 4
     dynamic-page-size: 5
 
   party:
