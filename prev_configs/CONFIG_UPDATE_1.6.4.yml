@@ -1,0 +1,11 @@
+# MDVSocial 1.6.4 - nuevas claves opcionales
+# Si tu config.yml ya existe, Bukkit usa estos defaults desde el jar aunque no
+# estén escritos físicamente. Puedes copiarlos si quieres personalizarlos.
+bedrock:
+  mobile-safety:
+    debug: false
+    click-debounce-ms: 180
+    action-delay-ticks: 2
+    touch-action-delay-ticks: 10
+    controller-action-delay-ticks: 4
+    dynamic-page-size: 5

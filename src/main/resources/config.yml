@@ -486,12 +486,17 @@ bedrock:
   # Cantidad de entradas por página en listas dinámicas para PC/consola.
   dynamic-page-size: 8
 
-  # Protecciones para Forms en móvil/táctil. Reducen dobles pulsaciones y
-  # evitan listas demasiado largas que algunos clientes Bedrock manejan mal.
+  # Navegación entre Forms. Desde 1.6.5 TODOS los dispositivos usan la misma
+  # transición. No se aplica debounce global ni delays distintos por input,
+  # porque podían consumir el primer toque válido del siguiente Form en móvil.
+  form-navigation:
+    delay-ticks: 1
+    debug: false
+
+  # Solo ajusta el tamaño de listas en dispositivos táctiles. No controla ya
+  # la navegación ni el tiempo de respuesta entre formularios.
   mobile-safety:
     enabled: true
-    click-debounce-ms: 200
-    action-delay-ticks: 4
     dynamic-page-size: 5
 
   party:

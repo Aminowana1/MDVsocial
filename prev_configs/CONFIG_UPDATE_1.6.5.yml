@@ -1,0 +1,16 @@
+# MDVSocial 1.6.5 - navegación Bedrock
+# Estas claves son opcionales; si no las copias, el plugin usa estos valores por defecto.
+bedrock:
+  form-navigation:
+    delay-ticks: 1
+    debug: false
+
+  mobile-safety:
+    enabled: true
+    dynamic-page-size: 5
+
+# Desde 1.6.5 se IGNORAN para navegación estas claves antiguas de 1.6.4:
+# bedrock.mobile-safety.click-debounce-ms
+# bedrock.mobile-safety.action-delay-ticks
+# bedrock.mobile-safety.touch-action-delay-ticks
+# bedrock.mobile-safety.controller-action-delay-ticks

@@ -1,0 +1,12 @@
+MDVSocial 1.6.5 - FIX BEDROCK MOBILE
+
+Compila con Java 21 + Maven:
+  mvn clean package
+
+Prueba recomendada:
+  /social -> Tu Personaje -> Volver -> Amigos -> Lista de Amigos
+
+Para diagnóstico temporal:
+  bedrock.form-navigation.debug: true
+
+No necesitas borrar Menus/ ni MenusBedrock/.

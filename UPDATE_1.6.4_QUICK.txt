@@ -1,0 +1,15 @@
+MDVSocial 1.6.4 QUICK UPDATE
+============================
+1) Compila con Java 21 / Maven.
+2) Apaga el servidor.
+3) Reemplaza el JAR de MDVSocial.
+4) NO reemplaces plugins/MDVSocial/Menus ni MenusBedrock.
+5) Enciende y prueba en celular: main -> perfil/amigos/warps/ayuda varias veces.
+
+Si quieres diagnóstico temporal:
+bedrock.mobile-safety.debug: true
+
+Nuevos defaults:
+touch-action-delay-ticks: 10
+controller-action-delay-ticks: 4
+action-delay-ticks: 2

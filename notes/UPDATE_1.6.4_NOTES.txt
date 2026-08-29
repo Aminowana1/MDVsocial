@@ -1,0 +1,41 @@
+MDVSocial 1.6.4 - Bedrock navigation/mobile fix + modular Bedrock core
+====================================================================
+
+Problema corregido
+------------------
+En algunos clientes Bedrock táctiles, el menú principal se abría pero al tocar
+submenús la navegación podía saltar de vuelta al main o ejecutar una respuesta
+vieja. La causa era una carrera entre respuestas de Forms consecutivos:
+las callbacks no estaban atadas al Form que las originó y el mismo estado de
+sesión se reutilizaba durante la navegación.
+
+Cambios 1.6.4
+-------------
+- Cada Form Bedrock recibe un token de sesión único.
+- Cada callback valida que su token siga siendo el activo antes de ejecutar.
+- Una respuesta tardía de un Form anterior ya no puede actuar sobre el Form nuevo.
+- Delay de transición según dispositivo:
+  * touch/celular: 10 ticks por defecto
+  * controller/consola: 4 ticks
+  * teclado/ratón PC: 2 ticks
+- Debounce sigue existiendo para respuestas duplicadas.
+- Debug opcional: bedrock.mobile-safety.debug: true
+- Los Forms estáticos de MenusBedrock y los Forms dinámicos usan el mismo sistema
+  de sesiones.
+
+Refactor
+--------
+El subsistema Bedrock ya no depende de una única clase grande para todo:
+- BedrockMenuManager: renderizado/envío de menús YAML estáticos.
+- BedrockMenuRepository: carga, merge y parseo de MenusBedrock.
+- BedrockUiSessionManager: sesiones, debounce y delays por dispositivo.
+- BedrockMenuContext: contexto de navegación.
+- BedrockMenuDefinition: definición parseada de un menú.
+- BedrockMenuButton: definición/visibilidad de botones.
+
+Compatibilidad
+--------------
+- Menus/ Java no fue modificado.
+- MenusBedrock/ no fue modificado visualmente.
+- player-data.db / correo / títulos / party / amigos mantienen la misma lógica.
+- No hace falta reemplazar MenusBedrock al actualizar el JAR.

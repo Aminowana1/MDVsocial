@@ -1,0 +1,9 @@
+MDVSocial 1.6.5
+
+- Corrige navegación de Forms en Bedrock móvil.
+- Elimina el debounce global que podía consumir el primer toque del Form siguiente.
+- Cada Form conserva token único y solo acepta una respuesta.
+- Transición uniforme de 1 tick para móvil, mando y teclado/ratón.
+- Los Forms se construyen antes de enviarse mediante FloodgatePlayer.sendForm(form).
+- Añade trazas opcionales bedrock.form-navigation.debug.
+- No cambia Menus/ Java ni los MenusBedrock existentes.
