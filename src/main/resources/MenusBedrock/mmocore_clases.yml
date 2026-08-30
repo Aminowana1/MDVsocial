@@ -1,0 +1,78 @@
+# ==========================================================
+# MDVSocial 1.6.6 - MMOCore Selección de Clases/Razas Bedrock
+# Basado en tu class-select.yml: Elfo, Humano y Orco.
+# La selección usa PlayerData real, consume el punto de clase y
+# dispara PlayerChangeClassEvent como el GUI original de MMOCore.
+# ==========================================================
+type: "DYNAMIC_MMOCORE_CLASSES"
+title: "&8&lSelección de raza"
+content:
+  - "&7Selecciona una raza."
+  - "&7Raza actual: &f{class}"
+  - "&7Puntos de clase: &e{class_points}"
+
+# Orden y clases visibles. El ID debe coincidir con el ID real de MMOCore.
+classes:
+  elfo:
+    enabled: true
+    id: "ELFO"
+    text: "&a&l{name}\n&r&7{description}\n&r&eToca para elegir esta raza."
+    image:
+      type: "URL"
+      data: ""
+
+  humano:
+    enabled: true
+    id: "HUMANO"
+    text: "&e&l{name}\n&r&7{description}\n&r&eToca para elegir esta raza."
+    image:
+      type: "URL"
+      data: ""
+
+  orco:
+    enabled: true
+    id: "ORCO"
+    text: "&c&l{name}\n&r&7{description}\n&r&eToca para elegir esta raza."
+    image:
+      type: "URL"
+      data: ""
+
+# Fallback si eliminas la sección classes y quieres listar todas las clases.
+class:
+  text: "&e&l{name}\n&r&7{description}\n&r&eToca para elegir esta raza."
+  image:
+    type: "URL"
+    data: ""
+
+buttons:
+  back:
+    text: "&6&lVolver\n&r&8Regresa al perfil."
+    image:
+      type: "URL"
+      data: ""
+
+confirm:
+  title: "&8Confirmar: &f{class}"
+  content:
+    - "&7¿Quieres elegir &f{class}&7?"
+    - ""
+    - "&a&l● &7&lLinaje"
+    - "{description}"
+    - ""
+    - "&e&l● &7&lAtributos"
+    - "{attribute_description}"
+    - ""
+    - "&7Costo: &e1 punto de clase"
+  confirm:
+    text: "&a&lConfirmar"
+    image:
+      type: "URL"
+      data: ""
+  back:
+    text: "&6Volver"
+    image:
+      type: "URL"
+      data: ""
+
+messages:
+  selected: ""

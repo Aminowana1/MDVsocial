@@ -5,17 +5,17 @@ content:
 buttons:
   perfil:
     text: "&e&lEstadísticas\n&7Consulta tu nivel, raza,"
-    action: "COMMAND_PLAYER"
+    action: "OPEN_MMOCORE_PROFILE"
     commands:
       - "perfil"
   atributos:
     text: "&d&lAtributos\n&7Gasta puntos para fortalecer"
-    action: "COMMAND_PLAYER"
+    action: "OPEN_MMOCORE_ATTRIBUTES"
     commands:
       - "atributos"
   razas:
     text: "&a&lRazas\n&7Revisa o cambia la raza"
-    action: "COMMAND_PLAYER"
+    action: "OPEN_MMOCORE_CLASSES"
     commands:
       - "class"
   aspecto:

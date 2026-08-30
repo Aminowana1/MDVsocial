@@ -107,6 +107,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     private MMOItemsBrowserManager mmoItemsBrowserManager;
     private BedrockMenuManager bedrockMenuManager;
     private BedrockUiSessionManager bedrockUiSessionManager;
+    private MMOCoreBedrockMenuManager mmoCoreBedrockMenuManager;
 
     private org.bukkit.NamespacedKey keyAction;
     private org.bukkit.NamespacedKey keyTitle;
@@ -157,6 +158,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         bedrockUiSessionManager = new BedrockUiSessionManager(this);
         bedrockMenuManager = new BedrockMenuManager(this);
         bedrockMenuManager.enable();
+        mmoCoreBedrockMenuManager = new MMOCoreBedrockMenuManager(this);
         setupEconomy();
 
         Bukkit.getPluginManager().registerEvents(this, this);
@@ -198,7 +200,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         mmoItemsBrowserManager.enable();
         startInteractiveChatProfileTask();
 
-        getLogger().info("MDVSocial 1.6.4 habilitado. Navegación Bedrock móvil serializada + arquitectura Bedrock modular.");
+        getLogger().info("MDVSocial 1.6.6 habilitado. Menús MMOCore Perfil/Atributos/Clases adaptados a Forms Bedrock.");
     }
 
     @Override
@@ -1890,6 +1892,9 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         return switch (normalized) {
             case "OPEN_FRIENDS_BEDROCK", "BEDROCK_FRIENDS", "OPEN_BEDROCK_FRIENDS" -> "OPEN_BEDROCK_FRIENDS";
             case "OPEN_PARTY_BEDROCK", "BEDROCK_PARTY", "OPEN_BEDROCK_PARTY" -> "OPEN_BEDROCK_PARTY";
+            case "OPEN_MMOCORE_PROFILE", "MMOCORE_PROFILE", "OPEN_BEDROCK_MMOCORE_PROFILE" -> "OPEN_MMOCORE_PROFILE";
+            case "OPEN_MMOCORE_ATTRIBUTES", "MMOCORE_ATTRIBUTES", "OPEN_BEDROCK_MMOCORE_ATTRIBUTES" -> "OPEN_MMOCORE_ATTRIBUTES";
+            case "OPEN_MMOCORE_CLASSES", "MMOCORE_CLASSES", "OPEN_BEDROCK_MMOCORE_CLASSES" -> "OPEN_MMOCORE_CLASSES";
             case "NONE", "INFO", "NO_ACTION" -> "NONE";
             default -> normalized;
         };
@@ -2002,6 +2007,18 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
                     context.targetOnline);
             case "OPEN_BEDROCK_FRIENDS" -> openBedrockFriends(player, 0);
             case "OPEN_BEDROCK_PARTY" -> openBedrockParty(player);
+            case "OPEN_MMOCORE_PROFILE" -> {
+                if (mmoCoreBedrockMenuManager == null || !mmoCoreBedrockMenuManager.openProfile(player))
+                    runBedrockPlayerCommands(player, button.commands, context);
+            }
+            case "OPEN_MMOCORE_ATTRIBUTES" -> {
+                if (mmoCoreBedrockMenuManager == null || !mmoCoreBedrockMenuManager.openAttributes(player))
+                    runBedrockPlayerCommands(player, button.commands, context);
+            }
+            case "OPEN_MMOCORE_CLASSES" -> {
+                if (mmoCoreBedrockMenuManager == null || !mmoCoreBedrockMenuManager.openClasses(player))
+                    runBedrockPlayerCommands(player, button.commands, context);
+            }
             default -> {
                 player.sendMessage(color(getPrefix() + "&cAcción Bedrock no reconocida: &e" + action));
                 getLogger().warning("Acción Bedrock no reconocida en " + context.menuId + ": " + action);
@@ -4580,6 +4597,14 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             }
         }
         return null;
+    }
+
+    void openBedrockProfileRoot(Player player) {
+        openCustomMenu(player, "menuperfil", 1, "main", 1);
+    }
+
+    void openBedrockPartyFromMMOCore(Player player) {
+        openBedrockParty(player);
     }
 
     private void openBedrockParty(Player player) {

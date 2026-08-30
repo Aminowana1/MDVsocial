@@ -1,0 +1,15 @@
+MDVSocial 1.6.6 - MMOCore Bedrock menus
+
+Cambios SOLO para Bedrock/Floodgate:
+- Perfil MMOCore adaptado a Form nativo editable: MenusBedrock/mmocore_perfil.yml
+- Atributos MMOCore adaptados a Form nativo editable: MenusBedrock/mmocore_atributos.yml
+  * subir 1 punto conserva PlayerData real de MMOCore
+  * respeta máximos y puntos disponibles
+  * redistribución con confirmación y punto de redistribución
+- Selección de clases/razas adaptada a Form nativo editable: MenusBedrock/mmocore_clases.yml
+  * Elfo/Humano/Orco según el class-select.yml entregado
+  * comprobación de puntos, permisos y clase actual
+  * confirmación, PlayerChangeClassEvent y carga de clase guardada
+- menuperfil.yml ahora abre estos Forms para Perfil/Atributos/Razas.
+- Los comandos originales quedan como fallback si la integración MMOCore no está disponible.
+- Java y el resto de menús de MDVSocial no se modifican.

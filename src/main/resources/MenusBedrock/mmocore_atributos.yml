@@ -1,0 +1,87 @@
+# ==========================================================
+# MDVSocial 1.6.6 - MMOCore Atributos para Bedrock
+# Las funciones modifican el PlayerData real de MMOCore.
+# ==========================================================
+type: "DYNAMIC_MMOCORE_ATTRIBUTES"
+title: "&8&lAtributos"
+content:
+  - "&7Puntos disponibles: &6{attribute_points}"
+  - "&7Puntos gastados: &e{spent_total}"
+  - "&7Redistribuciones: &e{reallocation_points}"
+  - ""
+  - "&8Toca un atributo para subir 1 punto."
+
+# Orden visual. Los atributos adicionales de MMOCore aparecen después.
+order:
+  - strength
+  - dexterity
+  - intelligence
+  - constitution
+
+# Formato genérico para atributos no definidos debajo.
+attribute:
+  text: "&e&l{name}\n&r&7Actual: &f{current} &8• &7Gastados: &f{spent}/{max}\n&r&eToca para subir 1 punto."
+  image:
+    type: "URL"
+    data: ""
+
+# Formatos específicos basados en tu attribute-view.yml de MMOCore.
+# Tokens disponibles: {name}, {current}, {spent}, {max}, {attribute_points}
+# y {buff_<stat>}/{total_<stat>} cuando MMOCore expone ese buff.
+attributes:
+  strength:
+    text: "&c&l{name}\n&r&7Puntos: &6{spent}&7/&6{max} &8• &7Actual: &c{current}\n&r&7Daño físico: &c+{total_physical_damage}% &8• &7Reg. vida: &c+{total_health_regeneration}/s"
+    image:
+      type: "URL"
+      data: ""
+
+  dexterity:
+    text: "&a&l{name}\n&r&7Puntos: &6{spent}&7/&6{max} &8• &7Actual: &a{current}\n&r&7Daño distancia: &a+{total_projectile_damage}% &8• &7Vel. ataque: &a+{total_attack_speed}"
+    image:
+      type: "URL"
+      data: ""
+
+  intelligence:
+    text: "&9&l{name}\n&r&7Puntos: &6{spent}&7/&6{max} &8• &7Actual: &9{current}\n&r&7Maná: &9+{total_max_mana} &8• &7Reg. maná: &9+{total_mana_regeneration}/s &8• &7Daño mágico: &9+{total_magic_damage}%"
+    image:
+      type: "URL"
+      data: ""
+
+  constitution:
+    text: "&6&l{name}\n&r&7Puntos: &6{spent}&7/&6{max} &8• &7Actual: &6{current}\n&r&7Vida: &c+{total_max_health} &8• &7Reducción: &6+{total_damage_reduction}%"
+    image:
+      type: "URL"
+      data: ""
+
+buttons:
+  reallocate:
+    enabled: true
+    text: "&e&lRedistribuir atributos\n&r&7Gastados: &6{spent_total} &8• &7Disponibles: &6{reallocation_points}"
+    image:
+      type: "URL"
+      data: ""
+
+  back:
+    text: "&6&lVolver\n&r&8Regresa al perfil."
+    image:
+      type: "URL"
+      data: ""
+
+reset:
+  title: "&e&lRedistribuir atributos"
+  content:
+    - "&7¿Quieres recuperar todos los puntos gastados?"
+    - ""
+    - "&7Puntos gastados: &6{spent_total}"
+    - "&7Redistribuciones disponibles: &6{reallocation_points}"
+    - "&7Costo: &e1 punto de redistribución"
+  confirm:
+    text: "&a&lSí, redistribuir"
+    image:
+      type: "URL"
+      data: ""
+  back:
+    text: "&6Volver"
+    image:
+      type: "URL"
+      data: ""

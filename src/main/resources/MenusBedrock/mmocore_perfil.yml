@@ -1,0 +1,64 @@
+# ==========================================================
+# MDVSocial 1.6.6 - MMOCore Perfil para Bedrock
+# Solo se usa con jugadores Floodgate/Bedrock.
+# El GUI Java de MMOCore no se modifica.
+# ==========================================================
+type: "DYNAMIC_MMOCORE_PROFILE"
+title: "&8&lTu Personaje"
+
+# Puedes usar tokens {token} de este menú y placeholders de PlaceholderAPI.
+content:
+  - "&e&l● &7&lProgreso"
+  - "&7Nivel actual: &e{level}"
+  - "&7EXP: &e{exp} &7/ &e{next_level}"
+  - ""
+  - "&e&l● &7&lIdentidad"
+  - "&7Título: &r%mdvsocial_title_colored_of_{player}%"
+  - "&7Clan: &r%mdvclans_clan_line_of_{player}%"
+  - "&7Raza actual: &c{class}"
+  - ""
+  - "&e&l● &7&lPuntos disponibles"
+  - "&7Atributo: &a{attribute_points}"
+  - "&7Clase: &c{class_points}"
+  - "&7Habilidad: &b{skill_points}"
+  - ""
+  - "&7Fuerza: &c{attribute_strength} &8• &7Destreza: &a{attribute_dexterity}"
+  - "&7Inteligencia: &9{attribute_intelligence} &8• &7Constitución: &6{attribute_constitution}"
+  - ""
+  - "&7Minero: &e%mmocore_profession_mining% &8• &7Leñador: &e%mmocore_profession_woodcutting%"
+  - "&7Agricultor: &e%mmocore_profession_farming% &8• &7Cazador: &e%mmocore_profession_cazador%"
+  - "&7Forjador: &e%mmocore_profession_forjador% &8• &7Pescador: &e%mmocore_profession_fishing%"
+
+buttons:
+  attributes:
+    # El menú Perfil original de MMOCore los muestra como información;
+    # el MenusBedrock/menuperfil.yml ya tiene un botón directo a Atributos.
+    enabled: false
+    text: "&d&lAtributos\n&r&8Gasta puntos para fortalecer tu personaje."
+    image:
+      type: "URL"
+      data: ""
+
+  classes:
+    # El MenusBedrock/menuperfil.yml ya tiene un botón directo a Razas.
+    enabled: false
+    text: "&a&lRazas\n&r&8Consulta o cambia tu raza."
+    image:
+      type: "URL"
+      data: ""
+
+  party:
+    enabled: true
+    text: "&d&lGrupo de Aventura\n&r&8Consulta tu party de MMOCore."
+    image:
+      type: "URL"
+      data: ""
+
+  back:
+    text: "&6&lVolver\n&r&8Regresa al menú de Perfil."
+    image:
+      type: "URL"
+      data: ""
+
+messages:
+  unavailable: "&cMMOCore no está disponible en este momento."
