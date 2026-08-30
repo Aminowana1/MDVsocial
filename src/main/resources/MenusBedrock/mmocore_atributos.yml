@@ -1,15 +1,20 @@
 # ==========================================================
 # MDVSocial 1.6.6 - MMOCore Atributos para Bedrock
+#
+# Bedrock usa una lista compacta y una pantalla de detalle
+# por atributo para evitar que los botones corten información.
 # Las funciones modifican el PlayerData real de MMOCore.
 # ==========================================================
 type: "DYNAMIC_MMOCORE_ATTRIBUTES"
 title: "&8&lAtributos"
+
 content:
   - "&7Puntos disponibles: &6{attribute_points}"
   - "&7Puntos gastados: &e{spent_total}"
   - "&7Redistribuciones: &e{reallocation_points}"
   - ""
-  - "&8Toca un atributo para subir 1 punto."
+  - "&8Selecciona un atributo para ver"
+  - "&8sus bonificaciones y mejorarlo."
 
 # Orden visual. Los atributos adicionales de MMOCore aparecen después.
 order:
@@ -18,40 +23,208 @@ order:
   - intelligence
   - constitution
 
-# Formato genérico para atributos no definidos debajo.
+# Botón compacto para cualquier atributo no definido debajo.
 attribute:
-  text: "&e&l{name}\n&r&7Actual: &f{current} &8• &7Gastados: &f{spent}/{max}\n&r&eToca para subir 1 punto."
+  text: "&e&l{name}\n&r&7Nivel: &f{current} &8• &7Puntos: &f{spent}/{max}"
   image:
     type: "URL"
     data: ""
 
-# Formatos específicos basados en tu attribute-view.yml de MMOCore.
-# Tokens disponibles: {name}, {current}, {spent}, {max}, {attribute_points}
-# y {buff_<stat>}/{total_<stat>} cuando MMOCore expone ese buff.
+# Botones compactos del menú principal.
 attributes:
   strength:
-    text: "&c&l{name}\n&r&7Puntos: &6{spent}&7/&6{max} &8• &7Actual: &c{current}\n&r&7Daño físico: &c+{total_physical_damage}% &8• &7Reg. vida: &c+{total_health_regeneration}/s"
+    text: "&c&l{name}\n&r&7Nivel: &c{current} &8• &7Puntos: &6{spent}/{max}"
     image:
       type: "URL"
       data: ""
 
   dexterity:
-    text: "&a&l{name}\n&r&7Puntos: &6{spent}&7/&6{max} &8• &7Actual: &a{current}\n&r&7Daño distancia: &a+{total_projectile_damage}% &8• &7Vel. ataque: &a+{total_attack_speed}"
+    text: "&a&l{name}\n&r&7Nivel: &a{current} &8• &7Puntos: &6{spent}/{max}"
     image:
       type: "URL"
       data: ""
 
   intelligence:
-    text: "&9&l{name}\n&r&7Puntos: &6{spent}&7/&6{max} &8• &7Actual: &9{current}\n&r&7Maná: &9+{total_max_mana} &8• &7Reg. maná: &9+{total_mana_regeneration}/s &8• &7Daño mágico: &9+{total_magic_damage}%"
+    text: "&9&l{name}\n&r&7Nivel: &9{current} &8• &7Puntos: &6{spent}/{max}"
     image:
       type: "URL"
       data: ""
 
   constitution:
-    text: "&6&l{name}\n&r&7Puntos: &6{spent}&7/&6{max} &8• &7Actual: &6{current}\n&r&7Vida: &c+{total_max_health} &8• &7Reducción: &6+{total_damage_reduction}%"
+    text: "&6&l{name}\n&r&7Nivel: &6{current} &8• &7Puntos: &6{spent}/{max}"
     image:
       type: "URL"
       data: ""
+
+# ==========================================================
+# DETALLE DE ATRIBUTOS
+# Al tocar un atributo del menú principal se abre esta vista.
+# El punto SOLO se gasta al tocar el botón "Subir +1".
+#
+# Tokens disponibles:
+# {name}, {current}, {spent}, {max}, {attribute_points},
+# {spent_total}, {reallocation_points},
+# {buff_<stat>} y {total_<stat>} cuando MMOCore los expone.
+# ==========================================================
+details:
+
+  # Fallback para atributos adicionales de MMOCore.
+  attribute:
+    title: "&8&l{name}"
+    content:
+      - "&7Nivel actual: &f{current}"
+      - "&7Puntos invertidos: &6{spent}&7/&6{max}"
+      - ""
+      - "&7Puntos disponibles: &6{attribute_points}"
+    upgrade:
+      text: "&a&lSubir {name} +1\n&r&7Consume 1 punto de atributo."
+      image:
+        type: "URL"
+        data: ""
+    no-points:
+      text: "&c&lSin puntos disponibles\n&r&7Consigue puntos de atributo para mejorar."
+      image:
+        type: "URL"
+        data: ""
+    maxed:
+      text: "&8&lMáximo alcanzado\n&r&7No puedes invertir más puntos."
+      image:
+        type: "URL"
+        data: ""
+    back:
+      text: "&6Volver"
+      image:
+        type: "URL"
+        data: ""
+
+  strength:
+    title: "&c&lFuerza"
+    content:
+      - "&7Nivel actual: &c{current}"
+      - "&7Puntos invertidos: &6{spent}&7/&6{max}"
+      - ""
+      - "&c&lBonificaciones actuales"
+      - "&7Daño físico: &c+{total_physical_damage}%"
+      - "&7Regeneración de vida: &c+{total_health_regeneration}/s"
+      - ""
+      - "&7Puntos disponibles: &6{attribute_points}"
+    upgrade:
+      text: "&a&lSubir Fuerza +1\n&r&7Consume 1 punto de atributo."
+      image:
+        type: "URL"
+        data: ""
+    no-points:
+      text: "&c&lSin puntos disponibles\n&r&7No tienes puntos para subir Fuerza."
+      image:
+        type: "URL"
+        data: ""
+    maxed:
+      text: "&8&lFuerza al máximo\n&r&7No puedes invertir más puntos."
+      image:
+        type: "URL"
+        data: ""
+    back:
+      text: "&6Volver a Atributos"
+      image:
+        type: "URL"
+        data: ""
+
+  dexterity:
+    title: "&a&lDestreza"
+    content:
+      - "&7Nivel actual: &a{current}"
+      - "&7Puntos invertidos: &6{spent}&7/&6{max}"
+      - ""
+      - "&a&lBonificaciones actuales"
+      - "&7Daño a distancia: &a+{total_projectile_damage}%"
+      - "&7Velocidad de ataque: &a+{total_attack_speed}"
+      - ""
+      - "&7Puntos disponibles: &6{attribute_points}"
+    upgrade:
+      text: "&a&lSubir Destreza +1\n&r&7Consume 1 punto de atributo."
+      image:
+        type: "URL"
+        data: ""
+    no-points:
+      text: "&c&lSin puntos disponibles\n&r&7No tienes puntos para subir Destreza."
+      image:
+        type: "URL"
+        data: ""
+    maxed:
+      text: "&8&lDestreza al máximo\n&r&7No puedes invertir más puntos."
+      image:
+        type: "URL"
+        data: ""
+    back:
+      text: "&6Volver a Atributos"
+      image:
+        type: "URL"
+        data: ""
+
+  intelligence:
+    title: "&9&lInteligencia"
+    content:
+      - "&7Nivel actual: &9{current}"
+      - "&7Puntos invertidos: &6{spent}&7/&6{max}"
+      - ""
+      - "&9&lBonificaciones actuales"
+      - "&7Maná máximo: &9+{total_max_mana}"
+      - "&7Regeneración de maná: &9+{total_mana_regeneration}/s"
+      - "&7Daño mágico: &9+{total_magic_damage}%"
+      - ""
+      - "&7Puntos disponibles: &6{attribute_points}"
+    upgrade:
+      text: "&a&lSubir Inteligencia +1\n&r&7Consume 1 punto de atributo."
+      image:
+        type: "URL"
+        data: ""
+    no-points:
+      text: "&c&lSin puntos disponibles\n&r&7No tienes puntos para subir Inteligencia."
+      image:
+        type: "URL"
+        data: ""
+    maxed:
+      text: "&8&lInteligencia al máximo\n&r&7No puedes invertir más puntos."
+      image:
+        type: "URL"
+        data: ""
+    back:
+      text: "&6Volver a Atributos"
+      image:
+        type: "URL"
+        data: ""
+
+  constitution:
+    title: "&6&lConstitución"
+    content:
+      - "&7Nivel actual: &6{current}"
+      - "&7Puntos invertidos: &6{spent}&7/&6{max}"
+      - ""
+      - "&6&lBonificaciones actuales"
+      - "&7Vida máxima: &c+{total_max_health}"
+      - "&7Reducción de daño: &6+{total_damage_reduction}%"
+      - ""
+      - "&7Puntos disponibles: &6{attribute_points}"
+    upgrade:
+      text: "&a&lSubir Constitución +1\n&r&7Consume 1 punto de atributo."
+      image:
+        type: "URL"
+        data: ""
+    no-points:
+      text: "&c&lSin puntos disponibles\n&r&7No tienes puntos para subir Constitución."
+      image:
+        type: "URL"
+        data: ""
+    maxed:
+      text: "&8&lConstitución al máximo\n&r&7No puedes invertir más puntos."
+      image:
+        type: "URL"
+        data: ""
+    back:
+      text: "&6Volver a Atributos"
+      image:
+        type: "URL"
+        data: ""
 
 buttons:
   reallocate:

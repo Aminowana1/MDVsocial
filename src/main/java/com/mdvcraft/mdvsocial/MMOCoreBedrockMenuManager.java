@@ -139,11 +139,11 @@ final class MMOCoreBedrockMenuManager {
                 addAttributeBuffTokens(attr, total, at);
 
                 String path = "attributes." + normalize(id);
-                String generic = "&e&l{name}\n&r&7Actual: &f{current} &8• &7Gastados: &f{spent}/{max}\n&r&eToca para subir 1 punto.";
+                String generic = "&e&l{name}\n&r&7Nivel: &f{current} &8• &7Puntos: &f{spent}/{max}";
                 String buttonText = text(ui, path + ".text",
                         textRaw(ui, "attribute.text", generic), player, at);
                 addButton(form, ui, ui.contains(path) ? path : "attribute", buttonText);
-                actions.add(() -> upgradeAttribute(player, attr));
+                actions.add(() -> openAttributeDetails(player, attr));
             }
 
             if (ui.getBoolean("buttons.reallocate.enabled", true)) {
@@ -223,6 +223,78 @@ final class MMOCoreBedrockMenuManager {
         actions.add(() -> chooseClass(player, clazz));
     }
 
+    private void openAttributeDetails(Player player, Object attr) {
+        if (!ready(player))
+            return;
+        try {
+            Object data = playerData(player);
+            if (data == null) {
+                unavailable(player, null);
+                return;
+            }
+
+            YamlConfiguration ui = ui("mmocore_atributos");
+            Object attributes = invoke(data, "getAttributes");
+            Object instance = invoke(attributes, "getInstance", attr);
+            if (instance == null) {
+                openAttributes(player);
+                return;
+            }
+
+            Map<String, String> t = baseTokens(data, player);
+            t.put("reallocation_points", string(invoke(data, "getAttributeReallocationPoints")));
+            t.put("spent_total", attributes == null ? "0" : string(invoke(attributes, "countPoints")));
+
+            String id = attributeId(attr);
+            int base = integer(invoke(instance, "getBase"));
+            int total = integer(invoke(instance, "getTotal"));
+            boolean hasMax = bool(invoke(attr, "hasMax"));
+            int max = integer(invoke(attr, "getMax"));
+            t.put("id", id);
+            t.put("name", attributeName(attr));
+            t.put("spent", String.valueOf(base));
+            t.put("current", String.valueOf(total));
+            t.put("max", hasMax ? String.valueOf(max) : "∞");
+            addAttributeBuffTokens(attr, total, t);
+
+            String specific = "details." + normalize(id);
+            String path = ui.contains(specific) ? specific : "details.attribute";
+            List<String> genericContent = List.of(
+                    "&7Nivel actual: &f{current}",
+                    "&7Puntos invertidos: &6{spent}&7/&6{max}",
+                    "",
+                    "&7Puntos disponibles: &6{attribute_points}");
+
+            SimpleForm.Builder form = SimpleForm.builder()
+                    .title(text(ui, path + ".title", "&8&l{name}", player, t))
+                    .content(lines(ui, path + ".content", genericContent, player, t));
+            List<Runnable> actions = new ArrayList<>();
+
+            boolean maxed = hasMax && base >= max;
+            if (maxed) {
+                addButton(form, ui, path + ".maxed",
+                        text(ui, path + ".maxed.text", "&8&lMáximo alcanzado\n&r&7No puedes invertir más puntos.", player, t));
+                actions.add(() -> openAttributeDetails(player, attr));
+            } else if (integer(invoke(data, "getAttributePoints")) < 1) {
+                addButton(form, ui, path + ".no-points",
+                        text(ui, path + ".no-points.text", "&c&lSin puntos disponibles\n&r&7Consigue puntos de atributo para mejorar.", player, t));
+                actions.add(() -> openAttributeDetails(player, attr));
+            } else {
+                addButton(form, ui, path + ".upgrade",
+                        text(ui, path + ".upgrade.text", "&a&lSubir {name} +1\n&r&7Consume 1 punto de atributo.", player, t));
+                actions.add(() -> upgradeAttribute(player, attr));
+            }
+
+            addButton(form, ui, path + ".back",
+                    text(ui, path + ".back.text", "&6Volver", player, t));
+            actions.add(() -> openAttributes(player));
+            send(player, form, actions);
+        } catch (Throwable ex) {
+            plugin.getLogger().warning("No se pudo abrir el detalle de atributo MMOCore en Bedrock: " + compact(ex));
+            openAttributes(player);
+        }
+    }
+
     private void upgradeAttribute(Player player, Object attr) {
         try {
             Object data = playerData(player);
@@ -231,7 +303,7 @@ final class MMOCoreBedrockMenuManager {
             int points = integer(invoke(data, "getAttributePoints"));
             if (points < 1) {
                 sendMMOCoreMessage(data, "ATTRIBUTE_MISSING_POINT");
-                openAttributes(player);
+                openAttributeDetails(player, attr);
                 return;
             }
             Object container = invoke(data, "getAttributes");
@@ -241,7 +313,7 @@ final class MMOCoreBedrockMenuManager {
             int max = integer(invoke(attr, "getMax"));
             if (hasMax && base >= max) {
                 sendMMOCoreMessage(data, "ATTRIBUTE_MAX_POINTS_HIT");
-                openAttributes(player);
+                openAttributeDetails(player, attr);
                 return;
             }
 
@@ -251,11 +323,11 @@ final class MMOCoreBedrockMenuManager {
             invoke(attr, "updateAdvancement", data, newBase);
             sendMMOCoreMessage(data, "ATTRIBUTE_LEVEL_UP", "attribute", attributeName(attr), "level", newBase);
             callAttributeUseEvent(data, attr);
-            openAttributes(player);
+            openAttributeDetails(player, attr);
         } catch (Throwable ex) {
             plugin.getLogger().warning("No se pudo subir atributo MMOCore desde Bedrock: " + compact(ex));
             player.sendMessage(plugin.bedrockText("&cNo se pudo actualizar el atributo.", player, null, "", false));
-            openAttributes(player);
+            openAttributeDetails(player, attr);
         }
     }
 
