@@ -278,7 +278,7 @@ public final class SocialMenuItemManager implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onInteract(PlayerInteractEvent event) {
         if (!enabled) return;
         if (event.getHand() != null && event.getHand() != EquipmentSlot.HAND) return;
@@ -287,12 +287,60 @@ public final class SocialMenuItemManager implements Listener {
         ItemStack item = event.getItem();
         if (!isMenuItem(item)) return;
 
-        event.setCancelled(true);
         Player player = event.getPlayer();
+
+        /*
+         * IMPORTANTE:
+         * Paper/Bukkit puede entregar RIGHT_CLICK_AIR ya cancelado cuando vanilla
+         * predice que no hay ninguna accion que ejecutar. Por eso NO podemos usar
+         * ignoreCancelled=true: hacerlo rompe el Libro del Viajero al hacer click
+         * derecho al aire.
+         *
+         * A la vez, si MDVAspectos tiene activo su race-command-gate y este jugador
+         * aun no tiene raza, MDVAspectos ya intercepto el mismo click en LOWEST y
+         * programo la apertura del selector de raza (Java o Bedrock). En ese caso
+         * MDVSocial no debe despachar /social, porque abriria el menu principal por
+         * encima del selector.
+         */
+        if (isBlockedByMdvAspectosRaceGate(player)) return;
+
+        event.setCancelled(true);
         Bukkit.getScheduler().runTask(plugin, () -> {
             ensureMenuItem(player);
             Bukkit.dispatchCommand(player, command);
         });
+    }
+
+
+    /**
+     * Consulta la configuracion REAL de MDVAspectos sin crear una dependencia dura.
+     * Esto permite distinguir una cancelacion funcional del race gate de la
+     * cancelacion predictiva que Bukkit usa en RIGHT_CLICK_AIR.
+     */
+    private boolean isBlockedByMdvAspectosRaceGate(Player player) {
+        if (player == null) return false;
+
+        org.bukkit.plugin.Plugin candidate = Bukkit.getPluginManager().getPlugin("MDVAspectos");
+        if (!(candidate instanceof org.bukkit.plugin.java.JavaPlugin aspectos) || !candidate.isEnabled()) {
+            return false;
+        }
+
+        FileConfiguration config = aspectos.getConfig();
+        if (!config.getBoolean("race-command-gate.enabled", false)) return false;
+
+        if (config.getBoolean("race-command-gate.allow-ops", true) && player.isOp()) {
+            return false;
+        }
+
+        String bypass = config.getString("race-command-gate.bypass-permission", "mdvcraft.racegate.bypass");
+        if (bypass != null && !bypass.isBlank() && player.hasPermission(bypass)) {
+            return false;
+        }
+
+        String required = config.getString("race-command-gate.required-permission", "mdvcraft.race.selected");
+        if (required == null || required.isBlank()) return false;
+
+        return !player.hasPermission(required);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

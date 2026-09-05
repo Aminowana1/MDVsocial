@@ -200,7 +200,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         mmoItemsBrowserManager.enable();
         startInteractiveChatProfileTask();
 
-        getLogger().info("MDVSocial 1.6.7 habilitado. Bridge directo de selección de raza Bedrock + respeto de gates externos.");
+        getLogger().info("MDVSocial 1.6.8 habilitado. Fix RIGHT_CLICK_AIR + bridge de raza Bedrock.");
     }
 
     @Override
