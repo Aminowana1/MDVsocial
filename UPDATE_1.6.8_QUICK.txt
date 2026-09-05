@@ -1,0 +1,9 @@
+MDVSocial 1.6.8 - Fix Libro del Viajero al aire
+
+- Corrige la regresion introducida en 1.6.7 donde RIGHT_CLICK_AIR no abria el menu.
+- Causa: ignoreCancelled=true omitia eventos que Bukkit/Paper puede pre-cancelar al hacer click al aire.
+- El listener vuelve a recibir eventos cancelados.
+- Antes de despachar /social consulta el race-command-gate real de MDVAspectos.
+- Jugador SIN raza: MDVAspectos conserva el control y abre el selector correcto Java/Bedrock.
+- Jugador CON raza: click derecho al aire o a bloque vuelve a abrir MDVSocial normalmente.
+- Sin cambios de config.
