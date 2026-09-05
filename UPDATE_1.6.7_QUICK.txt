@@ -1,0 +1,9 @@
+MDVSocial 1.6.7 - Bridge de raza Bedrock
+
+- Añade MDVSocialAPI.openBedrockRaceSelection(Player).
+- Abre directamente MenusBedrock/mmocore_clases.yml mediante el manager real de MMOCore.
+- No pasa por el menú principal.
+- El Libro/Sello social ahora respeta PlayerInteractEvent cancelado por gates externos
+  (por ejemplo race-command-gate de MDVAspectos), evitando que un click cancelado
+  abra igualmente /social de forma interna.
+- Java no cambia.
