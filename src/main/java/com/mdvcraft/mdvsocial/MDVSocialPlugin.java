@@ -200,7 +200,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         mmoItemsBrowserManager.enable();
         startInteractiveChatProfileTask();
 
-        getLogger().info("MDVSocial 1.6.6 habilitado. Menús MMOCore Perfil/Atributos/Clases adaptados a Forms Bedrock.");
+        getLogger().info("MDVSocial 1.6.7 habilitado. Bridge directo de selección de raza Bedrock + respeto de gates externos.");
     }
 
     @Override
@@ -4601,6 +4601,21 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
 
     void openBedrockProfileRoot(Player player) {
         openCustomMenu(player, "menuperfil", 1, "main", 1);
+    }
+
+    /**
+     * Punto de entrada estable para otros plugins de MDVCRAFT (por ejemplo
+     * MDVAspectos) que necesiten abrir DIRECTAMENTE la selección de raza
+     * nativa de Bedrock sin pasar primero por el menú principal.
+     *
+     * @return true únicamente si el jugador es Bedrock y el Form de clases
+     *         de MMOCore pudo abrirse.
+     */
+    boolean openBedrockRaceSelection(Player player) {
+        if (player == null || !player.isOnline() || !isBedrockPlayer(player)) {
+            return false;
+        }
+        return mmoCoreBedrockMenuManager != null && mmoCoreBedrockMenuManager.openClasses(player);
     }
 
     void openBedrockPartyFromMMOCore(Player player) {

@@ -83,6 +83,17 @@ public final class MDVSocialAPI {
         return true;
     }
 
+    /**
+     * Abre directamente el selector nativo de clases/razas de MMOCore para
+     * jugadores Bedrock. No abre el menú principal de MDVSocial.
+     *
+     * Pensado para gates externos como MDVAspectos. Java devuelve false.
+     */
+    public static boolean openBedrockRaceSelection(Player player) {
+        MDVSocialPlugin plugin = plugin();
+        return plugin != null && player != null && plugin.openBedrockRaceSelection(player);
+    }
+
     /** Reproduce un sonido comun del core UI. Ejemplos: default, open, back, close, page, confirm, danger, invalid. */
     public static boolean playUISound(Player player, String soundKey) {
         MDVSocialPlugin plugin = plugin();

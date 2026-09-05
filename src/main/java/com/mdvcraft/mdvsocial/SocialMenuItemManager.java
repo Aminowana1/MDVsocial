@@ -278,7 +278,7 @@ public final class SocialMenuItemManager implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent event) {
         if (!enabled) return;
         if (event.getHand() != null && event.getHand() != EquipmentSlot.HAND) return;
