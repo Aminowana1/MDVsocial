@@ -1,0 +1,12 @@
+type: "SIMPLE"
+title: "&9&lDiscord"
+content:
+  - "&fUnete a nuestra comunidad:"
+  - "&b{discord}"
+  - "&7Escribe el enlace en tu navegador."
+
+buttons:
+  abrir:
+    text: "&9&lOkay"
+    action: "OPEN_DISCORD"
+    sound: "open"

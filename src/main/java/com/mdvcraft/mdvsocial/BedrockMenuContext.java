@@ -3,7 +3,7 @@ package com.mdvcraft.mdvsocial;
 import java.util.UUID;
 
 /** Immutable navigation context for a Bedrock form screen. */
-final class BedrockMenuContext {
+public final class BedrockMenuContext {
     final String menuId;
     final int page;
     final String previousMenu;

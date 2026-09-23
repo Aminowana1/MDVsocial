@@ -59,7 +59,8 @@ import java.util.stream.Collectors;
  * Menú personal de hogares usando EssentialsX como backend.
  *
  * El modo LOCK_EXCESS conserva todos los hogares de EssentialsX, pero suspende
- * los que exceden el límite actual de MDVSocial. La selección se mantiene estable:
+ * los que exceden el límite actual de MDVSocial. La selección se mantiene
+ * estable:
  * primero preferred-home-names y luego el resto por nombre.
  */
 public final class PlayerHomesMenuManager implements Listener, CommandExecutor, TabCompleter {
@@ -141,13 +142,15 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
         lockMode = config.getString(CONFIG_PATH + ".suspended-homes.mode", "LOCK_EXCESS");
         restoreOnUpgrade = config.getBoolean(CONFIG_PATH + ".suspended-homes.restore-on-upgrade", true);
         allowDeleteLocked = config.getBoolean(CONFIG_PATH + ".suspended-homes.allow-delete-locked", true);
-        lockBypassPermission = config.getString(CONFIG_PATH + ".suspended-homes.bypass-permission", "mdvsocial.homes.lock.bypass");
+        lockBypassPermission = config.getString(CONFIG_PATH + ".suspended-homes.bypass-permission",
+                "mdvsocial.homes.lock.bypass");
         preferredHomeNames = config.getStringList(CONFIG_PATH + ".suspended-homes.preferred-home-names").stream()
                 .filter(s -> s != null && !s.isBlank())
                 .map(String::trim)
                 .collect(Collectors.toCollection(ArrayList::new));
         if (preferredHomeNames.isEmpty()) {
-            for (int i = 1; i <= maxVisibleHomes; i++) preferredHomeNames.add(generateHomeName(i));
+            for (int i = 1; i <= maxVisibleHomes; i++)
+                preferredHomeNames.add(generateHomeName(i));
         }
         interceptedHomeCommands = config.getStringList(CONFIG_PATH + ".suspended-homes.intercept-commands").stream()
                 .filter(s -> s != null && !s.isBlank())
@@ -197,39 +200,53 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
                 .map(home -> home.withLocked(lockedNames.contains(normalizeHomeName(home.name))))
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        Inventory inv = Bukkit.createInventory(new HomesHolder(), size, color(applyGlobalPlaceholders(title, player, displayedHomes, maxHomes)));
+        Inventory inv = Bukkit.createInventory(new HomesHolder(), size,
+                color(applyGlobalPlaceholders(title, player, displayedHomes, maxHomes)));
         fill(inv, player, displayedHomes, maxHomes);
-        inv.setItem(slot("items.info.slot", 13), itemFromPath("items.info", "INFO", null, 0, player, displayedHomes, maxHomes));
+        inv.setItem(slot("items.info.slot", 13),
+                itemFromPath("items.info", "INFO", null, 0, player, displayedHomes, maxHomes));
 
-        for (int i = 1; i <= maxVisibleHomes; i++) {
-            HomeData home = i <= displayedHomes.size() ? displayedHomes.get(i - 1) : null;
+        // Show pre-existing homes outside the configured default slot count too;
+        // never hide an Essentials home just because its ordinal exceeds the GUI default.
+        for (int i = 1; i <= Math.min(9, Math.max(maxVisibleHomes, displayedHomes.size())); i++) {
+            HomeData home = homeAtPosition(displayedHomes, i);
             boolean slotWithinLimit = i <= maxHomes;
             int teleportSlot = slot("items.teleport.slot-" + i, defaultTeleportSlot(i));
             int setSlot = slot("items.set.slot-" + i, defaultSetSlot(i));
 
             if (home != null && home.locked) {
-                inv.setItem(teleportSlot, itemFromPath("items.teleport.locked", "LOCKED_HOME", home, i, player, displayedHomes, maxHomes));
+                inv.setItem(teleportSlot, itemFromPath("items.teleport.locked", "LOCKED_HOME", home, i, player,
+                        displayedHomes, maxHomes));
                 String lockedAction = allowDeleteLocked ? "DELETE_LOCKED_HOME" : "LOCKED_HOME";
-                inv.setItem(setSlot, itemFromPath("items.set.locked", lockedAction, home, i, player, displayedHomes, maxHomes));
+                inv.setItem(setSlot,
+                        itemFromPath("items.set.locked", lockedAction, home, i, player, displayedHomes, maxHomes));
                 continue;
             }
 
             if (!slotWithinLimit) {
                 HomeData lockedSlot = HomeData.missing(generateHomeName(i)).withLocked(true);
-                inv.setItem(teleportSlot, itemFromPath("items.teleport.locked", "LOCKED_HOME", lockedSlot, i, player, displayedHomes, maxHomes));
-                inv.setItem(setSlot, itemFromPath("items.set.locked", "LOCKED_HOME", lockedSlot, i, player, displayedHomes, maxHomes));
+                inv.setItem(teleportSlot, itemFromPath("items.teleport.locked", "LOCKED_HOME", lockedSlot, i, player,
+                        displayedHomes, maxHomes));
+                inv.setItem(setSlot, itemFromPath("items.set.locked", "LOCKED_HOME", lockedSlot, i, player,
+                        displayedHomes, maxHomes));
                 continue;
             }
 
             if (home == null) {
                 String generatedName = generateHomeName(i);
                 HomeData missingHome = HomeData.missing(generatedName);
-                inv.setItem(teleportSlot, itemFromPath("items.teleport.missing", "MISSING", missingHome, i, player, displayedHomes, maxHomes));
-                String setMissingPath = section("items.set.missing") != null || section("set.missing") != null ? "items.set.missing" : "items.set.available";
-                inv.setItem(setSlot, itemFromPath(setMissingPath, "SET_HOME", missingHome, i, player, displayedHomes, maxHomes));
+                inv.setItem(teleportSlot, itemFromPath("items.teleport.missing", "MISSING", missingHome, i, player,
+                        displayedHomes, maxHomes));
+                String setMissingPath = section("items.set.missing") != null || section("set.missing") != null
+                        ? "items.set.missing"
+                        : "items.set.available";
+                inv.setItem(setSlot,
+                        itemFromPath(setMissingPath, "SET_HOME", missingHome, i, player, displayedHomes, maxHomes));
             } else {
-                inv.setItem(teleportSlot, itemFromPath("items.teleport.available", "TELEPORT_HOME", home, i, player, displayedHomes, maxHomes));
-                inv.setItem(setSlot, itemFromPath("items.set.available", "SET_HOME", home, i, player, displayedHomes, maxHomes));
+                inv.setItem(teleportSlot, itemFromPath("items.teleport.available", "TELEPORT_HOME", home, i, player,
+                        displayedHomes, maxHomes));
+                inv.setItem(setSlot,
+                        itemFromPath("items.set.available", "SET_HOME", home, i, player, displayedHomes, maxHomes));
             }
         }
 
@@ -243,7 +260,6 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
 
         player.openInventory(inv);
     }
-
 
     private void openBedrockHomesMenu(Player player) {
         List<HomeData> homes = readHomes(player);
@@ -271,20 +287,22 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
 
         int totalSlots = Math.max(maxVisibleHomes, Math.min(displayed.size(), 9));
         for (int i = 1; i <= totalSlots; i++) {
-            HomeData home = i <= displayed.size() ? displayed.get(i - 1) : null;
+            HomeData home = homeAtPosition(displayed, i);
             boolean withinLimit = i <= maxHomes;
             if (home == null) {
                 String generated = generateHomeName(i);
                 HomeData missing = HomeData.missing(generated);
                 if (withinLimit) {
                     addBedrockHomeButton(builder, ui, "buttons.create",
-                            bedrockHomeText(ui, "buttons.create.text", "&aCrear &f{home_name}\n&7Guardar ubicación actual",
+                            bedrockHomeText(ui, "buttons.create.text",
+                                    "&aCrear &f{home_name}\n&7Guardar ubicación actual",
                                     player, missing, i, displayed, maxHomes));
                     int number = i;
                     actions.add(() -> runHomeCommand(player, setCommand, generated, number, true));
                 } else {
                     addBedrockHomeButton(builder, ui, "buttons.locked-slot",
-                            bedrockHomeText(ui, "buttons.locked-slot.text", "&8Espacio {home_number} bloqueado\n&7Aumenta tu límite de hogares",
+                            bedrockHomeText(ui, "buttons.locked-slot.text",
+                                    "&8Espacio {home_number} bloqueado\n&7Aumenta tu límite de hogares",
                                     player, missing.withLocked(true), i, displayed, maxHomes));
                     actions.add(() -> openBedrockHomesMenu(player));
                 }
@@ -300,7 +318,8 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
                 actions.add(() -> openBedrockLockedHome(player, selected, number));
             } else {
                 addBedrockHomeButton(builder, ui, "buttons.home",
-                        bedrockHomeText(ui, "buttons.home.text", "&6{home_name}\n&7{home_world} {home_x}, {home_y}, {home_z}",
+                        bedrockHomeText(ui, "buttons.home.text",
+                                "&6{home_name}\n&7{home_world} {home_x}, {home_y}, {home_z}",
                                 player, home, i, displayed, maxHomes));
                 HomeData selected = home;
                 actions.add(() -> openBedrockHomeActions(player, selected, number));
@@ -325,14 +344,17 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
         int maxHomes = getMaxHomes(player);
         YamlConfiguration ui = bedrockHomesUi();
         SimpleForm.Builder builder = SimpleForm.builder()
-                .title(bedrockHomeText(ui, "home-actions.title", "&6&l{home_name}", player, home, number, homes, maxHomes))
+                .title(bedrockHomeText(ui, "home-actions.title", "&6&l{home_name}", player, home, number, homes,
+                        maxHomes))
                 .content(bedrockHomeLines(ui, "home-actions.content",
                         List.of("&7Mundo: &f{home_world}", "&7X: &f{home_x}  &7Y: &f{home_y}  &7Z: &f{home_z}"),
                         player, home, number, homes, maxHomes));
         addBedrockHomeButton(builder, ui, "home-actions.teleport",
-                bedrockHomeText(ui, "home-actions.teleport", "&aTeletransportarse", player, home, number, homes, maxHomes));
+                bedrockHomeText(ui, "home-actions.teleport", "&aTeletransportarse", player, home, number, homes,
+                        maxHomes));
         addBedrockHomeButton(builder, ui, "home-actions.update",
-                bedrockHomeText(ui, "home-actions.update", "&eActualizar ubicación", player, home, number, homes, maxHomes));
+                bedrockHomeText(ui, "home-actions.update", "&eActualizar ubicación", player, home, number, homes,
+                        maxHomes));
         addBedrockHomeButton(builder, ui, "home-actions.delete",
                 bedrockHomeText(ui, "home-actions.delete", "&cEliminar hogar", player, home, number, homes, maxHomes));
         addBedrockHomeButton(builder, ui, "home-actions.back",
@@ -353,7 +375,8 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
         int maxHomes = getMaxHomes(player);
         YamlConfiguration ui = bedrockHomesUi();
         SimpleForm.Builder builder = SimpleForm.builder()
-                .title(bedrockHomeText(ui, "locked-menu.title", "&c&lHogar suspendido", player, home, number, homes, maxHomes))
+                .title(bedrockHomeText(ui, "locked-menu.title", "&c&lHogar suspendido", player, home, number, homes,
+                        maxHomes))
                 .content(bedrockHomeLines(ui, "locked-menu.content",
                         List.of("&7{home_name} está guardado pero supera tu límite actual.",
                                 "&7No puedes teletransportarte hasta recuperar un espacio."),
@@ -361,7 +384,8 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
         List<Runnable> actions = new ArrayList<>();
         if (allowDeleteLocked) {
             addBedrockHomeButton(builder, ui, "locked-menu.delete",
-                    bedrockHomeText(ui, "locked-menu.delete", "&cEliminar hogar suspendido", player, home, number, homes, maxHomes));
+                    bedrockHomeText(ui, "locked-menu.delete", "&cEliminar hogar suspendido", player, home, number,
+                            homes, maxHomes));
             actions.add(() -> confirmBedrockDeleteHome(player, home, number));
         }
         addBedrockHomeButton(builder, ui, "locked-menu.back",
@@ -380,9 +404,11 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
         int maxHomes = getMaxHomes(player);
         YamlConfiguration ui = bedrockHomesUi();
         SimpleForm.Builder builder = SimpleForm.builder()
-                .title(bedrockHomeText(ui, "delete-confirm.title", "&c&lEliminar {home_name}", player, home, number, homes, maxHomes))
+                .title(bedrockHomeText(ui, "delete-confirm.title", "&c&lEliminar {home_name}", player, home, number,
+                        homes, maxHomes))
                 .content(bedrockHomeText(ui, "delete-confirm.content",
-                        "&7Esta acción elimina el hogar de EssentialsX. ¿Continuar?", player, home, number, homes, maxHomes));
+                        "&7Esta acción elimina el hogar de EssentialsX. ¿Continuar?", player, home, number, homes,
+                        maxHomes));
         addBedrockHomeButton(builder, ui, "delete-confirm.confirm",
                 bedrockHomeText(ui, "delete-confirm.confirm", "&cSí, eliminar", player, home, number, homes, maxHomes));
         addBedrockHomeButton(builder, ui, "delete-confirm.cancel",
@@ -402,24 +428,26 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
     }
 
     private String bedrockHomeLines(YamlConfiguration ui, String path, List<String> defaults,
-                                    Player player, HomeData home, int number, List<HomeData> homes, int maxHomes) {
+            Player player, HomeData home, int number, List<HomeData> homes, int maxHomes) {
         List<String> lines = ui.getStringList(path);
-        if (lines.isEmpty()) lines = defaults;
+        if (lines.isEmpty())
+            lines = defaults;
         StringBuilder out = new StringBuilder();
         for (String line : lines) {
-            if (out.length() > 0) out.append('\n');
+            if (out.length() > 0)
+                out.append('\n');
             out.append(bedrockHomeRaw(line, player, home, number, homes, maxHomes));
         }
         return out.toString();
     }
 
     private String bedrockHomeText(YamlConfiguration ui, String path, String def,
-                                   Player player, HomeData home, int number, List<HomeData> homes, int maxHomes) {
+            Player player, HomeData home, int number, List<HomeData> homes, int maxHomes) {
         return bedrockHomeRaw(ui.getString(path, def), player, home, number, homes, maxHomes);
     }
 
     private String bedrockHomeRaw(String raw, Player player, HomeData home, int number,
-                                  List<HomeData> homes, int maxHomes) {
+            List<HomeData> homes, int maxHomes) {
         String text = home == null
                 ? applyGlobalPlaceholders(raw, player, homes, maxHomes)
                 : applyPlaceholders(raw, player, home, number, homes, maxHomes);
@@ -448,20 +476,25 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) return;
-        if (!(event.getView().getTopInventory().getHolder() instanceof HomesHolder)) return;
+        if (!(event.getWhoClicked() instanceof Player player))
+            return;
+        if (!(event.getView().getTopInventory().getHolder() instanceof HomesHolder))
+            return;
 
         event.setCancelled(true);
         ItemStack clicked = event.getCurrentItem();
-        if (clicked == null || clicked.getType().isAir() || !clicked.hasItemMeta()) return;
+        if (clicked == null || clicked.getType().isAir() || !clicked.hasItemMeta())
+            return;
 
         PersistentDataContainer pdc = clicked.getItemMeta().getPersistentDataContainer();
         String action = pdc.get(keyAction, PersistentDataType.STRING);
-        if (action == null || action.isBlank()) return;
+        if (action == null || action.isBlank())
+            return;
 
         String homeName = pdc.get(keyHomeName, PersistentDataType.STRING);
         Integer homeNumber = pdc.get(keyHomeNumber, PersistentDataType.INTEGER);
-        if (homeNumber == null) homeNumber = 0;
+        if (homeNumber == null)
+            homeNumber = 0;
 
         switch (action) {
             case "TELEPORT_HOME" -> {
@@ -476,7 +509,8 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
                     if (homeExists(player, homeName)) {
                         runHomeCommand(player, deleteCommand, homeName, homeNumber, true);
                     } else {
-                        sendMessage(player, "home-not-set", "&cEse hogar aún no está establecido.", Map.of("home", safe(homeName), "number", String.valueOf(homeNumber)));
+                        sendMessage(player, "home-not-set", "&cEse hogar aún no está establecido.",
+                                Map.of("home", safe(homeName), "number", String.valueOf(homeNumber)));
                     }
                 } else {
                     runHomeCommand(player, setCommand, homeName, homeNumber, true);
@@ -486,38 +520,48 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
                 if (!allowDeleteLocked) {
                     sendLockedMessage(player, homeName, homeNumber);
                 } else if (!isDeleteClick(event.getClick())) {
-                    sendMessage(player, "locked-delete-hint", "&eUsa click derecho para eliminar el hogar suspendido &6{home}&e.", Map.of("home", safe(homeName), "number", String.valueOf(homeNumber)));
+                    sendMessage(player, "locked-delete-hint",
+                            "&eUsa click derecho para eliminar el hogar suspendido &6{home}&e.",
+                            Map.of("home", safe(homeName), "number", String.valueOf(homeNumber)));
                 } else if (homeExists(player, homeName)) {
                     runHomeCommand(player, deleteCommand, homeName, homeNumber, true);
                 } else {
-                    sendMessage(player, "home-not-set", "&cEse hogar aún no está establecido.", Map.of("home", safe(homeName), "number", String.valueOf(homeNumber)));
+                    sendMessage(player, "home-not-set", "&cEse hogar aún no está establecido.",
+                            Map.of("home", safe(homeName), "number", String.valueOf(homeNumber)));
                 }
             }
             case "LOCKED_HOME" -> sendLockedMessage(player, homeName, homeNumber);
             case "BACK" -> {
-                if (closeOnAction) player.closeInventory();
+                if (closeOnAction)
+                    player.closeInventory();
                 String backCommand = normalizeCommand(sectionString("items.back.command", "social"));
                 Bukkit.getScheduler().runTask(plugin, () -> Bukkit.dispatchCommand(player, backCommand));
             }
-            default -> { }
+            default -> {
+            }
         }
     }
 
     /**
      * Bloquea también /home, /ehome y las variantes con namespace de EssentialsX.
-     * Se usa el evento de comandos porque EssentialsX no expone un evento específico
-     * cancelable para seleccionar un hogar antes de iniciar todos sus flujos de teleport.
+     * Se usa el evento de comandos porque EssentialsX no expone un evento
+     * específico
+     * cancelable para seleccionar un hogar antes de iniciar todos sus flujos de
+     * teleport.
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onHomeCommand(PlayerCommandPreprocessEvent event) {
         Player player = event.getPlayer();
         String raw = event.getMessage();
-        if (raw == null || raw.length() < 2) return;
+        if (raw == null || raw.length() < 2)
+            return;
         String withoutSlash = raw.substring(1).trim();
-        if (withoutSlash.isEmpty()) return;
+        if (withoutSlash.isEmpty())
+            return;
         String[] parts = withoutSlash.split("\\s+", 2);
         String label = normalizeCommandLabel(parts[0]);
-        if (!interceptedHomeCommands.contains(label)) return;
+        if (!interceptedHomeCommands.contains(label))
+            return;
 
         // Bedrock: /home sin argumentos abre siempre el Form nativo de MDVSocial.
         // Esto no cambia el comportamiento de /home <nombre>, ni el de jugadores Java.
@@ -527,13 +571,16 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
             return;
         }
 
-        if (!isLockExcessActive()) return;
-        if (hasLockBypass(player)) return;
+        if (!isLockExcessActive())
+            return;
+        if (hasLockBypass(player))
+            return;
 
         List<HomeData> homes = readHomes(player);
         int maxHomes = getMaxHomes(player);
         Set<String> locked = syncLockedHomes(player, homes, maxHomes);
-        if (homes.isEmpty()) return; // Conserva spawn-if-no-home de EssentialsX para Java.
+        if (homes.isEmpty())
+            return; // Conserva spawn-if-no-home de EssentialsX para Java.
 
         if (parts.length == 1 || parts[1].isBlank()) {
             HomeData firstActive = homes.stream()
@@ -542,7 +589,9 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
                     .orElse(null);
             if (firstActive == null) {
                 event.setCancelled(true);
-                sendMessage(player, "all-homes-locked", "&cTodos tus hogares están suspendidos. Recupera un límite mayor o elimina uno.", Map.of("max_homes", String.valueOf(maxHomes)));
+                sendMessage(player, "all-homes-locked",
+                        "&cTodos tus hogares están suspendidos. Recupera un límite mayor o elimina uno.",
+                        Map.of("max_homes", String.valueOf(maxHomes)));
                 return;
             }
             event.setMessage("/" + parts[0] + " " + firstActive.name);
@@ -553,19 +602,23 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
         int colon = requested.indexOf(':');
         if (colon >= 0) {
             String owner = requested.substring(0, colon);
-            if (!owner.equalsIgnoreCase(player.getName())) return;
+            if (!owner.equalsIgnoreCase(player.getName()))
+                return;
             requested = requested.substring(colon + 1);
         }
         HomeData matched = findHome(homes, requested);
-        if (matched == null) return;
-        if (!locked.contains(normalizeHomeName(matched.name))) return;
+        if (matched == null)
+            return;
+        if (!locked.contains(normalizeHomeName(matched.name)))
+            return;
 
         event.setCancelled(true);
         sendLockedMessage(player, matched.name, Math.max(1, homes.indexOf(matched) + 1));
     }
 
     public int restorePersistentLocks(UUID uuid) {
-        if (uuid == null || lockData == null) return 0;
+        if (uuid == null || lockData == null)
+            return 0;
         List<String> before = lockData.getStringList(lockPath(uuid));
         lockData.set(lockPath(uuid), null);
         saveLockData();
@@ -573,10 +626,12 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
     }
 
     public List<String> getLockedHomeNames(Player player) {
-        if (player == null) return Collections.emptyList();
+        if (player == null)
+            return Collections.emptyList();
         List<HomeData> homes = readHomes(player);
         Set<String> locked = syncLockedHomes(player, homes, getMaxHomes(player));
-        return homes.stream().filter(h -> locked.contains(normalizeHomeName(h.name))).map(h -> h.name).collect(Collectors.toList());
+        return homes.stream().filter(h -> locked.contains(normalizeHomeName(h.name))).map(h -> h.name)
+                .collect(Collectors.toList());
     }
 
     public int getCurrentLimit(Player player) {
@@ -587,22 +642,26 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
         return click == ClickType.RIGHT || click == ClickType.SHIFT_RIGHT;
     }
 
-    private void runHomeCommand(Player player, String commandTemplate, String homeName, int homeNumber, boolean requireName) {
+    private void runHomeCommand(Player player, String commandTemplate, String homeName, int homeNumber,
+            boolean requireName) {
         if (requireName && (homeName == null || homeName.isBlank())) {
-            sendMessage(player, "home-not-set", "&cEse hogar aún no está establecido.", Map.of("home", "", "number", String.valueOf(homeNumber)));
+            sendMessage(player, "home-not-set", "&cEse hogar aún no está establecido.",
+                    Map.of("home", "", "number", String.valueOf(homeNumber)));
             return;
         }
         if (commandTemplate.equalsIgnoreCase(teleportCommand) && isHomeLocked(player, homeName)) {
             sendLockedMessage(player, homeName, homeNumber);
             return;
         }
-        if (closeOnAction) player.closeInventory();
+        if (closeOnAction)
+            player.closeInventory();
         String command = commandTemplate
                 .replace("{player}", player.getName())
                 .replace("{home}", safe(homeName))
                 .replace("{home_name}", safe(homeName))
                 .replace("{home_number}", String.valueOf(homeNumber));
-        if (command.startsWith("/")) command = command.substring(1);
+        if (command.startsWith("/"))
+            command = command.substring(1);
         final String finalCommand = command;
         Bukkit.getScheduler().runTask(plugin, () -> Bukkit.dispatchCommand(player, finalCommand));
     }
@@ -612,26 +671,29 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
     }
 
     private HomeData findHome(List<HomeData> homes, String homeName) {
-        if (homeName == null || homeName.isBlank()) return null;
+        if (homeName == null || homeName.isBlank())
+            return null;
         for (HomeData home : homes) {
-            if (home.name.equalsIgnoreCase(homeName)) return home;
+            if (home.name.equalsIgnoreCase(homeName))
+                return home;
         }
         return null;
     }
 
     private boolean isHomeLocked(Player player, String homeName) {
-        if (!isLockExcessActive() || hasLockBypass(player) || homeName == null || homeName.isBlank()) return false;
+        if (!isLockExcessActive() || hasLockBypass(player) || homeName == null || homeName.isBlank())
+            return false;
         List<HomeData> homes = readHomes(player);
         Set<String> locked = syncLockedHomes(player, homes, getMaxHomes(player));
         return locked.contains(normalizeHomeName(homeName));
     }
 
     private void sendLockedMessage(Player player, String homeName, int homeNumber) {
-        sendMessage(player, "home-suspended", "&cEl hogar &e{home} &cestá suspendido porque supera tu límite actual de &e{max_homes}&c.", Map.of(
-                "home", safe(homeName),
-                "number", String.valueOf(homeNumber),
-                "max_homes", String.valueOf(getMaxHomes(player))
-        ));
+        sendMessage(player, "home-suspended",
+                "&cEl hogar &e{home} &cestá suspendido porque supera tu límite actual de &e{max_homes}&c.", Map.of(
+                        "home", safe(homeName),
+                        "number", String.valueOf(homeNumber),
+                        "max_homes", String.valueOf(getMaxHomes(player))));
     }
 
     private boolean isLockExcessActive() {
@@ -639,21 +701,26 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
     }
 
     private boolean hasLockBypass(Player player) {
-        return player != null && lockBypassPermission != null && !lockBypassPermission.isBlank() && player.hasPermission(lockBypassPermission);
+        return player != null && lockBypassPermission != null && !lockBypassPermission.isBlank()
+                && player.hasPermission(lockBypassPermission);
     }
 
     private Set<String> syncLockedHomes(Player player, List<HomeData> homes, int maxHomes) {
-        if (!isLockExcessActive() || hasLockBypass(player)) return Collections.emptySet();
+        if (!isLockExcessActive() || hasLockBypass(player))
+            return Collections.emptySet();
 
-        Set<String> existing = homes.stream().map(h -> normalizeHomeName(h.name)).collect(Collectors.toCollection(HashSet::new));
+        Set<String> existing = homes.stream().map(h -> normalizeHomeName(h.name))
+                .collect(Collectors.toCollection(HashSet::new));
         Set<String> dynamicExcess = new HashSet<>();
-        for (int i = Math.max(0, maxHomes); i < homes.size(); i++) {
-            dynamicExcess.add(normalizeHomeName(homes.get(i).name));
+        for (int slot = maxHomes + 1; slot <= Math.max(maxVisibleHomes, homes.size()); slot++) {
+            HomeData home = homeAtPosition(homes, slot);
+            if (home != null) dynamicExcess.add(normalizeHomeName(home.name));
         }
 
         Set<String> locked = new HashSet<>(dynamicExcess);
         if (!restoreOnUpgrade && lockData != null) {
-            locked.addAll(lockData.getStringList(lockPath(player.getUniqueId())).stream().map(this::normalizeHomeName).collect(Collectors.toSet()));
+            locked.addAll(lockData.getStringList(lockPath(player.getUniqueId())).stream().map(this::normalizeHomeName)
+                    .collect(Collectors.toSet()));
         }
         locked.retainAll(existing);
         persistLockedHomes(player.getUniqueId(), locked);
@@ -661,13 +728,17 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
     }
 
     private void persistLockedHomes(UUID uuid, Set<String> locked) {
-        if (lockData == null || uuid == null) return;
+        if (lockData == null || uuid == null)
+            return;
         List<String> sorted = new ArrayList<>(locked);
         sorted.sort(String.CASE_INSENSITIVE_ORDER);
         List<String> old = lockData.getStringList(lockPath(uuid));
-        if (old.equals(sorted)) return;
-        if (sorted.isEmpty()) lockData.set(lockPath(uuid), null);
-        else lockData.set(lockPath(uuid), sorted);
+        if (old.equals(sorted))
+            return;
+        if (sorted.isEmpty())
+            lockData.set(lockPath(uuid), null);
+        else
+            lockData.set(lockPath(uuid), sorted);
         saveLockData();
     }
 
@@ -682,17 +753,54 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
         return out;
     }
 
+    /** Exact numbered homes never move; legacy/custom names fill only unused slots. */
+    private HomeData homeAtPosition(List<HomeData> homes, int position) {
+        if (homes == null || position < 1) return null;
+        String expected = normalizeHomeName(generateHomeName(position));
+        for (HomeData home : homes) {
+            if (normalizeHomeName(home.name).equals(expected)) return home;
+        }
+        // Some pre-fix homes had an arbitrary Essentials name. Keep them accessible
+        // without moving casa2 into casa1 if casa1 has not yet been created.
+        Set<String> numbered = new HashSet<>();
+        for (int slot = 1; slot <= Math.max(maxVisibleHomes, homes.size()); slot++) {
+            numbered.add(normalizeHomeName(generateHomeName(slot)));
+        }
+        int freeSlot = 0;
+        for (int slot = 1; slot <= Math.max(maxVisibleHomes, homes.size()); slot++) {
+            String candidate = normalizeHomeName(generateHomeName(slot));
+            boolean occupied = false;
+            for (HomeData home : homes) {
+                if (normalizeHomeName(home.name).equals(candidate)) { occupied = true; break; }
+            }
+            if (occupied) continue;
+            freeSlot++;
+            if (slot == position) {
+                int legacy = 0;
+                for (HomeData home : homes) {
+                    if (numbered.contains(normalizeHomeName(home.name))) continue;
+                    if (++legacy == freeSlot) return home;
+                }
+                return null;
+            }
+        }
+        return null;
+    }
+
     @SuppressWarnings("unchecked")
     private List<HomeData> readHomesFromEssentialsApi(Player player) {
         Plugin essentials = Bukkit.getPluginManager().getPlugin("Essentials");
-        if (essentials == null || !essentials.isEnabled()) return null;
+        if (essentials == null || !essentials.isEnabled())
+            return null;
         try {
             Method getUser = essentials.getClass().getMethod("getUser", UUID.class);
             Object user = getUser.invoke(essentials, player.getUniqueId());
-            if (user == null) return null;
+            if (user == null)
+                return null;
             Method getHomes = user.getClass().getMethod("getHomes");
             Object rawHomes = getHomes.invoke(user);
-            if (!(rawHomes instanceof Collection<?> names)) return null;
+            if (!(rawHomes instanceof Collection<?> names))
+                return null;
 
             Method getHome = user.getClass().getMethod("getHome", String.class);
             List<HomeData> out = new ArrayList<>();
@@ -701,7 +809,8 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
                 try {
                     Object rawLocation = getHome.invoke(user, name);
                     if (rawLocation instanceof Location loc) {
-                        out.add(new HomeData(name, loc.getWorld() == null ? "world" : loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ(), true, false));
+                        out.add(new HomeData(name, loc.getWorld() == null ? "world" : loc.getWorld().getName(),
+                                loc.getX(), loc.getY(), loc.getZ(), true, false));
                     } else {
                         out.add(new HomeData(name, "world", 0, 0, 0, true, false));
                     }
@@ -716,7 +825,9 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
             return out;
         } catch (Throwable ex) {
             if (!essentialsApiFailureLogged) {
-                plugin.getLogger().warning("No se pudo leer la API de hogares de EssentialsX; se usará userdata como respaldo: " + ex.getClass().getSimpleName());
+                plugin.getLogger()
+                        .warning("No se pudo leer la API de hogares de EssentialsX; se usará userdata como respaldo: "
+                                + ex.getClass().getSimpleName());
                 essentialsApiFailureLogged = true;
             }
             return null;
@@ -725,10 +836,12 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
 
     private List<HomeData> readHomesFromYaml(Player player) {
         File file = new File(resolveUserdataFolder(), player.getUniqueId().toString() + ".yml");
-        if (!file.exists()) return new ArrayList<>();
+        if (!file.exists())
+            return new ArrayList<>();
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
         ConfigurationSection homesSec = yaml.getConfigurationSection("homes");
-        if (homesSec == null) return new ArrayList<>();
+        if (homesSec == null)
+            return new ArrayList<>();
 
         List<HomeData> out = new ArrayList<>();
         for (String name : homesSec.getKeys(false)) {
@@ -741,14 +854,14 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
                         homeSec.getDouble("y", homeSec.getDouble("loc.y", 0)),
                         homeSec.getDouble("z", homeSec.getDouble("loc.z", 0)),
                         true,
-                        false
-                ));
+                        false));
                 continue;
             }
 
             String raw = homesSec.getString(name, "");
             HomeData parsed = parseLegacyHome(name, raw);
-            if (parsed != null) out.add(parsed);
+            if (parsed != null)
+                out.add(parsed);
         }
         return out;
     }
@@ -759,26 +872,32 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
             preferredOrder.putIfAbsent(normalizeHomeName(preferredHomeNames.get(i)), i);
         }
         homes.sort(Comparator
-                .comparingInt((HomeData home) -> preferredOrder.getOrDefault(normalizeHomeName(home.name), Integer.MAX_VALUE))
+                .comparingInt(
+                        (HomeData home) -> preferredOrder.getOrDefault(normalizeHomeName(home.name), Integer.MAX_VALUE))
                 .thenComparing(home -> home.name.toLowerCase(Locale.ROOT))
                 .thenComparing(home -> home.name));
     }
 
     private HomeData parseLegacyHome(String name, String raw) {
-        if (raw == null || raw.isBlank()) return null;
+        if (raw == null || raw.isBlank())
+            return null;
         String[] parts = raw.split(",");
-        if (parts.length < 4) return new HomeData(name, "world", 0, 0, 0, true, false);
+        if (parts.length < 4)
+            return new HomeData(name, "world", 0, 0, 0, true, false);
         try {
-            return new HomeData(name, parts[0].trim(), Double.parseDouble(parts[1].trim()), Double.parseDouble(parts[2].trim()), Double.parseDouble(parts[3].trim()), true, false);
+            return new HomeData(name, parts[0].trim(), Double.parseDouble(parts[1].trim()),
+                    Double.parseDouble(parts[2].trim()), Double.parseDouble(parts[3].trim()), true, false);
         } catch (Exception ignored) {
             return new HomeData(name, "world", 0, 0, 0, true, false);
         }
     }
 
     private File resolveUserdataFolder() {
-        if (userdataPath == null || userdataPath.isBlank()) return new File("plugins/Essentials/userdata");
+        if (userdataPath == null || userdataPath.isBlank())
+            return new File("plugins/Essentials/userdata");
         File file = new File(userdataPath);
-        if (file.isAbsolute()) return file;
+        if (file.isAbsolute())
+            return file;
         return new File(Bukkit.getWorldContainer(), userdataPath);
     }
 
@@ -788,40 +907,52 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
         for (Map<?, ?> entry : list) {
             Object permObj = entry.get("permission");
             Object homesObj = entry.get("homes");
-            if (homesObj == null) homesObj = entry.get("max");
+            if (homesObj == null)
+                homesObj = entry.get("max");
             String permission = permObj == null ? "" : String.valueOf(permObj);
             int homes = parseInt(homesObj, -1);
-            if (!permission.isBlank() && homes > max && player.hasPermission(permission)) max = homes;
+            if (!permission.isBlank() && homes > max && player.hasPermission(permission))
+                max = homes;
         }
 
         ConfigurationSection sec = plugin.getConfig().getConfigurationSection(CONFIG_PATH + ".max-homes.permissions");
         if (sec != null) {
             for (String key : sec.getKeys(false)) {
                 int homes = sec.getInt(key, -1);
-                if (homes > max && player.hasPermission(key)) max = homes;
+                if (homes > max && player.hasPermission(key))
+                    max = homes;
             }
         }
         return Math.max(0, Math.min(maxVisibleHomes, max));
     }
 
     private int parseInt(Object value, int def) {
-        if (value instanceof Number n) return n.intValue();
-        try { return Integer.parseInt(String.valueOf(value)); } catch (Exception ignored) { return def; }
+        if (value instanceof Number n)
+            return n.intValue();
+        try {
+            return Integer.parseInt(String.valueOf(value));
+        } catch (Exception ignored) {
+            return def;
+        }
     }
 
     private String generateHomeName(int number) {
-        return safe(defaultHomeNameFormat).replace("{number}", String.valueOf(number)).replace("{home_number}", String.valueOf(number));
+        return safe(defaultHomeNameFormat).replace("{number}", String.valueOf(number)).replace("{home_number}",
+                String.valueOf(number));
     }
 
-    private ItemStack itemFromPath(String relativePath, String action, HomeData home, int number, Player player, List<HomeData> homes, int maxHomes) {
+    private ItemStack itemFromPath(String relativePath, String action, HomeData home, int number, Player player,
+            List<HomeData> homes, int maxHomes) {
         ConfigurationSection sec = section(relativePath);
         String matName = sec == null ? "PAPER" : sec.getString("material", "PAPER");
         Material material = Material.matchMaterial(matName == null ? "PAPER" : matName.toUpperCase(Locale.ROOT));
-        if (material == null) material = Material.PAPER;
+        if (material == null)
+            material = Material.PAPER;
 
         ItemStack item = new ItemStack(material, Math.max(1, Math.min(64, sec == null ? 1 : sec.getInt("amount", 1))));
         ItemMeta meta = item.getItemMeta();
-        if (meta == null) return item;
+        if (meta == null)
+            return item;
 
         if (sec != null && material == Material.PLAYER_HEAD && meta instanceof SkullMeta skull) {
             String texture = readTexture(sec);
@@ -838,16 +969,22 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
         }
 
         String name = sec == null ? "" : sec.getString("name", "");
-        if (name != null && !name.isBlank()) meta.setDisplayName(color(applyPlaceholders(name, player, home, number, homes, maxHomes)));
+        if (name != null && !name.isBlank())
+            meta.setDisplayName(color(applyPlaceholders(name, player, home, number, homes, maxHomes)));
         List<String> lore = sec == null ? Collections.emptyList() : sec.getStringList("lore");
         if (!lore.isEmpty()) {
-            meta.setLore(lore.stream().map(line -> color(applyPlaceholders(line, player, home, number, homes, maxHomes))).collect(Collectors.toList()));
+            meta.setLore(
+                    lore.stream().map(line -> color(applyPlaceholders(line, player, home, number, homes, maxHomes)))
+                            .collect(Collectors.toList()));
         }
 
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_UNBREAKABLE);
-        if (action != null && !action.isBlank()) meta.getPersistentDataContainer().set(keyAction, PersistentDataType.STRING, action);
-        if (home != null && home.name != null && !home.name.isBlank()) meta.getPersistentDataContainer().set(keyHomeName, PersistentDataType.STRING, home.name);
-        if (number > 0) meta.getPersistentDataContainer().set(keyHomeNumber, PersistentDataType.INTEGER, number);
+        if (action != null && !action.isBlank())
+            meta.getPersistentDataContainer().set(keyAction, PersistentDataType.STRING, action);
+        if (home != null && home.name != null && !home.name.isBlank())
+            meta.getPersistentDataContainer().set(keyHomeName, PersistentDataType.STRING, home.name);
+        if (number > 0)
+            meta.getPersistentDataContainer().set(keyHomeNumber, PersistentDataType.INTEGER, number);
         item.setItemMeta(meta);
         return item;
     }
@@ -865,15 +1002,18 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
                 .replace("{max_visible_homes}", String.valueOf(maxVisibleHomes));
     }
 
-    private String applyPlaceholders(String input, Player player, HomeData home, int number, List<HomeData> homes, int maxHomes) {
-        if (home == null) home = HomeData.missing(generateHomeName(number));
+    private String applyPlaceholders(String input, Player player, HomeData home, int number, List<HomeData> homes,
+            int maxHomes) {
+        if (home == null)
+            home = HomeData.missing(generateHomeName(number));
         String currentWorld = player.getWorld().getName();
         int currentX = player.getLocation().getBlockX();
         int currentY = player.getLocation().getBlockY();
         int currentZ = player.getLocation().getBlockZ();
         String status = home.locked
                 ? color(sectionString("status-text.suspended", "&cSuspendida"))
-                : (home.exists ? color(sectionString("status-text.established", "&aEstablecida")) : color(sectionString("status-text.missing", "&cNo establecida")));
+                : (home.exists ? color(sectionString("status-text.established", "&aEstablecida"))
+                        : color(sectionString("status-text.missing", "&cNo establecida")));
 
         return applyGlobalPlaceholders(input, player, homes, maxHomes)
                 .replace("{home_number}", String.valueOf(number))
@@ -898,9 +1038,11 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
 
     private void fill(Inventory inv, Player player, List<HomeData> homes, int maxHomes) {
         ConfigurationSection sec = section("items.filler");
-        if (sec == null || !sec.getBoolean("enabled", true)) return;
+        if (sec == null || !sec.getBoolean("enabled", true))
+            return;
         ItemStack filler = itemFromPath("items.filler", "", null, 0, player, homes, maxHomes);
-        for (int i = 0; i < inv.getSize(); i++) inv.setItem(i, filler);
+        for (int i = 0; i < inv.getSize(); i++)
+            inv.setItem(i, filler);
     }
 
     private int slot(String path, int def) {
@@ -908,44 +1050,51 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
     }
 
     private int defaultTeleportSlot(int number) {
-        int[] slots = {10, 19, 28, 37, 46, 11, 20, 29, 38};
+        int[] slots = { 10, 19, 28, 37, 46, 11, 20, 29, 38 };
         return slots[Math.max(0, Math.min(slots.length - 1, number - 1))];
     }
 
     private int defaultSetSlot(int number) {
-        int[] slots = {16, 25, 34, 43, 52, 15, 24, 33, 42};
+        int[] slots = { 16, 25, 34, 43, 52, 15, 24, 33, 42 };
         return slots[Math.max(0, Math.min(slots.length - 1, number - 1))];
     }
 
     private int normalizeMenuSize(int value) {
         int normalized = Math.max(9, Math.min(54, value));
-        if (normalized % 9 != 0) normalized = ((normalized / 9) + 1) * 9;
+        if (normalized % 9 != 0)
+            normalized = ((normalized / 9) + 1) * 9;
         return normalized;
     }
 
     private ConfigurationSection section(String relativePath) {
         ConfigurationSection sec = plugin.getConfig().getConfigurationSection(CONFIG_PATH + "." + relativePath);
-        if (sec != null) return sec;
+        if (sec != null)
+            return sec;
         if (relativePath != null && relativePath.startsWith("items.")) {
-            return plugin.getConfig().getConfigurationSection(CONFIG_PATH + "." + relativePath.substring("items.".length()));
+            return plugin.getConfig()
+                    .getConfigurationSection(CONFIG_PATH + "." + relativePath.substring("items.".length()));
         }
         return null;
     }
 
     private String sectionString(String relativePath, String def) {
         String value = plugin.getConfig().getString(CONFIG_PATH + "." + relativePath, null);
-        if (value != null) return value;
+        if (value != null)
+            return value;
         if (relativePath != null && relativePath.startsWith("items.")) {
             value = plugin.getConfig().getString(CONFIG_PATH + "." + relativePath.substring("items.".length()), null);
-            if (value != null) return value;
+            if (value != null)
+                return value;
         }
         return def;
     }
 
     private String normalizeCommand(String raw) {
-        if (raw == null || raw.isBlank()) return "social";
+        if (raw == null || raw.isBlank())
+            return "social";
         String out = raw.trim();
-        if (out.startsWith("/")) out = out.substring(1);
+        if (out.startsWith("/"))
+            out = out.substring(1);
         return out;
     }
 
@@ -959,7 +1108,8 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
     }
 
     private String stripQuotes(String raw) {
-        if (raw == null || raw.length() < 2) return raw == null ? "" : raw;
+        if (raw == null || raw.length() < 2)
+            return raw == null ? "" : raw;
         if ((raw.startsWith("\"") && raw.endsWith("\"")) || (raw.startsWith("'") && raw.endsWith("'"))) {
             return raw.substring(1, raw.length() - 1);
         }
@@ -967,30 +1117,42 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
     }
 
     private String readTexture(ConfigurationSection sec) {
-        if (sec == null) return "";
+        if (sec == null)
+            return "";
         String texture = sec.getString("custom-head-texture", "");
-        if (texture == null || texture.isBlank()) texture = sec.getString("texture", "");
-        if (texture == null || texture.isBlank()) texture = sec.getString("head-texture", "");
-        if (texture == null || texture.isBlank()) texture = sec.getString("skull-texture", "");
-        if (texture == null || texture.isBlank()) texture = sec.getString("texture-base64", "");
+        if (texture == null || texture.isBlank())
+            texture = sec.getString("texture", "");
+        if (texture == null || texture.isBlank())
+            texture = sec.getString("head-texture", "");
+        if (texture == null || texture.isBlank())
+            texture = sec.getString("skull-texture", "");
+        if (texture == null || texture.isBlank())
+            texture = sec.getString("texture-base64", "");
         return texture == null ? "" : texture.trim();
     }
 
     private String extractTextureUrl(String textureValue) {
-        if (textureValue == null) return "";
+        if (textureValue == null)
+            return "";
         String value = textureValue.trim();
-        if (value.isBlank()) return "";
-        if (value.startsWith("http://") || value.startsWith("https://")) return value;
+        if (value.isBlank())
+            return "";
+        if (value.startsWith("http://") || value.startsWith("https://"))
+            return value;
         try {
             String decoded = new String(Base64.getDecoder().decode(value), StandardCharsets.UTF_8);
             int urlKey = decoded.indexOf("\"url\"");
-            if (urlKey < 0) return "";
+            if (urlKey < 0)
+                return "";
             int colon = decoded.indexOf(':', urlKey);
-            if (colon < 0) return "";
+            if (colon < 0)
+                return "";
             int firstQuote = decoded.indexOf('"', colon);
-            if (firstQuote < 0) return "";
+            if (firstQuote < 0)
+                return "";
             int secondQuote = decoded.indexOf('"', firstQuote + 1);
-            if (secondQuote < 0) return "";
+            if (secondQuote < 0)
+                return "";
             return decoded.substring(firstQuote + 1, secondQuote).replace("\\/", "/");
         } catch (Throwable ignored) {
             return "";
@@ -998,16 +1160,19 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
     }
 
     private void applySkullTexture(SkullMeta skull, String textureValue) {
-        if (skull == null || textureValue == null || textureValue.isBlank()) return;
+        if (skull == null || textureValue == null || textureValue.isBlank())
+            return;
         String textureUrl = extractTextureUrl(textureValue.trim());
-        if (textureUrl == null || textureUrl.isBlank()) return;
+        if (textureUrl == null || textureUrl.isBlank())
+            return;
         try {
             PlayerProfile profile = Bukkit.createPlayerProfile(UUID.randomUUID(), "MDVHome");
             PlayerTextures textures = profile.getTextures();
             textures.setSkin(new URL(textureUrl));
             profile.setTextures(textures);
             skull.setOwnerProfile(profile);
-        } catch (Throwable ignored) { }
+        } catch (Throwable ignored) {
+        }
     }
 
     private String getMessage(String key, String def) {
@@ -1031,13 +1196,15 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
     }
 
     private void loadLockData() {
-        if (!plugin.getDataFolder().exists()) plugin.getDataFolder().mkdirs();
+        if (!plugin.getDataFolder().exists())
+            plugin.getDataFolder().mkdirs();
         lockDataFile = new File(plugin.getDataFolder(), "homes-lock-data.yml");
         lockData = YamlConfiguration.loadConfiguration(lockDataFile);
     }
 
     private void saveLockData() {
-        if (lockData == null || lockDataFile == null) return;
+        if (lockData == null || lockDataFile == null)
+            return;
         try {
             lockData.save(lockDataFile);
         } catch (IOException ex) {

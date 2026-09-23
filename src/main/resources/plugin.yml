@@ -1,5 +1,5 @@
 name: MDVSocial
-version: 1.6.8
+version: 1.6.10
 main: com.mdvcraft.mdvsocial.MDVSocialPlugin
 api-version: '1.21'
 author: MDVCRAFT
@@ -24,6 +24,13 @@ commands:
     description: Envia y administra cartas de MDVSocial.
     usage: /carta
     aliases: [cartas]
+  tienda:
+    description: Abre la tienda online de MDVCRAFT.
+    usage: /tienda
+    aliases: [shop, store]
+  discord:
+    description: Muestra el enlace del Discord de MDVCRAFT.
+    usage: /discord
   casa:
     description: Abre el menu de casas personales.
     usage: /casa

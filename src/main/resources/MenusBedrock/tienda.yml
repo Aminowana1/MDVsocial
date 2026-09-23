@@ -1,0 +1,12 @@
+type: "SIMPLE"
+title: "&2&lTienda online"
+content:
+  - "&fVisita nuestra tienda:"
+  - "&b{shop}"
+  - "&7Escribe el enlace en tu navegador."
+
+buttons:
+  abrir:
+    text: "&2&lOkay"
+    action: "OPEN_STORE"
+    sound: "open"

@@ -16,22 +16,24 @@ import java.util.concurrent.atomic.AtomicLong;
  * Owns the lifecycle of Bedrock Form responses.
  *
  * 1.6.5 intentionally does NOT debounce across forms. A SimpleForm response is
- * already a one-shot response; applying a global time debounce could consume the
+ * already a one-shot response; applying a global time debounce could consume
+ * the
  * first valid tap of the next form on touch devices.
  *
- * Each form receives a monotonically increasing token. Only the active token can
+ * Each form receives a monotonically increasing token. Only the active token
+ * can
  * be consumed and each token can be consumed once. The selected action is then
  * executed on the Bukkit main thread after a very small, device-independent
  * delay (1 tick by default).
  */
-final class BedrockUiSessionManager {
+public final class BedrockUiSessionManager {
 
     private final MDVSocialPlugin plugin;
     private final AtomicLong sequence = new AtomicLong();
     private final Map<UUID, Long> activeSession = new ConcurrentHashMap<>();
     private final Map<UUID, Long> consumedSession = new ConcurrentHashMap<>();
 
-    BedrockUiSessionManager(MDVSocialPlugin plugin) {
+    public BedrockUiSessionManager(MDVSocialPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -124,7 +126,7 @@ final class BedrockUiSessionManager {
         consumedSession.remove(uuid);
     }
 
-    void clearAll() {
+    public void clearAll() {
         activeSession.clear();
         consumedSession.clear();
     }

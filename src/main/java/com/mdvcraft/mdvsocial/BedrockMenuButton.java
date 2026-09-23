@@ -7,7 +7,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 /** One parsed button in a MenusBedrock SimpleForm. */
-final class BedrockMenuButton {
+public final class BedrockMenuButton {
     final String id;
     final String text;
     final String action;

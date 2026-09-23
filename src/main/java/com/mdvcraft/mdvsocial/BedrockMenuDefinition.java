@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /** Parsed static YAML form definition from MenusBedrock. */
-final class BedrockMenuDefinition {
+public final class BedrockMenuDefinition {
     final String id;
     final String title;
     final String permission;

@@ -17,7 +17,7 @@ import java.util.Map;
  * Owns loading, parsing and safe auto-updating of MenusBedrock YAML files.
  * Rendering and player navigation intentionally live elsewhere.
  */
-final class BedrockMenuRepository {
+public final class BedrockMenuRepository {
 
     private static final List<String> DEFAULT_MENU_FILES = List.of(
             "main.yml",
@@ -38,6 +38,8 @@ final class BedrockMenuRepository {
             "mmocore_atributos.yml",
             "mmocore_clases.yml",
             "homes.yml",
+            "tienda.yml",
+            "discord.yml",
             "titulos.yml",
             "titulos_lista.yml",
             "rangos.yml");
@@ -46,7 +48,7 @@ final class BedrockMenuRepository {
     private final Map<String, BedrockMenuDefinition> menus = new LinkedHashMap<>();
     private final Map<String, YamlConfiguration> rawMenus = new LinkedHashMap<>();
 
-    BedrockMenuRepository(MDVSocialPlugin plugin) {
+    public BedrockMenuRepository(MDVSocialPlugin plugin) {
         this.plugin = plugin;
     }
 

@@ -19,22 +19,22 @@ import java.util.UUID;
  * YAML persistence/parsing lives in BedrockMenuRepository and response/session
  * serialization lives in BedrockUiSessionManager.
  */
-final class BedrockMenuManager {
+public final class BedrockMenuManager {
 
     private final MDVSocialPlugin plugin;
     private final BedrockMenuRepository repository;
     private boolean floodgateAvailable;
 
-    BedrockMenuManager(MDVSocialPlugin plugin) {
+    public BedrockMenuManager(MDVSocialPlugin plugin) {
         this.plugin = plugin;
         this.repository = new BedrockMenuRepository(plugin);
     }
 
-    void enable() {
+    public void enable() {
         reload();
     }
 
-    void reload() {
+    public void reload() {
         refreshFloodgateState();
         repository.reload();
         plugin.getLogger().info("Menus Bedrock cargados: " + repository.size()
@@ -67,7 +67,7 @@ final class BedrockMenuManager {
         return repository.rawMenu(menuId);
     }
 
-    boolean open(Player player, String rawMenuId, int page, String previousMenu, int previousPage,
+    public boolean open(Player player, String rawMenuId, int page, String previousMenu, int previousPage,
             UUID targetUuid, String targetName, boolean targetOnline) {
         if (!isBedrock(player))
             return false;
