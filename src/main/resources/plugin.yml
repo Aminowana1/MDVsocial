@@ -1,10 +1,14 @@
 name: MDVSocial
-version: 1.6.10
+version: 1.6.11
 main: com.mdvcraft.mdvsocial.MDVSocialPlugin
 api-version: '1.21'
 author: MDVCRAFT
-softdepend: [PlaceholderAPI, Vault, LuckPerms, MMOCore, MMOItems, Essentials, MDVClans, LPC, floodgate]
+softdepend: [PlaceholderAPI, Vault, LuckPerms, MMOCore, MMOItems, Essentials, MDVClans, LPC, floodgate, ProtectionStones, WorldGuard]
 commands:
+  protes:
+    description: Gestiona tus protecciones y sus miembros sin teletransporte.
+    usage: /protes
+    aliases: [protecciones, misprotes]
   social:
     description: Abre el menu social de MDVCRAFT.
     usage: /social
@@ -44,6 +48,15 @@ commands:
     usage: /mdvitems
     aliases: [itemsstaff, bibliotecaitems]
 permissions:
+  mdvsocial.protections.use:
+    description: Abre el gestor de protecciones propias.
+    default: true
+  mdvsocial.protections.members:
+    description: Gestiona miembros propios. Requiere protectionstones.members.
+    default: true
+  mdvsocial.protections.remove:
+    description: Remueve protecciones propias. Requiere permisos unclaim y unclaim.remote de ProtectionStones.
+    default: true
   mdvsocial.use:
     description: Permite usar /social y /titulos.
     default: true

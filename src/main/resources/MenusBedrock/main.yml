@@ -4,6 +4,12 @@ content:
   - "&7Menú social de MDVCRAFT."
   - "&8La interfaz se adapta automáticamente a Bedrock."
 buttons:
+  protecciones:
+    text: "&aTus protecciones\n&7Coordenadas y miembros"
+    action: COMMAND_PLAYER
+    commands:
+      - 'mdvsocial:protes'
+    permission: mdvsocial.protections.use
   perfil:
     text: "&e&lTu Personaje\n&7Nivel: &e{level}"
     action: "OPEN_MENU"

@@ -5,6 +5,17 @@
 title: '&8MDVSocial'
 size: 27
 items:
+  protecciones:
+    slot: 22
+    material: EMERALD_BLOCK
+    name: '&aTus protecciones'
+    lore:
+      - '&7Coordenadas, miembros y eliminacion remota.'
+      - '&eClick para gestionar.'
+    action: COMMAND_PLAYER
+    commands:
+      - 'mdvsocial:protes'
+    permission: mdvsocial.protections.use
   titulos:
     slot: 11
     material: NAME_TAG

@@ -105,6 +105,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     private Economy economy;
     private SocialMenuItemManager socialMenuItemManager;
     private PlayerHomesMenuManager playerHomesMenuManager;
+    private PlayerProtectionsMenuManager playerProtectionsMenuManager;
     private MMOItemsBrowserManager mmoItemsBrowserManager;
     private BedrockMenuManager bedrockMenuManager;
     private BedrockUiSessionManager bedrockUiSessionManager;
@@ -199,11 +200,13 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         socialMenuItemManager.enable();
         playerHomesMenuManager = new PlayerHomesMenuManager(this);
         playerHomesMenuManager.enable();
+        playerProtectionsMenuManager = new PlayerProtectionsMenuManager(this);
+        playerProtectionsMenuManager.enable();
         mmoItemsBrowserManager = new MMOItemsBrowserManager(this);
         mmoItemsBrowserManager.enable();
         startInteractiveChatProfileTask();
 
-        getLogger().info("MDVSocial 1.6.10 habilitado. Homes restauradas y correo SQLite.");
+        getLogger().info("MDVSocial 1.6.11 habilitado. Gestor de protecciones Java y Bedrock.");
     }
 
     @Override
@@ -218,6 +221,9 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         }
         if (playerHomesMenuManager != null) {
             playerHomesMenuManager.disable();
+        }
+        if (playerProtectionsMenuManager != null) {
+            playerProtectionsMenuManager.disable();
         }
         resetAllScoreboardPartyPermissions();
         if (bedrockUiSessionManager != null)
@@ -609,6 +615,9 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             }
             if (playerHomesMenuManager != null) {
                 playerHomesMenuManager.reload();
+            }
+            if (playerProtectionsMenuManager != null) {
+                playerProtectionsMenuManager.reload();
             }
             startInteractiveChatProfileTask();
             msg(sender, "reloaded");

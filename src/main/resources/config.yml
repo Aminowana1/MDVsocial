@@ -1779,3 +1779,8 @@ discord:
   missing-url: "&cEl Discord no esta configurado."
   player-only: "&cEste comando solo puede ejecutarlo un jugador."
   url: ""
+protections-menu:
+  enabled: true
+  # Devuelve el item original tras eliminar correctamente. Respeta no_drop de ProtectionStones.
+  # Se exige un espacio vacio; si no hay espacio, se conserva la proteccion.
+  return-block: true
