@@ -1,0 +1,56 @@
+# Slots desde 0. Edita este archivo y usa /mdvsocial reload.
+# Las acciones y comprobaciones de propietario las gestiona MDVSocial.
+managed-by: protections
+size: 54
+filler:
+  material: BLACK_STAINED_GLASS_PANE
+  name: ' '
+title: '&8Gestionar protección'
+content-slots: [20, 22, 24]
+content: ['{details}']
+header:
+  enabled: true
+  slot: 4
+  # Se usa el ítem auténtico de la protección seleccionada.
+  preserve-lore: true
+  lore:
+    - ''
+    - '&7Protección: &e{protection}'
+    - '&7Mundo: &f{world}'
+    - '&7X: &f{x} &7Y: &f{y} &7Z: &f{z}'
+    - '&7Miembros: &f{members}'
+    - '{group_notice}'
+items:
+  location:
+    material: MAP
+    name: '&bUbicación'
+    text: '&bUbicación'
+    lore:
+      - '&7Mundo: &f{world}'
+      - '&7X: &f{x} &7Y: &f{y} &7Z: &f{z}'
+  members:
+    material: PLAYER_HEAD
+    name: '&aMiembros ({members})'
+    text: '&aMiembros ({members})'
+    lore: ['&7Ver, agregar o quitar miembros.']
+  remove:
+    material: BARRIER
+    name: '&cBorrar protección'
+    text: '&cBorrar protección'
+    lore: ['&7Requiere confirmación.']
+navigation:
+  back:
+    slot: 49
+    material: ARROW
+    name: '&eVolver'
+    lore: []
+  previous:
+    slot: 48
+    material: ARROW
+    name: '&ePágina anterior'
+    lore: []
+  next:
+    slot: 50
+    material: ARROW
+    name: '&ePágina siguiente'
+    lore: []

@@ -48,6 +48,7 @@ public final class SocialMenuItemManager implements Listener {
     private static final String CONFIG_PATH = "social-menu-item";
 
     private final MDVSocialPlugin plugin;
+    private ItemStack itemTemplate;
     private final NamespacedKey itemKey;
     private BukkitTask checkTask;
 
@@ -99,6 +100,7 @@ public final class SocialMenuItemManager implements Listener {
     }
 
     private void reloadSettings() {
+        itemTemplate = null;
         FileConfiguration config = plugin.getConfig();
         enabled = config.getBoolean(CONFIG_PATH + ".enabled", true);
         slot = Math.max(0, Math.min(35, config.getInt(CONFIG_PATH + ".slot", 8)));
@@ -129,27 +131,25 @@ public final class SocialMenuItemManager implements Listener {
 
     private void syncOnlinePlayers() {
         if (!enabled) return;
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            ensureMenuItem(player);
-        }
+        plugin.queueOnlineWork("social-item", this::ensureMenuItem);
     }
 
     private void ensureMenuItem(Player player) {
         if (!enabled || player == null || !player.isOnline()) return;
 
         PlayerInventory inventory = player.getInventory();
-        ItemStack wanted = createMenuItem();
+        ItemStack wanted = itemTemplate == null ? createMenuItem() : itemTemplate;
         ItemStack current = inventory.getItem(slot);
 
         if (current == null || current.getType().isAir()) {
-            inventory.setItem(slot, wanted);
+            inventory.setItem(slot, wanted.clone());
         } else if (!isMenuItem(current)) {
             if (dropReplacedItem) {
                 player.getWorld().dropItemNaturally(player.getLocation(), current.clone());
             }
-            inventory.setItem(slot, wanted);
+            inventory.setItem(slot, wanted.clone());
         } else if (!isSameMenuItem(current, wanted)) {
-            inventory.setItem(slot, wanted);
+            inventory.setItem(slot, wanted.clone());
         }
 
         if (removeExtraCopies) {
@@ -158,6 +158,7 @@ public final class SocialMenuItemManager implements Listener {
     }
 
     private ItemStack createMenuItem() {
+        if (itemTemplate != null) return itemTemplate.clone();
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return item;
@@ -181,6 +182,7 @@ public final class SocialMenuItemManager implements Listener {
         }
 
         item.setItemMeta(meta);
+        itemTemplate = item.clone();
         return item;
     }
 

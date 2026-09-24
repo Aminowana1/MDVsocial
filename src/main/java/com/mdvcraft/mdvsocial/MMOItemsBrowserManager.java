@@ -62,7 +62,11 @@ public final class MMOItemsBrowserManager implements Listener {
     private final NamespacedKey typeKey;
     private final NamespacedKey itemIdKey;
     private final Map<String, List<String>> catalog = new LinkedHashMap<>();
-    private final Map<String, ItemStack> baseItemCache = new HashMap<>();
+    private final Map<String, ItemStack> baseItemCache = new LinkedHashMap<>(16, .75f, true) {
+        @Override protected boolean removeEldestEntry(Map.Entry<String, ItemStack> entry) {
+            return size() > Math.max(1, Math.min(4096, plugin.getConfig().getInt("performance.item-cache-size", 256)));
+        }
+    };
     private final Set<String> failedBaseItems = new LinkedHashSet<>();
 
     public MMOItemsBrowserManager(MDVSocialPlugin plugin) {

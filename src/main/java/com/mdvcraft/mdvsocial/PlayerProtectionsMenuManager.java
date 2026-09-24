@@ -23,6 +23,9 @@ import org.geysermc.cumulus.form.SimpleForm;
 import org.geysermc.floodgate.api.FloodgateApi;
 
 import java.util.*;
+import java.util.function.Supplier;
+import org.bukkit.configuration.file.YamlConfiguration;
+import static com.mdvcraft.mdvsocial.ProtectionMenuFiles.*;
 import java.util.logging.Level;
 
 import static com.mdvcraft.mdvsocial.ProtectionStonesHook.*;
@@ -31,14 +34,19 @@ import static com.mdvcraft.mdvsocial.ProtectionStonesHook.*;
 public final class PlayerProtectionsMenuManager implements Listener, CommandExecutor, TabCompleter {
     private final MDVSocialPlugin plugin;
     private ProtectionStonesHook api;
+    private final ProtectionMenuFiles menuFiles;
     private final Map<UUID, PendingInput> pending = new HashMap<>();
     private final Map<UUID, Long> revisions = new HashMap<>();
     private long sequence;
+    private final Map<UUID, Long> loading = new HashMap<>();
+    private final java.util.concurrent.ThreadPoolExecutor scanner = new java.util.concurrent.ThreadPoolExecutor(
+            1, 1, 0L, java.util.concurrent.TimeUnit.MILLISECONDS, new java.util.concurrent.ArrayBlockingQueue<>(64),
+            task -> { Thread t = new Thread(task, "MDVSocial-Protections"); t.setDaemon(true); return t; });
     private record PendingInput(Key key, long expires) {}
-    private record Entry(ItemStack icon, String label, CheckedAction action) {}
+    private record Entry(String style, Supplier<ItemStack> icon, Map<String, String> tokens, CheckedAction action) {}
     @FunctionalInterface private interface CheckedAction { void run() throws Exception; }
 
-    public PlayerProtectionsMenuManager(MDVSocialPlugin plugin) { this.plugin = plugin; }
+    public PlayerProtectionsMenuManager(MDVSocialPlugin plugin) { this.plugin = plugin; this.menuFiles = new ProtectionMenuFiles(plugin); }
 
     public void enable() {
         reload();
@@ -49,6 +57,9 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
     }
 
     public void reload() {
+        menuFiles.reload();
+        loading.clear();
+        scanner.getQueue().clear();
         pending.clear();
         revisions.clear();
         api = null;
@@ -63,6 +74,8 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
     }
 
     public void disable() {
+        scanner.shutdownNow();
+        loading.clear();
         pending.clear();
         revisions.clear();
         for (Player p : Bukkit.getOnlinePlayers()) {
@@ -129,111 +142,170 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
     }
 
     private void openMain(Player p, int page) throws Exception {
-        pending.remove(p.getUniqueId());
-        List<Protection> protections = api.owned(p);
-        int limit = api.limit(p);
-        String limitText = limit < 0 ? "Sin límite" : String.valueOf(limit);
-        String content = "&7Protecciones colocadas: &e" + protections.size() + " &7/ &e" + limitText
-                + "\n&7Límite obtenido de tus permisos de ProtectionStones."
-                + (limit >= 0 && protections.size() > limit ? "\n&cSuperas tu límite actual. Puedes gestionar todas tus protecciones." : "")
-                + (protections.isEmpty() ? "\n&7Todavía no tienes protecciones." : "");
-        List<Entry> entries = new ArrayList<>();
-        for (Protection protection : protections) {
-            ItemMeta meta = protection.item().getItemMeta();
-            String itemName = meta.hasDisplayName() ? meta.getDisplayName() : protection.item().getType().name();
-            entries.add(new Entry(protectionIcon(protection), itemName + " &7[" + protection.item().getType() + "]\n&7" + protection.worldName()
-                    + " · " + coordinates(protection.key()), () -> openDetails(p, protection.key())));
+        if (loading.containsKey(p.getUniqueId())) return;
+        long revision = nextRevision(p);
+        loading.put(p.getUniqueId(), revision);
+        ProtectionStonesHook hook = api;
+        UUID uuid = p.getUniqueId();
+        List<org.bukkit.World> worlds = List.copyOf(Bukkit.getWorlds());
+        p.closeInventory();
+        Inventory expectedInventory = p.getOpenInventory().getTopInventory();
+        long bedrockSession = plugin.isBedrockPlayer(p) ? plugin.beginBedrockUiSession(p) : 0L;
+        try {
+            scanner.execute(() -> {
+                List<Object> regions;
+                try { regions = hook.queryOwned(uuid, worlds); }
+                catch (Exception ex) {
+                    if (plugin.isEnabled()) Bukkit.getScheduler().runTask(plugin, () -> {
+                        if (loading.remove(uuid, revision) && current(p, revision))
+                            execute(p, () -> { throw ex; });
+                    });
+                    return;
+                }
+                if (!plugin.isEnabled()) return;
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (!loading.remove(uuid, revision) || api != hook || !current(p, revision)
+                            || p.getOpenInventory().getTopInventory() != expectedInventory) return;
+                    Runnable render = () -> execute(p, () -> {
+                        List<Protection> protections = new ArrayList<>();
+                        for (Object region : regions) {
+                            if ((Boolean) call(region, "isOwner", new Class<?>[]{UUID.class}, uuid))
+                                protections.add(hook.snapshot(region));
+                        }
+                        protections.sort(Comparator.comparing(Protection::worldName).thenComparing(r -> r.key().id()));
+                        renderMain(p, page, protections);
+                    });
+                    if (bedrockSession != 0L) plugin.runBedrockUiAction(p, bedrockSession, render);
+                    else render.run();
+                });
+            });
+        } catch (java.util.concurrent.RejectedExecutionException ex) {
+            loading.remove(uuid);
+            message(p, "&eEl gestor está ocupado. Vuelve a abrir /protes en unos segundos.");
         }
-        show(p, "&8Tus protecciones", content, entries, page, () -> p.performCommand("social"));
+    }
+
+    private YamlConfiguration definition(Player p, String id) {
+        return menuFiles.get(plugin.isBedrockPlayer(p), id);
+    }
+
+    private Map<String, String> tokens(Protection protection) {
+        ItemMeta meta = protection.item().getItemMeta();
+        Map<String, String> values = new HashMap<>();
+        values.put("protection", protection.name());
+        values.put("item_name", meta.hasDisplayName() ? meta.getDisplayName() : protection.item().getType().name());
+        values.put("material", protection.item().getType().name());
+        values.put("world", protection.worldName());
+        values.put("x", String.valueOf(protection.key().x()));
+        values.put("y", String.valueOf(protection.key().y()));
+        values.put("z", String.valueOf(protection.key().z()));
+        values.put("members", String.valueOf(protection.members().size()));
+        values.put("group_notice", groupNotice(protection).strip());
+        values.put("details", description(protection));
+        return values;
+    }
+
+    private void renderMain(Player p, int ignoredPage, List<Protection> protections) throws Exception {
+        pending.remove(p.getUniqueId());
+        int limit = api.limit(p);
+        YamlConfiguration config = definition(p, MAIN);
+        Map<String, String> values = new HashMap<>();
+        values.put("count", String.valueOf(protections.size()));
+        values.put("limit", limit < 0 ? config.getString("messages.unlimited", "Sin límite") : String.valueOf(limit));
+        values.put("limit_notice", limit >= 0 && protections.size() > limit ? config.getString("messages.over-limit", "") : "");
+        values.put("empty_notice", protections.isEmpty() ? config.getString("messages.empty", "") : "");
+        List<Entry> entries = new ArrayList<>();
+        for (Protection protection : protections) entries.add(new Entry("protection", protection::item,
+                tokens(protection), () -> openDetails(p, protection.key())));
+        show(p, MAIN, values, entries, List.of(), 0, null, () -> p.performCommand("social"));
     }
 
     private void openDetails(Player p, Key key) throws Exception {
         pending.remove(p.getUniqueId());
         Protection protection = api.snapshot(api.requireOwned(p, key));
-        String content = description(protection);
         List<Entry> entries = List.of(
-                new Entry(protectionIcon(protection), "&bVer coordenadas", () -> {
+                entry("location", Material.MAP, () -> {
                     api.requireOwned(p, key);
                     message(p, "&b" + protection.worldName() + " &7— &e" + coordinates(key));
                     openDetails(p, key);
                 }),
-                entry(Material.PLAYER_HEAD, "&aMiembros (" + protection.members().size() + ")",
-                        "&7Ver, agregar o quitar miembros.", () -> openMembers(p, key, 0)),
-                entry(Material.TNT, "&cRemover protección", "&7Eliminar a distancia con confirmación.",
-                        () -> confirmDelete(p, key)));
-        show(p, "&8Gestionar protección", content, entries, 0, () -> openMain(p, 0));
+                entry("members", Material.PLAYER_HEAD, () -> openMembers(p, key, 0)),
+                entry("remove", Material.BARRIER, () -> confirmDelete(p, key)));
+        show(p, OPTIONS, tokens(protection), entries, List.of(), 0, protection.item(), () -> openMain(p, 0));
     }
 
     private void openMembers(Player p, Key key, int page) throws Exception {
         Protection protection = api.snapshot(api.requireOwned(p, key));
         List<Entry> entries = new ArrayList<>();
-        entries.add(entry(Material.LIME_DYE, "&aAgregar miembro", "&7Elige un jugador o introduce su nombre.",
-                () -> addPrompt(p, key)));
         List<UUID> members = new ArrayList<>(protection.members());
-        members.sort(Comparator.comparing(this::playerName, String.CASE_INSENSITIVE_ORDER).thenComparing(UUID::toString));
-        for (UUID uuid : members) {
-            String name = playerName(uuid);
-            ItemStack skull = icon(Material.PLAYER_HEAD, "&e" + name, "&7Pulsa para quitarlo de miembros.", "&8" + uuid);
-            SkullMeta meta = (SkullMeta) skull.getItemMeta();
-            meta.setOwningPlayer(Bukkit.getOfflinePlayer(uuid));
-            skull.setItemMeta(meta);
-            entries.add(new Entry(skull, "&e" + name + "\n&7Quitar miembro", () -> confirmMemberRemoval(p, key, uuid)));
-        }
-        show(p, "&8Miembros", "&7Protección: &e" + protection.name() + "\n&7Miembros: &e" + members.size()
-                + groupNotice(protection), entries, page, () -> openDetails(p, key));
+        Map<UUID, String> names = new HashMap<>();
+        for (UUID uuid : members) names.put(uuid, playerName(uuid));
+        members.sort(Comparator.<UUID, String>comparing(names::get, String.CASE_INSENSITIVE_ORDER).thenComparing(UUID::toString));
+        for (UUID uuid : members) entries.add(new Entry("member", () -> head(uuid),
+                Map.of("member", names.get(uuid), "uuid", uuid.toString()), () -> confirmMemberRemoval(p, key, uuid)));
+        show(p, MEMBERS, tokens(protection), entries,
+                List.of(entry("add", Material.LIME_DYE, () -> addPrompt(p, key))), page, null, () -> openDetails(p, key));
     }
 
     private void confirmMemberRemoval(Player p, Key key, UUID member) throws Exception {
         permission(p, "mdvsocial.protections.members");
         permission(p, "protectionstones.members");
         Protection protection = api.snapshot(api.requireOwned(p, key));
-        show(p, "&8Quitar miembro", "&7¿Quitar a &e" + playerName(member) + "&7?" + groupNotice(protection),
-                List.of(entry(Material.RED_DYE, "&cConfirmar", "&7Perderá su acceso como miembro.", () -> {
-                    permission(p, "mdvsocial.protections.members");
-                    permission(p, "protectionstones.members");
-                    api.removeMember(api.requireOwned(p, key), member);
-                    message(p, "&aMiembro eliminado.");
-                    openMembers(p, key, 0);
-                })), 0, () -> openMembers(p, key, 0));
+        Map<String, String> values = tokens(protection);
+        YamlConfiguration config = definition(p, CONFIRM);
+        values.put("action", config.getString("labels.member", "Quitar miembro"));
+        values.put("target", playerName(member));
+        values.put("warning", config.getString("warnings.member", ""));
+        show(p, CONFIRM, values, List.of(entry("confirm", Material.RED_CONCRETE, () -> {
+            permission(p, "mdvsocial.protections.members");
+            permission(p, "protectionstones.members");
+            api.removeMember(api.requireOwned(p, key), member);
+            message(p, "&aMiembro eliminado.");
+            openMembers(p, key, 0);
+        })), List.of(), 0, null, () -> openMembers(p, key, 0));
     }
 
     private void addPrompt(Player p, Key key) throws Exception {
         permission(p, "mdvsocial.protections.members");
         permission(p, "protectionstones.members");
-        api.requireOwned(p, key);
-        if (plugin.isBedrockPlayer(p)) {
-            long revision = nextRevision(p);
-            long session = plugin.beginBedrockUiSession(p);
-            CustomForm.Builder form = CustomForm.builder().title(color("&8Agregar miembro"))
-                    .input("Nombre exacto del jugador (incluye el prefijo Bedrock)", "Nombre", "");
-            form.validResultHandler(response -> {
-                String name = response.asInput(0);
-                plugin.runBedrockUiAction(p, session, () -> {
-                    if (!current(p, revision)) return;
-                    nextRevision(p);
-                    execute(p, () -> addByName(p, key, name));
-                });
-            });
-            if (!FloodgateApi.getInstance().sendForm(p.getUniqueId(), form))
-                message(p, "&cNo se pudo abrir el formulario. Vuelve a usar /protes.");
-            return;
-        }
+        Protection protection = api.snapshot(api.requireOwned(p, key));
         pending.put(p.getUniqueId(), new PendingInput(key, System.currentTimeMillis() + 120_000));
         List<Entry> entries = new ArrayList<>();
-        entries.add(entry(Material.NAME_TAG, "&eEscribir un nombre", "&7También permite jugadores desconectados conocidos.", () -> {
-            api.requireOwned(p, key);
-            pending.put(p.getUniqueId(), new PendingInput(key, System.currentTimeMillis() + 120_000));
-            p.closeInventory();
-            message(p, "&eEscribe /protes agregar <nombre exacto> &7(2 minutos). Usa /protes cancelar para volver.");
-        }));
         for (Player target : Bukkit.getOnlinePlayers().stream().sorted(Comparator.comparing(Player::getName)).toList()) {
             if (target.getUniqueId().equals(p.getUniqueId())) continue;
             UUID uuid = target.getUniqueId();
-            entries.add(entry(Material.PLAYER_HEAD, "&a" + target.getName(), "&7Agregar como miembro.",
+            entries.add(new Entry("player", () -> head(uuid), Map.of("member", target.getName(), "uuid", uuid.toString()),
                     () -> addMember(p, key, uuid)));
         }
-        show(p, "&8Agregar miembro", "&7Selecciona un jugador o escribe un nombre.", entries, 0,
-                () -> { pending.remove(p.getUniqueId()); openMembers(p, key, 0); });
+        Map<String, String> values = tokens(protection);
+        values.put("count", String.valueOf(entries.size()));
+        show(p, SEARCH, values, entries, List.of(entry("name", Material.NAME_TAG, () -> namePrompt(p, key))),
+                0, null, () -> { pending.remove(p.getUniqueId()); openMembers(p, key, 0); });
+    }
+
+    private void namePrompt(Player p, Key key) throws Exception {
+        api.requireOwned(p, key);
+        if (!plugin.isBedrockPlayer(p)) {
+            pending.put(p.getUniqueId(), new PendingInput(key, System.currentTimeMillis() + 120_000));
+            p.closeInventory();
+            message(p, definition(p, SEARCH).getString("name-prompt", ""));
+            return;
+        }
+        long revision = nextRevision(p);
+        long session = plugin.beginBedrockUiSession(p);
+        YamlConfiguration config = definition(p, INPUT);
+        CustomForm.Builder form = CustomForm.builder().title(color(config.getString("title", "Agregar miembro")))
+                .input(color(config.getString("label", "Nombre exacto")), config.getString("placeholder", "Nombre"), config.getString("default", ""));
+        form.validResultHandler(response -> {
+            String name = response.asInput(0);
+            plugin.runBedrockUiAction(p, session, () -> {
+                if (!current(p, revision)) return;
+                nextRevision(p);
+                execute(p, () -> addByName(p, key, name));
+            });
+        });
+        if (!FloodgateApi.getInstance().sendForm(p.getUniqueId(), form))
+            message(p, "&cNo se pudo abrir el formulario. Vuelve a usar /protes.");
     }
 
     private void addByName(Player p, Key key, String input) throws Exception {
@@ -268,12 +340,14 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
         Object region = api.requireOwned(p, key);
         Protection protection = api.snapshot(region);
         ItemStack refund = api.refund(region, returnBlock());
-        String content = description(protection) + "\n\n&cSe quitará esta protección y su bloque."
-                + (refund == null ? "\n&cNo se devolverá el bloque." : "\n&aEl bloque volverá a tu inventario si hay espacio.")
-                + "\n&cLa zona podría quedar expuesta.";
-        show(p, "&8Confirmar eliminación", content,
-                List.of(entry(Material.RED_CONCRETE, "&cSí, remover esta protección", "&7Esta acción no se puede deshacer.",
-                        () -> removeProtection(p, key))), 0, () -> openDetails(p, key));
+        Map<String, String> values = tokens(protection);
+        YamlConfiguration config = definition(p, CONFIRM);
+        values.put("action", config.getString("labels.protection", "Borrar protección"));
+        values.put("target", protection.name());
+        values.put("refund_notice", config.getString(refund == null ? "warnings.no-refund" : "warnings.refund", ""));
+        values.put("warning", replace(config.getString("warnings.protection", ""), values));
+        show(p, CONFIRM, values, List.of(entry("confirm", Material.RED_CONCRETE, () -> removeProtection(p, key))),
+                List.of(), 0, null, () -> openDetails(p, key));
     }
 
     private boolean returnBlock() { return plugin.getConfig().getBoolean("protections-menu.return-block", true); }
@@ -302,23 +376,6 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
         return true;
     }
 
-    private ItemStack protectionIcon(Protection protection) {
-        ItemStack item = protection.item().clone();
-        ItemMeta meta = item.getItemMeta();
-        List<String> lore = meta.hasLore() ? new ArrayList<>(Objects.requireNonNull(meta.getLore())) : new ArrayList<>();
-        lore.add("");
-        lore.add(color("&7Protección: &e" + protection.name()));
-        lore.add(color("&7Mundo: &f" + protection.worldName()));
-        lore.add(color("&7Coordenadas: &f" + coordinates(protection.key())));
-        lore.add(color("&7Miembros: &f" + protection.members().size()));
-        if (protection.merged()) lore.add(color("&eFusionada: miembros compartidos."));
-        if (!protection.configured()) lore.add(color("&cTipo no configurado en ProtectionStones."));
-        lore.add(color("&aPulsa para gestionar."));
-        meta.setLore(lore);
-        item.setItemMeta(meta);
-        return item;
-    }
-
     private String description(Protection protection) {
         ItemMeta meta = protection.item().getItemMeta();
         String name = meta.hasDisplayName() ? meta.getDisplayName() : protection.item().getType().name();
@@ -337,15 +394,45 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
         return name == null ? uuid.toString() : name;
     }
 
-    private Entry entry(Material material, String label, String lore, CheckedAction action) {
-        return new Entry(icon(material, label, lore), label, action);
+    private Entry entry(String style, Material material, CheckedAction action) {
+        return new Entry(style, () -> new ItemStack(material), Map.of(), action);
     }
 
-    private static ItemStack icon(Material material, String label, String... lore) {
-        ItemStack item = new ItemStack(material);
+    static ItemStack head(UUID uuid) {
+        ItemStack item = new ItemStack(Material.PLAYER_HEAD);
+        SkullMeta meta = (SkullMeta) item.getItemMeta();
+        applyHeadProfile(meta, uuid);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    static void applyHeadProfile(SkullMeta meta, UUID uuid) {
+        Player online = Bukkit.getPlayer(uuid);
+        if (online != null) meta.setPlayerProfile(online.getPlayerProfile());
+        else meta.setOwningPlayer(Bukkit.getOfflinePlayer(uuid));
+    }
+
+    private List<String> lines(YamlConfiguration config, String path, Map<String, String> values) {
+        List<String> result = new ArrayList<>();
+        for (String line : config.getStringList(path)) {
+            String expanded = replace(line, values);
+            if (!line.isEmpty() && expanded.isEmpty()) continue;
+            result.addAll(Arrays.asList(expanded.split("\n", -1)));
+        }
+        return result;
+    }
+
+    private ItemStack styled(YamlConfiguration config, String path, ItemStack base, Map<String, String> values) {
+        ItemStack item = base.clone();
+        String materialName = config.getString(path + ".material");
+        Material material = materialName == null ? null : Material.matchMaterial(materialName);
+        if (material != null && material != item.getType() && material.isItem() && !material.isAir()) item.setType(material);
         ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(color(label));
-        meta.setLore(Arrays.stream(lore).map(PlayerProtectionsMenuManager::color).toList());
+        if (config.contains(path + ".name")) meta.setDisplayName(color(replace(config.getString(path + ".name", ""), values)));
+        List<String> lore = config.getBoolean(path + ".preserve-lore", false) && meta.hasLore()
+                ? new ArrayList<>(Objects.requireNonNull(meta.getLore())) : new ArrayList<>();
+        lore.addAll(lines(config, path + ".lore", values).stream().map(PlayerProtectionsMenuManager::color).toList());
+        meta.setLore(lore);
         item.setItemMeta(meta);
         return item;
     }
@@ -359,27 +446,41 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
         return p.isOnline() && Objects.equals(revisions.get(p.getUniqueId()), revision);
     }
 
-    private void show(Player p, String title, String content, List<Entry> entries, int requestedPage,
-                      CheckedAction back) {
-        int pageSize = plugin.isBedrockPlayer(p) ? 6 : 36;
-        int pages = Math.max(1, (entries.size() + pageSize - 1) / pageSize);
-        int page = Math.max(0, Math.min(requestedPage, pages - 1));
-        List<Entry> visible = entries.subList(page * pageSize, Math.min(entries.size(), (page + 1) * pageSize));
+    private void show(Player p, String id, Map<String, String> originalValues, List<Entry> entries,
+                      List<Entry> fixed, int requestedPage, ItemStack headerBase, CheckedAction back) {
+        boolean bedrock = plugin.isBedrockPlayer(p);
+        YamlConfiguration config = definition(p, id);
+        Map<String, String> values = new HashMap<>(originalValues);
+        values.put("player", p.getName());
+        List<Integer> slots = bedrock ? List.of() : slots(id, config, entries.size());
+        int capacity = bedrock ? (paginated(id) ? Math.max(1, Math.min(100, config.getInt("page-size", 6)))
+                : Math.max(1, entries.size())) : slots.size();
+        Page page = page(entries.size(), capacity, requestedPage, paginated(id));
+        List<Entry> visible = entries.subList(page.from(), page.to());
+        String title = color(replace(config.getString("title", "Protecciones"), values));
+        String content = String.join("\n", lines(config, "content", values));
         long revision = nextRevision(p);
-        if (plugin.isBedrockPlayer(p)) {
+        CheckedAction previous = () -> show(p, id, originalValues, entries, fixed, page.index() - 1, headerBase, back);
+        CheckedAction next = () -> show(p, id, originalValues, entries, fixed, page.index() + 1, headerBase, back);
+        if (bedrock) {
             long session = plugin.beginBedrockUiSession(p);
-            SimpleForm.Builder builder = SimpleForm.builder().title(color(title))
-                    .content(color(content + "\n\n&7Página " + (page + 1) + "/" + pages));
+            SimpleForm.Builder builder = SimpleForm.builder().title(title).content(color(content));
             List<CheckedAction> actions = new ArrayList<>();
-            for (Entry entry : visible) { builder.button(color(entry.label())); actions.add(entry.action()); }
-            if (page > 0) {
-                builder.button("Anterior"); actions.add(() -> show(p, title, content, entries, page - 1, back));
+            List<Entry> buttons = new ArrayList<>(fixed);
+            buttons.addAll(visible);
+            for (Entry entry : buttons) {
+                Map<String, String> buttonValues = new HashMap<>(values);
+                buttonValues.putAll(entry.tokens());
+                builder.button(color(replace(config.getString("items." + entry.style() + ".text", entry.style()), buttonValues)));
+                actions.add(entry.action());
             }
-            if (page + 1 < pages) {
-                builder.button("Siguiente"); actions.add(() -> show(p, title, content, entries, page + 1, back));
+            if (page.previous()) { builder.button(color(config.getString("navigation.previous", "Anterior"))); actions.add(previous); }
+            if (page.next()) { builder.button(color(config.getString("navigation.next", "Siguiente"))); actions.add(next); }
+            builder.button(color(config.getString("navigation.back", "Volver"))); actions.add(back);
+            if (config.getBoolean("show-close", true)) {
+                builder.button(color(config.getString("navigation.close", "Cerrar")));
+                actions.add(() -> pending.remove(p.getUniqueId()));
             }
-            builder.button("Volver / Cancelar"); actions.add(back);
-            builder.button("Cerrar"); actions.add(() -> pending.remove(p.getUniqueId()));
             builder.validResultHandler(response -> {
                 int index = response.clickedButtonId();
                 plugin.runBedrockUiAction(p, session, () -> {
@@ -393,27 +494,40 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
             return;
         }
         MenuHolder holder = new MenuHolder(p.getUniqueId(), revision);
-        Inventory inventory = Bukkit.createInventory(holder, 54, color(title));
+        Inventory inventory = Bukkit.createInventory(holder, config.getInt("size"), title);
         holder.inventory = inventory;
-        ItemStack glass = icon(Material.GRAY_STAINED_GLASS_PANE, " ");
-        for (int slot = 0; slot < 54; slot++) inventory.setItem(slot, glass);
-        inventory.setItem(4, icon(Material.BOOK, title, content.split("\n")));
-        int[] centered = {19, 21, 23, 25};
-        for (int i = 0; i < visible.size(); i++) {
-            int slot = visible.size() <= 4 ? centered[i] : 9 + i;
-            inventory.setItem(slot, visible.get(i).icon());
-            holder.actions.put(slot, visible.get(i).action());
+        ItemStack glass = styled(config, "filler", new ItemStack(Material.BLACK_STAINED_GLASS_PANE), values);
+        for (int slot = 0; slot < inventory.getSize(); slot++) inventory.setItem(slot, glass);
+        if (config.getBoolean("header.enabled", true)) {
+            ItemStack header = styled(config, "header", headerBase == null ? new ItemStack(Material.BOOK) : headerBase, values);
+            if (!config.contains("header.lore")) {
+                ItemMeta meta = header.getItemMeta();
+                List<String> lore = meta.hasLore() ? new ArrayList<>(Objects.requireNonNull(meta.getLore())) : new ArrayList<>();
+                lore.addAll(Arrays.stream(content.split("\n")).map(PlayerProtectionsMenuManager::color).toList());
+                meta.setLore(lore);
+                header.setItemMeta(meta);
+            }
+            inventory.setItem(config.getInt("header.slot"), header);
         }
-        if (page > 0) button(holder, 45, Material.ARROW, "&eAnterior", () -> show(p, title, content, entries, page - 1, back));
-        button(holder, 48, Material.ARROW, "&eVolver / Cancelar", back);
-        inventory.setItem(49, icon(Material.PAPER, "&fPágina " + (page + 1) + "/" + pages));
-        button(holder, 50, Material.BARRIER, "&cCerrar", () -> { pending.remove(p.getUniqueId()); p.closeInventory(); });
-        if (page + 1 < pages) button(holder, 53, Material.ARROW, "&eSiguiente", () -> show(p, title, content, entries, page + 1, back));
+        for (int i = 0; i < visible.size(); i++) place(holder, slots.get(i), config, visible.get(i), values);
+        for (Entry entry : fixed) place(holder, config.getInt("items." + entry.style() + ".slot"), config, entry, values);
+        navigation(holder, config, "back", values, back);
+        if (page.previous()) navigation(holder, config, "previous", values, previous);
+        if (page.next()) navigation(holder, config, "next", values, next);
         p.openInventory(inventory);
     }
 
-    private void button(MenuHolder holder, int slot, Material material, String label, CheckedAction action) {
-        holder.inventory.setItem(slot, icon(material, label));
+    private void place(MenuHolder holder, int slot, YamlConfiguration config, Entry entry, Map<String, String> values) {
+        Map<String, String> merged = new HashMap<>(values);
+        merged.putAll(entry.tokens());
+        holder.inventory.setItem(slot, styled(config, "items." + entry.style(), entry.icon().get(), merged));
+        holder.actions.put(slot, entry.action());
+    }
+
+    private void navigation(MenuHolder holder, YamlConfiguration config, String name, Map<String, String> values, CheckedAction action) {
+        String path = "navigation." + name;
+        int slot = config.getInt(path + ".slot");
+        holder.inventory.setItem(slot, styled(config, path, new ItemStack(Material.ARROW), values));
         holder.actions.put(slot, action);
     }
 
@@ -438,6 +552,7 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
     }
 
     @EventHandler public void onQuit(PlayerQuitEvent event) {
+        loading.remove(event.getPlayer().getUniqueId());
         pending.remove(event.getPlayer().getUniqueId());
         revisions.remove(event.getPlayer().getUniqueId());
     }

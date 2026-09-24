@@ -1,0 +1,23 @@
+managed-by: protections
+type: SIMPLE
+title: '&8Confirmar eliminación'
+show-close: false
+content: ['&7{action}: &e{target}', '{warning}', '{group_notice}']
+navigation:
+  back: '&eVolver / Cancelar'
+items:
+  confirm:
+    material: RED_CONCRETE
+    name: '&cConfirmar'
+    text: '&cConfirmar'
+    lore:
+      - '&7{action}: &e{target}'
+      - '{warning}'
+labels:
+  protection: 'Borrar protección'
+  member: 'Quitar miembro'
+warnings:
+  member: '&7Perderá el acceso como miembro.'
+  refund: '&aEl bloque volverá al inventario si hay espacio.'
+  no-refund: '&cEste bloque no se devuelve.'
+  protection: "&7{world}: {x}, {y}, {z}\n{refund_notice}\n&cLa zona podría quedar expuesta."

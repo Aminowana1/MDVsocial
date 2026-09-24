@@ -1784,3 +1784,11 @@ protections-menu:
   # Devuelve el item original tras eliminar correctamente. Respeta no_drop de ProtectionStones.
   # Se exige un espacio vacio; si no hay espacio, se conserva la proteccion.
   return-block: true
+
+# Limites de memoria y reparto del trabajo. No cambia permisos ni limites de protes/homes.
+performance:
+  mail-cache-size: 128
+  profile-cache-size: 8192
+  item-cache-size: 256
+  work-budget-ms: 2
+  work-items-per-tick: 32

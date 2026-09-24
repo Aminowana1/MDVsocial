@@ -1,0 +1,6 @@
+managed-by: protections
+type: CUSTOM
+title: '&8Agregar miembro'
+label: 'Nombre exacto del jugador (incluye el prefijo Bedrock)'
+placeholder: 'Nombre'
+default: ''

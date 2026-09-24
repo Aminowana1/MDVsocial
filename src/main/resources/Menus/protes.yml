@@ -1,0 +1,54 @@
+# Slots desde 0. Edita este archivo y usa /mdvsocial reload.
+# Las acciones y comprobaciones de propietario las gestiona MDVSocial.
+managed-by: protections
+size: 54
+filler:
+  material: BLACK_STAINED_GLASS_PANE
+  name: ' '
+title: '&8Tus protecciones'
+content-slots: [19, 21, 23, 25]
+# Solo se utilizan si existen más de cuatro: mismas columnas, dos filas abajo.
+overflow-slots: [37, 39, 41, 43]
+content:
+  - '&7Protecciones colocadas: &e{count} &7/ &e{limit}'
+  - '&7Límite según tus permisos de ProtectionStones.'
+  - '{limit_notice}'
+  - '{empty_notice}'
+header:
+  enabled: true
+  slot: 4
+  material: BOOK
+  name: '&eTus protecciones'
+items:
+  protection:
+    preserve-lore: true
+    # Sin material ni name: conserva el ítem original de ProtectionStones.
+    text: "{item_name}\n&7{world} · {x}, {y}, {z}"
+    lore:
+      - ''
+      - '&7Protección: &e{protection}'
+      - '&7Mundo: &f{world}'
+      - '&7Coordenadas: &f{x}, {y}, {z}'
+      - '&7Miembros: &f{members}'
+      - '{group_notice}'
+      - '&aPulsa para gestionar.'
+messages:
+  unlimited: 'Sin límite'
+  over-limit: '&cSuperas tu límite actual.'
+  empty: '&7Todavía no tienes protecciones.'
+navigation:
+  back:
+    slot: 49
+    material: ARROW
+    name: '&eVolver'
+    lore: []
+  previous:
+    slot: 48
+    material: ARROW
+    name: '&ePágina anterior'
+    lore: []
+  next:
+    slot: 50
+    material: ARROW
+    name: '&ePágina siguiente'
+    lore: []

@@ -1,0 +1,24 @@
+# Textos nativos Bedrock. Se cargan al iniciar o con /mdvsocial reload.
+managed-by: protections
+type: SIMPLE
+page-size: 6
+navigation:
+  back: '&eVolver'
+  previous: '&ePágina anterior'
+  next: '&ePágina siguiente'
+  close: '&cCerrar'
+show-close: true
+title: '&8Miembros'
+content: ['&7Protección: &e{protection}', '&7Miembros: &e{members}', '{group_notice}']
+items:
+  add:
+    slot: 8
+    material: LIME_DYE
+    name: '&aAgregar miembro'
+    text: '&aAgregar miembro'
+    lore: ['&7Buscar un jugador o escribir su nombre.']
+  member:
+    material: PLAYER_HEAD
+    name: '&e{member}'
+    text: "&e{member}\n&7Quitar miembro"
+    lore: ['&7Pulsa para quitarlo de miembros.', '&8{uuid}']

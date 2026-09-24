@@ -97,6 +97,7 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
 
     private File lockDataFile;
     private YamlConfiguration lockData;
+    private CoalescingFileWriter lockWriter;
     private boolean essentialsApiLogged;
     private boolean essentialsApiFailureLogged;
 
@@ -122,6 +123,8 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
 
     public void disable() {
         saveLockData();
+        if (lockWriter != null) try { lockWriter.close(); }
+        catch (Exception e) { plugin.getLogger().severe("No se pudo guardar homes-lock-data.yml: " + e); }
         HandlerList.unregisterAll(this);
     }
 
@@ -1200,14 +1203,16 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
             plugin.getDataFolder().mkdirs();
         lockDataFile = new File(plugin.getDataFolder(), "homes-lock-data.yml");
         lockData = YamlConfiguration.loadConfiguration(lockDataFile);
+        lockWriter = new CoalescingFileWriter(lockDataFile.toPath(),
+                error -> plugin.getLogger().severe("Error guardando homes-lock-data.yml: " + error));
     }
 
     private void saveLockData() {
         if (lockData == null || lockDataFile == null)
             return;
         try {
-            lockData.save(lockDataFile);
-        } catch (IOException ex) {
+            lockWriter.save(lockData.saveToString());
+        } catch (RuntimeException ex) {
             plugin.getLogger().warning("No se pudo guardar homes-lock-data.yml: " + ex.getMessage());
         }
     }

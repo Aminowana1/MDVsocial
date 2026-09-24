@@ -36,6 +36,37 @@ final class PlayerDataStore implements AutoCloseable {
     private final JavaPlugin plugin;
     private final File databaseFile;
     private Connection connection;
+    private final java.util.LinkedHashMap<UUID, java.util.Map<String, Object>> profiles = new java.util.LinkedHashMap<>(16, .75f, true);
+    private long profileLoads;
+
+    private java.util.Map<String, Object> profile(UUID uuid) throws SQLException {
+        java.util.Map<String, Object> result = profiles.get(uuid);
+        if (result != null) return result;
+        result = new java.util.HashMap<>();
+        result.put("last-name", ""); result.put("active", ""); result.put("punishment.active", false);
+        result.put("punishment.title", ""); result.put("punishment.previous-title", "");
+        try (PreparedStatement ps = connection.prepareStatement("SELECT * FROM player_profiles WHERE uuid=?")) {
+            ps.setString(1, uuid.toString());
+            try (ResultSet rs = ps.executeQuery()) { if (rs.next()) {
+                result.put("last-name", rs.getString("last_name")); result.put("active", rs.getString("active_title"));
+                result.put("punishment.active", rs.getBoolean("punishment_active"));
+                result.put("punishment.title", rs.getString("punishment_title")); result.put("punishment.previous-title", rs.getString("punishment_previous_title"));
+            } }
+        }
+        List<String> unlocked = new ArrayList<>();
+        try (PreparedStatement ps = connection.prepareStatement("SELECT title_id FROM player_unlocked_titles WHERE uuid=? ORDER BY title_id")) {
+            ps.setString(1, uuid.toString());
+            try (ResultSet rs = ps.executeQuery()) { while (rs.next()) unlocked.add(rs.getString(1)); }
+        }
+        result.put("unlocked", List.copyOf(unlocked));
+        profiles.put(uuid, result); profileLoads++;
+        int capacity = Math.max(1, plugin.getConfig().getInt("performance.profile-cache-size", 8192));
+        while (profiles.size() > capacity) profiles.remove(profiles.keySet().iterator().next());
+        return result;
+    }
+    synchronized void forget(UUID uuid) { profiles.remove(uuid); }
+    synchronized int residentCount() { return profiles.size(); }
+    synchronized long profileLoads() { return profileLoads; }
 
     PlayerDataStore(JavaPlugin plugin, File databaseFile) {
         this.plugin = plugin;
@@ -43,7 +74,7 @@ final class PlayerDataStore implements AutoCloseable {
     }
 
     synchronized void open(File legacyYaml) throws SQLException, IOException {
-        closeQuietly();
+        closeQuietly(); profiles.clear();
         File parent = databaseFile.getParentFile();
         if (parent != null && !parent.exists() && !parent.mkdirs()) {
             throw new IOException("No se pudo crear la carpeta de datos para SQLite.");
@@ -92,82 +123,43 @@ final class PlayerDataStore implements AutoCloseable {
     }
 
     synchronized String getString(String path, String def) {
-        ParsedPath parsed = parse(path);
-        if (parsed == null)
-            return def;
-        String column = switch (parsed.child) {
-            case "last-name" -> "last_name";
-            case "active" -> "active_title";
-            case "punishment.title" -> "punishment_title";
-            case "punishment.previous-title" -> "punishment_previous_title";
-            default -> null;
-        };
-        if (column == null)
-            return def;
-
-        try {
-            ensureProfile(parsed.uuid);
-            try (PreparedStatement ps = connection.prepareStatement(
-                    "SELECT " + column + " FROM player_profiles WHERE uuid = ?")) {
-                ps.setString(1, parsed.uuid.toString());
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (!rs.next())
-                        return def;
-                    String value = rs.getString(1);
-                    return value == null ? def : value;
-                }
-            }
-        } catch (SQLException ex) {
-            plugin.getLogger().severe("Error leyendo player-data.db: " + ex.getMessage());
-            return def;
-        }
+        ParsedPath p = parse(path);
+        if (p == null) return def;
+        try { Object value = profile(p.uuid).get(p.child); return value instanceof String s ? s : def; }
+        catch (SQLException ex) { throw new IllegalStateException("Cannot read player profile", ex); }
     }
-
     synchronized boolean getBoolean(String path, boolean def) {
-        ParsedPath parsed = parse(path);
-        if (parsed == null || !"punishment.active".equals(parsed.child))
-            return def;
-        try {
-            ensureProfile(parsed.uuid);
-            try (PreparedStatement ps = connection.prepareStatement(
-                    "SELECT punishment_active FROM player_profiles WHERE uuid = ?")) {
-                ps.setString(1, parsed.uuid.toString());
-                try (ResultSet rs = ps.executeQuery()) {
-                    return rs.next() ? rs.getInt(1) != 0 : def;
-                }
-            }
-        } catch (SQLException ex) {
-            plugin.getLogger().severe("Error leyendo player-data.db: " + ex.getMessage());
-            return def;
-        }
+        ParsedPath p = parse(path);
+        if (p == null) return def;
+        try { Object value = profile(p.uuid).get(p.child); return value instanceof Boolean b ? b : def; }
+        catch (SQLException ex) { throw new IllegalStateException("Cannot read player profile", ex); }
     }
-
     synchronized List<String> getStringList(String path) {
-        ParsedPath parsed = parse(path);
-        if (parsed == null || !"unlocked".equals(parsed.child))
-            return new ArrayList<>();
-        List<String> result = new ArrayList<>();
+        ParsedPath p = parse(path);
+        if (p == null || !p.child.equals("unlocked")) return new ArrayList<>();
         try {
-            ensureProfile(parsed.uuid);
-            try (PreparedStatement ps = connection.prepareStatement(
-                    "SELECT title_id FROM player_unlocked_titles WHERE uuid = ? ORDER BY title_id")) {
-                ps.setString(1, parsed.uuid.toString());
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next())
-                        result.add(rs.getString(1));
-                }
-            }
-        } catch (SQLException ex) {
-            plugin.getLogger().severe("Error leyendo player-data.db: " + ex.getMessage());
-        }
-        return result;
+            @SuppressWarnings("unchecked") List<String> values = (List<String>) profile(p.uuid).get("unlocked");
+            return new ArrayList<>(values);
+        } catch (SQLException ex) { throw new IllegalStateException("Cannot read player profile", ex); }
     }
-
     synchronized void set(String path, Object value) {
         ParsedPath parsed = parse(path);
         if (parsed == null)
             return;
         try {
+            java.util.Map<String, Object> cached = profile(parsed.uuid);
+            Object normalized = value;
+            if (List.of("last-name", "active", "punishment.title", "punishment.previous-title").contains(parsed.child)) normalized = stringValue(value);
+            else if (parsed.child.equals("punishment.active")) normalized = booleanValue(value);
+            else if (parsed.child.equals("unlocked")) {
+                java.util.TreeSet<String> titles = new java.util.TreeSet<>();
+                if (value instanceof Collection<?> values) for (Object raw : values) {
+                    String title = stringValue(raw).trim().toLowerCase(Locale.ROOT).replace(' ', '_');
+                    if (!title.isBlank()) titles.add(title);
+                }
+                normalized = List.copyOf(titles);
+            }
+            if (cached.containsKey(parsed.child) && java.util.Objects.equals(cached.get(parsed.child), normalized)) return;
             ensureProfile(parsed.uuid);
             switch (parsed.child) {
                 case "last-name" -> updateText(parsed.uuid, "last_name", stringValue(value));
@@ -182,8 +174,13 @@ final class PlayerDataStore implements AutoCloseable {
                 case "unlocked" -> replaceUnlockedTitles(parsed.uuid, value);
                 default -> plugin.getLogger().fine("Ruta SQLite ignorada: " + path);
             }
+            if (cached.containsKey(parsed.child)) cached.put(parsed.child, normalized);
+            else if (parsed.child.equals("punishment") && value == null) {
+                cached.put("punishment.active", false); cached.put("punishment.title", ""); cached.put("punishment.previous-title", "");
+            }
         } catch (SQLException ex) {
-            plugin.getLogger().severe("Error escribiendo player-data.db: " + ex.getMessage());
+            profiles.remove(parsed.uuid);
+            throw new IllegalStateException("Cannot persist player profile", ex);
         }
     }
 
@@ -193,7 +190,7 @@ final class PlayerDataStore implements AutoCloseable {
     }
 
     @Override
-    public synchronized void close() throws SQLException {
+    public synchronized void close() throws SQLException { profiles.clear();
         if (connection != null) {
             connection.close();
             connection = null;

@@ -1,0 +1,25 @@
+# Textos nativos Bedrock. Se cargan al iniciar o con /mdvsocial reload.
+managed-by: protections
+type: SIMPLE
+page-size: 6
+navigation:
+  back: '&eVolver'
+  previous: '&ePágina anterior'
+  next: '&ePágina siguiente'
+  close: '&cCerrar'
+show-close: true
+title: '&8Agregar miembro'
+content: ['&7Selecciona un jugador o escribe su nombre.']
+items:
+  name:
+    slot: 8
+    material: NAME_TAG
+    name: '&eEscribir un nombre'
+    text: '&eEscribir un nombre'
+    lore: ['&7También permite jugadores desconectados conocidos.']
+  player:
+    material: PLAYER_HEAD
+    name: '&a{member}'
+    text: "&a{member}\n&7Agregar como miembro"
+    lore: ['&7Agregar como miembro.']
+name-prompt: '&eEscribe /protes agregar <nombre exacto> &7(2 minutos). Usa /protes cancelar para volver.'

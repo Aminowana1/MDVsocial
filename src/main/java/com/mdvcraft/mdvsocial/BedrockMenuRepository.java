@@ -76,6 +76,7 @@ public final class BedrockMenuRepository {
             String id = normalize(dot > 0 ? name.substring(0, dot) : name);
             try {
                 YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+                if ("protections".equalsIgnoreCase(yaml.getString("managed-by", ""))) continue;
                 rawMenus.put(id, yaml);
                 menus.put(id, parseMenu(id, yaml));
             } catch (Throwable ex) {

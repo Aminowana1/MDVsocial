@@ -1,0 +1,33 @@
+# Textos nativos Bedrock. Se cargan al iniciar o con /mdvsocial reload.
+managed-by: protections
+type: SIMPLE
+page-size: 6
+navigation:
+  back: '&eVolver'
+  previous: '&ePágina anterior'
+  next: '&ePágina siguiente'
+  close: '&cCerrar'
+show-close: true
+title: '&8Tus protecciones'
+content:
+  - '&7Protecciones colocadas: &e{count} &7/ &e{limit}'
+  - '&7Límite según tus permisos de ProtectionStones.'
+  - '{limit_notice}'
+  - '{empty_notice}'
+items:
+  protection:
+    preserve-lore: true
+    # Sin material ni name: conserva el ítem original de ProtectionStones.
+    text: "{item_name}\n&7{world} · {x}, {y}, {z}"
+    lore:
+      - ''
+      - '&7Protección: &e{protection}'
+      - '&7Mundo: &f{world}'
+      - '&7Coordenadas: &f{x}, {y}, {z}'
+      - '&7Miembros: &f{members}'
+      - '{group_notice}'
+      - '&aPulsa para gestionar.'
+messages:
+  unlimited: 'Sin límite'
+  over-limit: '&cSuperas tu límite actual.'
+  empty: '&7Todavía no tienes protecciones.'

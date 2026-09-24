@@ -1,0 +1,34 @@
+# Misma confirmación para borrar protecciones y quitar miembros.
+managed-by: protections
+size: 27
+title: '&8Confirmar eliminación'
+content-slots: [15]
+filler:
+  material: BLACK_STAINED_GLASS_PANE
+  name: ' '
+header:
+  enabled: false
+content: ['&7{action}: &e{target}', '{warning}', '{group_notice}']
+navigation:
+  back:
+    slot: 11
+    material: ARROW
+    name: '&eVolver / Cancelar'
+    lore: ['&7Volver sin realizar cambios.']
+items:
+  confirm:
+    material: RED_CONCRETE
+    name: '&cConfirmar'
+    text: '&cConfirmar'
+    lore:
+      - '&7{action}: &e{target}'
+      - '{warning}'
+      - '{group_notice}'
+labels:
+  protection: 'Borrar protección'
+  member: 'Quitar miembro'
+warnings:
+  member: '&7Perderá el acceso como miembro.'
+  refund: '&aEl bloque volverá al inventario si hay espacio.'
+  no-refund: '&cEste bloque no se devuelve.'
+  protection: "&7{world}: {x}, {y}, {z}\n{refund_notice}\n&cLa zona podría quedar expuesta."

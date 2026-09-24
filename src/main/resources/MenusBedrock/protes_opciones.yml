@@ -1,0 +1,30 @@
+# Textos nativos Bedrock. Se cargan al iniciar o con /mdvsocial reload.
+managed-by: protections
+type: SIMPLE
+page-size: 6
+navigation:
+  back: '&eVolver'
+  previous: '&ePágina anterior'
+  next: '&ePágina siguiente'
+  close: '&cCerrar'
+show-close: true
+title: '&8Gestionar protección'
+content: ['{details}']
+items:
+  location:
+    material: MAP
+    name: '&bUbicación'
+    text: '&bUbicación'
+    lore:
+      - '&7Mundo: &f{world}'
+      - '&7X: &f{x} &7Y: &f{y} &7Z: &f{z}'
+  members:
+    material: PLAYER_HEAD
+    name: '&aMiembros ({members})'
+    text: '&aMiembros ({members})'
+    lore: ['&7Ver, agregar o quitar miembros.']
+  remove:
+    material: BARRIER
+    name: '&cBorrar protección'
+    text: '&cBorrar protección'
+    lore: ['&7Requiere confirmación.']

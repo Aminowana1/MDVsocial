@@ -53,6 +53,21 @@ class ProtectionStonesHook {
         return result;
     }
 
+    /** PS documents getPSRegions as async-safe; item/block snapshots are deliberately deferred to the server thread. */
+    List<Object> queryOwned(UUID uuid, List<World> worlds) throws ReflectiveOperationException {
+        Object psPlayer = playerClass.getMethod("fromUUID", UUID.class).invoke(null, uuid);
+        List<Object> result = new ArrayList<>();
+        for (World world : worlds) {
+            Collection<?> regions = (Collection<?>) call(psPlayer, "getPSRegions",
+                    new Class<?>[]{World.class, boolean.class}, world, false);
+            for (Object region : regions) {
+                if (groupClass.isInstance(region)) result.addAll((Collection<?>) call(region, "getMergedRegions"));
+                else result.add(region);
+            }
+        }
+        return result;
+    }
+
     /** Re-resolve by world UUID and exact stone location for EVERY action, including form callbacks. */
     Object requireOwned(Player player, Key key) throws ReflectiveOperationException {
         World world = Bukkit.getWorld(key.world());
