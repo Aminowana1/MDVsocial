@@ -428,6 +428,10 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
         Material material = materialName == null ? null : Material.matchMaterial(materialName);
         if (material != null && material != item.getType() && material.isItem() && !material.isAir()) item.setType(material);
         ItemMeta meta = item.getItemMeta();
+        if (meta instanceof SkullMeta skull) {
+            String texture = plugin.readTexture(config.getConfigurationSection(path));
+            if (texture != null && !texture.isBlank()) plugin.applySkullTexture(skull, replace(texture, values));
+        }
         if (config.contains(path + ".name")) meta.setDisplayName(color(replace(config.getString(path + ".name", ""), values)));
         List<String> lore = config.getBoolean(path + ".preserve-lore", false) && meta.hasLore()
                 ? new ArrayList<>(Objects.requireNonNull(meta.getLore())) : new ArrayList<>();

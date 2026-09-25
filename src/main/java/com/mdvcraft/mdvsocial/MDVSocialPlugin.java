@@ -208,7 +208,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         mmoItemsBrowserManager.enable();
         startInteractiveChatProfileTask();
 
-        getLogger().info("MDVSocial 1.6.13 habilitado. Cachés limitadas y trabajo repartido.");
+        getLogger().info("MDVSocial 1.6.14 habilitado. Cachés limitadas y trabajo repartido.");
     }
 
     @Override
@@ -2308,7 +2308,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         return item;
     }
 
-    private String readTexture(ConfigurationSection sec) {
+    String readTexture(ConfigurationSection sec) {
         if (sec == null)
             return "";
         String texture = sec.getString("custom-head-texture", "");
@@ -2365,7 +2365,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
      * - Evita IllegalAccessException/IllegalArgumentException en Paper/Purpur
      * 1.21+.
      */
-    private void applySkullTexture(SkullMeta skull, String textureValue) {
+    void applySkullTexture(SkullMeta skull, String textureValue) {
         if (skull == null || textureValue == null || textureValue.isBlank())
             return;
 
