@@ -213,7 +213,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
 
     @Override
     public void onDisable() {
-        if (workQueue != null) workQueue.close();
+        if (workQueue != null)
+            workQueue.close();
         mailSessions.clear();
         if (interactiveChatProfileTask != null) {
             interactiveChatProfileTask.cancel();
@@ -242,8 +243,11 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         saveData();
         saveMailData();
         if (mailStore != null) {
-            try { mailStore.close(); }
-            catch (Exception e) { getLogger().severe("Error al cerrar mail-data.db: " + e); }
+            try {
+                mailStore.close();
+            } catch (Exception e) {
+                getLogger().severe("Error al cerrar mail-data.db: " + e);
+            }
         }
         if (data != null) {
             try {
@@ -255,7 +259,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     }
 
     private void loadAll() {
-        if (workQueue != null) workQueue.finishRequiredAndClear();
+        if (workQueue != null)
+            workQueue.finishRequiredAndClear();
         reloadConfig();
         loadData();
         loadMailData();
@@ -303,8 +308,11 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     private void loadMailData() {
         if (mailStore != null) {
             saveMailData();
-            try { mailStore.close(); }
-            catch (Exception e) { throw new IllegalStateException("Cannot reload mail SQLite safely", e); }
+            try {
+                mailStore.close();
+            } catch (Exception e) {
+                throw new IllegalStateException("Cannot reload mail SQLite safely", e);
+            }
             mailStore = null;
         }
         getDataFolder().mkdirs();
@@ -314,14 +322,16 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
                     Math.max(1, Math.min(8192, getConfig().getInt("performance.mail-cache-size", 128))));
             mailData = mailStore.open(mailFile);
         } catch (Exception e) {
-            getLogger().severe("No se pudo abrir/migrar correo SQLite; desactivando plugin para proteger los mensajes: " + e);
+            getLogger().severe(
+                    "No se pudo abrir/migrar correo SQLite; desactivando plugin para proteger los mensajes: " + e);
             getServer().getPluginManager().disablePlugin(this);
             throw new IllegalStateException("Mail SQLite unavailable", e);
         }
     }
 
     private void saveMailData() {
-        if (mailData != null && mailStore != null) mailStore.flush(mailData);
+        if (mailData != null && mailStore != null)
+            mailStore.flush(mailData);
     }
 
     private void loadTitles() {
@@ -1791,7 +1801,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             String id = normalize(dot > 0 ? fileName.substring(0, dot) : fileName);
             try {
                 YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
-                if ("protections".equalsIgnoreCase(yaml.getString("managed-by", ""))) continue;
+                if ("protections".equalsIgnoreCase(yaml.getString("managed-by", "")))
+                    continue;
                 CustomMenuDef def = parseCustomMenu(id, yaml);
                 customMenus.put(id, def);
             } catch (Exception e) {
@@ -2888,29 +2899,36 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         boolean ignoreLimit = getConfig().getBoolean("mail.server-mail-ignore-mailbox-limit", true);
         String campaignId = createCampaignId();
         int[] counts = new int[2];
-        boolean accepted = workQueue.submit("broadcast-send", Arrays.asList(Bukkit.getOfflinePlayers()).iterator(), target -> {
-            if (target == null || !target.hasPlayedBefore()) return;
-            if (!ignoreLimit && getMailIds(target.getUniqueId()).size() >= getMailboxLimit(target)) {
-                counts[1]++; return;
-            }
-            storeMail(target.getUniqueId(), target.getName() == null ? "jugador" : target.getName(), "", author, clean,
-                    expiresAt, sentAt, "SERVER_BROADCAST", campaignId);
-            saveMailData();
-            counts[0]++;
-        }, () -> {
-            String registry = "broadcasts." + campaignId;
-            mailData.set(registry + ".author", author);
-            mailData.set(registry + ".message", clean);
-            mailData.set(registry + ".sent-at", sentAt);
-            mailData.set(registry + ".expires-at", expiresAt);
-            mailData.set(registry + ".recipients", counts[0]);
-            mailData.set(registry + ".skipped", counts[1]);
-            saveMailData();
-            msg(sender, "mail-broadcast-sent",
-                    Map.of("sent", String.valueOf(counts[0]), "skipped", String.valueOf(counts[1]), "id", campaignId));
-        }, true);
-        sender.sendMessage(color(accepted ? "&eEnviando el correo por lotes..." : "&eYa hay un envío global en curso. Intenta cuando termine."));
+        boolean accepted = workQueue.submit("broadcast-send", Arrays.asList(Bukkit.getOfflinePlayers()).iterator(),
+                target -> {
+                    if (target == null || !target.hasPlayedBefore())
+                        return;
+                    if (!ignoreLimit && getMailIds(target.getUniqueId()).size() >= getMailboxLimit(target)) {
+                        counts[1]++;
+                        return;
+                    }
+                    storeMail(target.getUniqueId(), target.getName() == null ? "jugador" : target.getName(), "", author,
+                            clean,
+                            expiresAt, sentAt, "SERVER_BROADCAST", campaignId);
+                    saveMailData();
+                    counts[0]++;
+                }, () -> {
+                    String registry = "broadcasts." + campaignId;
+                    mailData.set(registry + ".author", author);
+                    mailData.set(registry + ".message", clean);
+                    mailData.set(registry + ".sent-at", sentAt);
+                    mailData.set(registry + ".expires-at", expiresAt);
+                    mailData.set(registry + ".recipients", counts[0]);
+                    mailData.set(registry + ".skipped", counts[1]);
+                    saveMailData();
+                    msg(sender, "mail-broadcast-sent",
+                            Map.of("sent", String.valueOf(counts[0]), "skipped", String.valueOf(counts[1]), "id",
+                                    campaignId));
+                }, true);
+        sender.sendMessage(color(accepted ? "&eEnviando el correo por lotes..."
+                : "&eYa hay un envío global en curso. Intenta cuando termine."));
     }
+
     private String createCampaignId() {
         String time = Long.toString(System.currentTimeMillis(), 36);
         String random = UUID.randomUUID().toString().replace("-", "").substring(0, 6);
@@ -2994,6 +3012,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     private void listServerMailCampaigns(CommandSender sender, int requestedPage) {
         collectServerMailCampaigns(sender, campaigns -> listServerMailCampaigns(sender, requestedPage, campaigns));
     }
+
     private void listServerMailCampaigns(CommandSender sender, int requestedPage, List<ServerMailCampaign> campaigns) {
         int perPage = 8;
         int maxPage = Math.max(1, (int) Math.ceil(campaigns.size() / (double) perPage));
@@ -3017,8 +3036,10 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     private void viewServerMailCampaign(CommandSender sender, String id) {
         collectServerMailCampaigns(sender, campaigns -> viewServerMailCampaign(sender, id, campaigns));
     }
+
     private void viewServerMailCampaign(CommandSender sender, String id, List<ServerMailCampaign> campaigns) {
-        ServerMailCampaign campaign = campaigns.stream().filter(c -> c.id.equalsIgnoreCase(id)).findFirst().orElse(null);
+        ServerMailCampaign campaign = campaigns.stream().filter(c -> c.id.equalsIgnoreCase(id)).findFirst()
+                .orElse(null);
         if (campaign == null) {
             msg(sender, "mail-broadcast-not-found");
             return;
@@ -3035,16 +3056,24 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
 
     private void deleteServerMailCampaign(CommandSender sender, String id) {
         collectServerMailCampaigns(sender, campaigns -> {
-            ServerMailCampaign campaign = campaigns.stream().filter(c -> c.id.equalsIgnoreCase(id)).findFirst().orElse(null);
-            if (campaign == null) { msg(sender, "mail-broadcast-not-found"); return; }
-            int[] removed = {0};
+            ServerMailCampaign campaign = campaigns.stream().filter(c -> c.id.equalsIgnoreCase(id)).findFirst()
+                    .orElse(null);
+            if (campaign == null) {
+                msg(sender, "mail-broadcast-not-found");
+                return;
+            }
+            int[] removed = { 0 };
             boolean accepted = workQueue.submit("campaign-delete", campaign.recipients.iterator(), recipient -> {
                 String root = "mailbox." + recipient + ".letters";
                 ConfigurationSection letters = mailData.getConfigurationSection(root);
-                if (letters == null) return;
+                if (letters == null)
+                    return;
                 for (String letter : new ArrayList<>(letters.getKeys(false))) {
                     String base = root + "." + letter;
-                    if (campaign.id.equalsIgnoreCase(effectiveCampaignId(base))) { mailData.set(base, null); removed[0]++; }
+                    if (campaign.id.equalsIgnoreCase(effectiveCampaignId(base))) {
+                        mailData.set(base, null);
+                        removed[0]++;
+                    }
                 }
                 saveMailData();
             }, () -> {
@@ -3052,10 +3081,13 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
                 saveMailData();
                 msg(sender, "mail-broadcast-deleted", Map.of("id", campaign.id, "removed", String.valueOf(removed[0])));
             }, true);
-            if (!accepted) sender.sendMessage(color("&eYa hay una eliminación en curso."));
+            if (!accepted)
+                sender.sendMessage(color("&eYa hay una eliminación en curso."));
         });
     }
-    private void collectServerMailCampaigns(CommandSender sender, java.util.function.Consumer<List<ServerMailCampaign>> complete) {
+
+    private void collectServerMailCampaigns(CommandSender sender,
+            java.util.function.Consumer<List<ServerMailCampaign>> complete) {
         if (workQueue.containsAny("broadcast-send", "campaign-delete")) {
             sender.sendMessage(color("&eEspera a que termine la operación actual de correo global."));
             return;
@@ -3104,8 +3136,10 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             out.sort(Comparator.comparingLong((ServerMailCampaign campaign) -> campaign.sentAt).reversed());
             complete.accept(out);
         }, true);
-        if (!accepted) sender.sendMessage(color("&eYa hay una consulta de campañas en curso. Intenta cuando termine."));
+        if (!accepted)
+            sender.sendMessage(color("&eYa hay una consulta de campañas en curso. Intenta cuando termine."));
     }
+
     private String effectiveCampaignId(String mailBase) {
         String stored = mailData.getString(mailBase + ".broadcast-id", "");
         if (!stored.isBlank())
@@ -3203,12 +3237,16 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     }
 
     private void cleanupExpiredMail() {
-        if (mailData == null || workQueue == null) return;
+        if (mailData == null || workQueue == null)
+            return;
         workQueue.submit("mail-cleanup", mailData.mailboxIds().iterator(), uuidText -> {
-            try { cleanupExpiredMailFor(UUID.fromString(uuidText)); }
-            catch (IllegalArgumentException ignored) { }
+            try {
+                cleanupExpiredMailFor(UUID.fromString(uuidText));
+            } catch (IllegalArgumentException ignored) {
+            }
         }, this::saveMailData, false);
     }
+
     private boolean cleanupExpiredMailFor(UUID uuid) {
         if (mailData == null)
             return false;
@@ -5379,7 +5417,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         mailSessions.remove(player.getUniqueId());
-        if (data != null) data.forget(player.getUniqueId());
+        if (data != null)
+            data.forget(player.getUniqueId());
         interactiveChatProfiles.remove(player.getUniqueId());
         if (bedrockUiSessionManager != null)
             bedrockUiSessionManager.clear(player);
@@ -6871,8 +6910,13 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         int count = countMMOCorePartyMembers(party);
         List<String> members = getMMOCorePartyMemberNames(party);
 
-        if (key.equals("party_header"))
-            return color("&dGrupo: &f" + count + "&7/&f" + max);
+        if (key.equals("party_header")) {
+            String header = getConfig().getString("scoreboard.group-header", "ɢʀᴜᴘᴏ &7(&f{count}&7/&f{max}&7)");
+            if (header != null)
+                header = header.replace("{count}", String.valueOf(count)).replace("{max}", String.valueOf(max));
+            return color(header != null ? header : "ɢʀᴜᴘᴏ &7(&f" + count + "&7/&f" + max + "&7)");
+
+        }
         if (key.equals("party_count"))
             return String.valueOf(count);
         if (key.equals("party_max"))
@@ -6907,6 +6951,24 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
                 if (index < 0 || index >= members.size())
                     return "";
                 String memberName = members.get(index);
+
+                if (mode.equals("line")) {
+                    Player member = Bukkit.getPlayerExact(memberName);
+                    String health = "--";
+                    String maxHealth = "--";
+                    if (member != null && member.isOnline()) {
+                        health = String.valueOf((int) Math.ceil(Math.max(0.0D, member.getHealth())));
+                        maxHealth = String.valueOf((int) Math.ceil(Math.max(1.0D, member.getMaxHealth())));
+                    }
+                    String format = getConfig().getString("scoreboard.group-member",
+                            "&c{health}❤ &r&f{name}");
+                    if (format == null)
+                        format = "&c{health}❤ &r&f{name}";
+                    return color(format
+                            .replace("{health}", health)
+                            .replace("{max_health}", maxHealth)
+                            .replace("{name}", memberName));
+                }
 
                 return switch (mode) {
                     case "name" -> color(memberName);
@@ -7169,7 +7231,11 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
 
     void queueOnlineWork(String key, java.util.function.Consumer<Player> action) {
         workQueue.submit(key, new ArrayList<>(Bukkit.getOnlinePlayers()).iterator(),
-                player -> { if (player.isOnline()) action.accept(player); }, () -> {}, false);
+                player -> {
+                    if (player.isOnline())
+                        action.accept(player);
+                }, () -> {
+                }, false);
     }
 
     public boolean hasTitle(Player player, String titleId) {

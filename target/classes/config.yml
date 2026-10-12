@@ -270,6 +270,16 @@ social-menu-item:
     - '&eClick derecho &7para abrir el menu.'
   glowing: true
   custom-model-data: 0
+
+
+scoreboard:
+  # Encabezado del grupo en el marcador de puntuación.
+  # Admite placeholders: {count} y {max}
+  group-header: 'ɢʀᴜᴘᴏ &7(&f{count}&7/&f{max}&7)'
+  # Formato de los miembros del grupo en el marcador de puntuación.
+  # Admite placeholders: {health}, {max_health} y {name}
+  group-member: '&c{health}❤ &r&f{name}'
+
   
 scoreboard-party-permission:
   enabled: true
@@ -486,12 +496,17 @@ bedrock:
   # Cantidad de entradas por página en listas dinámicas para PC/consola.
   dynamic-page-size: 8
 
-  # Protecciones para Forms en móvil/táctil. Reducen dobles pulsaciones y
-  # evitan listas demasiado largas que algunos clientes Bedrock manejan mal.
+  # Navegación entre Forms. Desde 1.6.5 TODOS los dispositivos usan la misma
+  # transición. No se aplica debounce global ni delays distintos por input,
+  # porque podían consumir el primer toque válido del siguiente Form en móvil.
+  form-navigation:
+    delay-ticks: 1
+    debug: false
+
+  # Solo ajusta el tamaño de listas en dispositivos táctiles. No controla ya
+  # la navegación ni el tiempo de respuesta entre formularios.
   mobile-safety:
     enabled: true
-    click-debounce-ms: 200
-    action-delay-ticks: 4
     dynamic-page-size: 5
 
   party:
@@ -1736,5 +1751,54 @@ ranks:
       - '&7Estado: {status}'
       
  
- 
- #aaaaa1
+# ----------------------------------------------------------
+# Tienda online
+# ----------------------------------------------------------
+shop:
+  java:
+    message: |
+      &6&lTienda online
+      &fVisita nuestra tienda:
+      {shop}
+    link-text: "&b&n[Abrir tienda]"
+  bedrock:
+    # Formulario Bedrock que se abre con /tienda.
+    menu: tienda
+    # Fallback si Floodgate o el formulario no pueden abrirse.
+    fallback-message: "&6&lTienda online\\n&fVisita nuestra tienda: &b{shop}"
+    
+  missing-url: "&cLa tienda online no esta configurada."
+  player-only: "&cEste comando solo puede ejecutarlo un jugador."
+  url: "https://mdvcraft.tebex.io/"
+
+# ----------------------------------------------------------
+# Discord de la comunidad
+# ----------------------------------------------------------
+discord:
+  java:
+    message: |
+      &6&lDiscord
+      &fUnete a nuestra comunidad:
+      {discord}
+    link-text: "&b&n[Unirse a Discord]"
+  bedrock:
+    # Formulario Bedrock que se abre con /discord.
+    menu: discord
+    # Fallback si Floodgate o el formulario no pueden abrirse.
+    fallback-message: "&6&lDiscord\\n&fUnete a nuestra comunidad: &b{discord}"
+  missing-url: "&cEl Discord no esta configurado."
+  player-only: "&cEste comando solo puede ejecutarlo un jugador."
+  url: ""
+protections-menu:
+  enabled: true
+  # Devuelve el item original tras eliminar correctamente. Respeta no_drop de ProtectionStones.
+  # Se exige un espacio vacio; si no hay espacio, se conserva la proteccion.
+  return-block: true
+
+# Limites de memoria y reparto del trabajo. No cambia permisos ni limites de protes/homes.
+performance:
+  mail-cache-size: 128
+  profile-cache-size: 8192
+  item-cache-size: 256
+  work-budget-ms: 2
+  work-items-per-tick: 32

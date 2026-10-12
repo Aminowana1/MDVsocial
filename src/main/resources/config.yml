@@ -270,6 +270,16 @@ social-menu-item:
     - '&eClick derecho &7para abrir el menu.'
   glowing: true
   custom-model-data: 0
+
+
+scoreboard:
+  # Encabezado del grupo en el marcador de puntuación.
+  # Admite placeholders: {count} y {max}
+  group-header: 'ɢʀᴜᴘᴏ &7(&f{count}&7/&f{max}&7)'
+  # Formato de los miembros del grupo en el marcador de puntuación.
+  # Admite placeholders: {health}, {max_health} y {name}
+  group-member: '&c{health}❤ &r&f{name}'
+
   
 scoreboard-party-permission:
   enabled: true
