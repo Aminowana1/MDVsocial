@@ -1,69 +1,138 @@
-type: "SIMPLE"
-title: "&8&lMDVSocial"
+type: SIMPLE
+title: '&2&lLibro del Aventurero'
 content:
-  - "&7Menú social de MDVCRAFT."
-  - "&8La interfaz se adapta automáticamente a Bedrock."
+- ''
+
 buttons:
-  protecciones:
-    text: "&aTus protecciones\n&7Coordenadas y miembros"
+  perfil:
+    text: |-
+      &5&lTu Personaje
+      &r&8Nivel: &e{level} &8Raza: &c{class}
+    image:
+      type: URL
+      data: https://raw.githubusercontent.com/k3vndev/MDVSocial-Images/refs/heads/main/output/personaje.png
+    action: OPEN_MENU
+    target-menu: menuperfil
+  homes:
+    text: |-
+      &4&lTus Hogares
+      &r&8Revisa, crea, elimina
+    image:
+      type: URL
+      data: https://raw.githubusercontent.com/k3vndev/MDVSocial-Images/refs/heads/main/output/hogares.png
     action: COMMAND_PLAYER
     commands:
-      - 'mdvsocial:protes'
-    permission: mdvsocial.protections.use
-  perfil:
-    text: "&e&lTu Personaje\n&7Nivel: &e{level}"
-    action: "OPEN_MENU"
-    target-menu: "menuperfil"
-  homes:
-    text: "&6&lTus Hogares\n&7Revisa, crea, elimina"
-    action: "COMMAND_PLAYER"
-    commands:
-      - "mdvsocial:casa"
-  misiones:
-    text: "&6&lContratos\n&7Consulta las misiones disponibles,"
-    action: "COMMAND_PLAYER"
-    commands:
-      - "mdvquest"
-    close-on-click: true
-    sound: "open"
-  clan:
-    text: "&5&lClan\n&7Accede a miembros, bases,"
-    action: "OPEN_CONDITIONAL_MENU"
-    condition-placeholder: "%mdvclans_is_in_clan%"
-    condition-equals: "true"
-    true-menu: "clan_con_clan"
-    false-menu: "clan_sin_clan"
-  amigos:
-    text: "&a&lAmigos\n&7Revisa contactos, cartas"
-    action: "OPEN_MENU"
-    target-menu: "menuamigos"
-  recetas:
-    text: "&a&lRecetas\n&7Consulta materiales, armas,"
-    action: "COMMAND_PLAYER"
-    commands:
-      - "mdvrecetas"
-    close-on-click: true
-  kits:
-    text: "&b&lSuministros\n&7Reclama equipo básico"
-    action: "COMMAND_PLAYER"
-    commands:
-      - "suministros"
-    close-on-click: true
-  titulos:
-    text: "&6&lTítulos y Rangos\n&7Compra, equipa y revisa"
-    action: "OPEN_TITLES"
-  administracion:
-    text: "&c&lAdministración\n&7Herramientas para administrar"
-    action: "OPEN_MENU"
-    target-menu: "admin"
-    sound: "open"
-    permission: "mdvsocial.admin-menu"
-    hide-without-permission: true
+    - mdvsocial:casa
   warps:
-    text: "&b&lLugares del Mundo\n&7Abre el mapa de lugares"
-    action: "OPEN_MENU"
-    target-menu: "warps"
+    text: |-
+      &9&lLugares del Mundo
+      &r&8Abre el mapa de lugares
+    image:
+      type: URL
+      data: https://raw.githubusercontent.com/k3vndev/MDVSocial-Images/refs/heads/main/output/lugares.png
+    action: OPEN_MENU
+    target-menu: warps
+  amigos:
+    text: |-
+      &2&lSocial y Amigos
+      &r&8Peticiones, TP y más
+    image:
+      type: URL
+      data: https://raw.githubusercontent.com/k3vndev/MDVSocial-Images/refs/heads/main/output/social.png
+    action: OPEN_MENU
+    target-menu: menuamigos
+  kits:
+    text: |-
+      &6&lSuministros
+      &r&8Reclama equipo básico
+    image:
+      type: URL
+      data: https://raw.githubusercontent.com/k3vndev/MDVSocial-Images/refs/heads/main/output/suministros.png
+    action: COMMAND_PLAYER
+    commands:
+    - suministros
+    close-on-click: true
+  recetas:
+    text: |-
+      &1&lRecetas Custom
+      &r&8Crafteos, materiales, armas
+    image:
+      type: URL
+      data: https://raw.githubusercontent.com/k3vndev/MDVSocial-Images/refs/heads/main/output/recetas.png
+    action: COMMAND_PLAYER
+    commands:
+    - mdvrecetas
+    close-on-click: true
+  protecciones:
+    text: |-
+      &9&lTus protecciones
+      &r&8Coordenadas y miembros
+    image:
+      type: URL
+      data: https://raw.githubusercontent.com/k3vndev/MDVSocial-Images/refs/heads/main/output/protes.png
+    action: COMMAND_PLAYER
+    commands:
+    - mdvsocial:protes
+    permission: mdvsocial.protections.use
+    hide-without-permission: true
+  clan:
+    text: |-
+      &5&lClan
+      &r&8Accede a miembros, bases
+    image:
+      type: URL
+      data: https://raw.githubusercontent.com/k3vndev/MDVSocial-Images/refs/heads/main/output/clan.png
+    action: OPEN_CONDITIONAL_MENU
+    condition-placeholder: '%mdvclans_is_in_clan%'
+    condition-equals: 'true'
+    true-menu: clan_con_clan
+    false-menu: clan_sin_clan
+  misiones:
+    text: |-
+      &6&lContratos
+      &r&8Consulta las misiones disponibles
+    image:
+      type: URL
+      data: https://raw.githubusercontent.com/k3vndev/MDVSocial-Images/refs/heads/main/output/quests.png
+    action: COMMAND_PLAYER
+    commands:
+    - mdvquest
+    close-on-click: true
+    sound: open
+  titulos:
+    text: |-
+      &6&lTítulos y Rangos
+      &r&8Compra, equipa y revisa
+    image:
+      type: URL
+      data: https://raw.githubusercontent.com/k3vndev/MDVSocial-Images/refs/heads/main/output/titulos.png
+    action: OPEN_TITLES
   ayuda:
-    text: "&d&lAyuda\n&7Consulta comandos útiles"
-    action: "OPEN_MENU"
-    target-menu: "ayuda"
+    text: |-
+      &d&lAyuda
+      &r&8Consulta comandos útiles
+    image:
+      type: URL
+      data: https://raw.githubusercontent.com/k3vndev/MDVSocial-Images/refs/heads/main/output/ayuda.png
+    action: OPEN_MENU
+    target-menu: ayuda
+  tiendita:
+    text: |-
+      &6&lTienda
+      &r&8Enlace externo a la tienda
+    image:
+      type: URL
+      data: https://raw.githubusercontent.com/k3vndev/MDVSocial-Images/refs/heads/main/output/tienda.png
+    action: OPEN_STORE
+  administracion:
+    text: |-
+      &c&lAdministración
+      &8Herramientas de admin
+    image:
+      type: URL
+      data: https://raw.githubusercontent.com/k3vndev/MDVSocial-Images/refs/heads/main/output/admin.png
+    action: OPEN_MENU
+    target-menu: admin
+    sound: open
+    permission: mdvsocial.admin-menu
+    hide-without-permission: true
