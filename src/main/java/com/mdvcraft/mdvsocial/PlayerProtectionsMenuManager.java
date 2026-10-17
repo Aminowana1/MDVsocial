@@ -20,7 +20,6 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.Plugin;
 import org.geysermc.cumulus.form.CustomForm;
 import org.geysermc.cumulus.form.SimpleForm;
-import org.geysermc.floodgate.api.FloodgateApi;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -150,7 +149,7 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
         List<org.bukkit.World> worlds = List.copyOf(Bukkit.getWorlds());
         p.closeInventory();
         Inventory expectedInventory = p.getOpenInventory().getTopInventory();
-        long bedrockSession = plugin.isBedrockPlayer(p) ? plugin.beginBedrockUiSession(p) : 0L;
+        long bedrockSession = plugin.isBedrockPlayer(p) ? plugin.bedrock().sessions().begin(p) : 0L;
         try {
             scanner.execute(() -> {
                 List<Object> regions;
@@ -175,7 +174,7 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
                         protections.sort(Comparator.comparing(Protection::worldName).thenComparing(r -> r.key().id()));
                         renderMain(p, page, protections);
                     });
-                    if (bedrockSession != 0L) plugin.runBedrockUiAction(p, bedrockSession, render);
+                    if (bedrockSession != 0L) plugin.bedrock().sessions().run(p, bedrockSession, render);
                     else render.run();
                 });
             });
@@ -292,19 +291,19 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
             return;
         }
         long revision = nextRevision(p);
-        long session = plugin.beginBedrockUiSession(p);
+        long session = plugin.bedrock().sessions().begin(p);
         YamlConfiguration config = definition(p, INPUT);
         CustomForm.Builder form = CustomForm.builder().title(color(config.getString("title", "Agregar miembro")))
                 .input(color(config.getString("label", "Nombre exacto")), config.getString("placeholder", "Nombre"), config.getString("default", ""));
         form.validResultHandler(response -> {
             String name = response.asInput(0);
-            plugin.runBedrockUiAction(p, session, () -> {
+            plugin.bedrock().sessions().run(p, session, () -> {
                 if (!current(p, revision)) return;
                 nextRevision(p);
                 execute(p, () -> addByName(p, key, name));
             });
         });
-        if (!FloodgateApi.getInstance().sendForm(p.getUniqueId(), form))
+        if (!plugin.bedrock().gateway().send(p, form.build()))
             message(p, "&cNo se pudo abrir el formulario. Vuelve a usar /protes.");
     }
 
@@ -467,7 +466,7 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
         CheckedAction previous = () -> show(p, id, originalValues, entries, fixed, page.index() - 1, headerBase, back);
         CheckedAction next = () -> show(p, id, originalValues, entries, fixed, page.index() + 1, headerBase, back);
         if (bedrock) {
-            long session = plugin.beginBedrockUiSession(p);
+            long session = plugin.bedrock().sessions().begin(p);
             SimpleForm.Builder builder = SimpleForm.builder().title(title).content(color(content));
             List<CheckedAction> actions = new ArrayList<>();
             List<Entry> buttons = new ArrayList<>(fixed);
@@ -487,13 +486,13 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
             }
             builder.validResultHandler(response -> {
                 int index = response.clickedButtonId();
-                plugin.runBedrockUiAction(p, session, () -> {
+                plugin.bedrock().sessions().run(p, session, () -> {
                     if (!current(p, revision) || index < 0 || index >= actions.size()) return;
                     nextRevision(p);
                     execute(p, actions.get(index));
                 });
             });
-            if (!FloodgateApi.getInstance().sendForm(p.getUniqueId(), builder))
+            if (!plugin.bedrock().gateway().send(p, builder.build()))
                 message(p, "&cNo se pudo abrir el formulario. Vuelve a usar /protes.");
             return;
         }

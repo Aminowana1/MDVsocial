@@ -1,5 +1,7 @@
 # MDVSocial 1.6.4 - Arquitectura Bedrock
 
+> Histórico. La arquitectura actual está en `BEDROCK_ARCHITECTURE.md`.
+
 El código Bedrock queda separado por responsabilidad para evitar que toda la
 navegación, configuración y estado de Forms viva en una única clase.
 

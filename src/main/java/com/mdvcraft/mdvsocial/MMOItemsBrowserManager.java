@@ -20,7 +20,6 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 import org.geysermc.cumulus.form.SimpleForm;
-import org.geysermc.floodgate.api.FloodgateApi;
 
 import java.io.File;
 import java.io.IOException;
@@ -172,11 +171,7 @@ public final class MMOItemsBrowserManager implements Listener {
         }
         builder.button(color("&6Volver a administración"));
         actions.add(() -> plugin.openAdminMenu(player));
-        builder.validResultHandler(response -> Bukkit.getScheduler().runTask(plugin, () -> {
-            int index = response.clickedButtonId();
-            if (index >= 0 && index < actions.size()) actions.get(index).run();
-        }));
-        sendBedrockForm(player, builder);
+        plugin.bedrock().forms().show(player, builder, actions);
     }
 
     private void openBedrockItems(Player player, String rawType, int requestedPage) {
@@ -214,11 +209,7 @@ public final class MMOItemsBrowserManager implements Listener {
         }
         builder.button(color("&6Volver a categorías"));
         actions.add(() -> openBedrockTypes(player, 0));
-        builder.validResultHandler(response -> Bukkit.getScheduler().runTask(plugin, () -> {
-            int index = response.clickedButtonId();
-            if (index >= 0 && index < actions.size()) actions.get(index).run();
-        }));
-        sendBedrockForm(player, builder);
+        plugin.bedrock().forms().show(player, builder, actions);
     }
 
     private void openBedrockItemActions(Player player, String type, String id, int returnPage) {
@@ -252,11 +243,7 @@ public final class MMOItemsBrowserManager implements Listener {
         }
         builder.button(color("&6Volver a objetos"));
         actions.add(() -> openBedrockItems(player, type, returnPage));
-        builder.validResultHandler(response -> Bukkit.getScheduler().runTask(plugin, () -> {
-            int index = response.clickedButtonId();
-            if (index >= 0 && index < actions.size()) actions.get(index).run();
-        }));
-        sendBedrockForm(player, builder);
+        plugin.bedrock().forms().show(player, builder, actions);
     }
 
     private String bedrockItemDisplay(ItemStack item, String id) {
@@ -266,16 +253,6 @@ public final class MMOItemsBrowserManager implements Listener {
                 return meta.getDisplayName();
         }
         return pretty(id);
-    }
-
-    private boolean sendBedrockForm(Player player, SimpleForm.Builder builder) {
-        try {
-            return FloodgateApi.getInstance().sendForm(player.getUniqueId(), builder);
-        } catch (Throwable ex) {
-            plugin.getLogger().warning("No se pudo enviar la biblioteca Bedrock a " + player.getName()
-                    + ": " + ex.getMessage());
-            return false;
-        }
     }
 
     private void openTypes(Player player, int requestedPage) {
