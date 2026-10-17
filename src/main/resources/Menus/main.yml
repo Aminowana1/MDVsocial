@@ -1,61 +1,234 @@
 # ==========================================================
 # MDVSocial - Menu modular principal
-# Acciones disponibles: OPEN_MENU / OPEN_CONDITIONAL_MENU / MDVCLANS_OPEN / COMMAND_PLAYER / BACK / CLOSE
+# Acciones disponibles:
+# OPEN_MENU / COMMAND_PLAYER / BACK / CLOSE / PREVIOUS_PAGE / NEXT_PAGE / OPEN_TITLES
 # ==========================================================
-title: '&8MDVSocial'
+
+title: '&8&lLibro del Viajero'
 size: 27
+
 items:
-  protecciones:
-    slot: 22
-    material: EMERALD_BLOCK
-    name: '&aTus protecciones'
+  administracion:
+    slot: 18
+    material: COMMAND_BLOCK
+    name: '&c&lAdministración'
     lore:
-      - '&7Coordenadas, miembros y eliminacion remota.'
-      - '&eClick para gestionar.'
+    - ''
+    - '&7Herramientas para administrar'
+    - '&7y crear contenido del servidor.'
+    - ''
+    - '&eClic para abrir.'
+    permission: mdvsocial.admin-menu
+    hide-without-permission: true
+    action: OPEN_MENU
+    target-menu: admin
+    sound: open
+  perfil:
+    slot: 0
+    material: PLAYER_HEAD
+    head-owner: '{player}'
+    name: '&e&lTu Personaje'
+    lore:
+    - ''
+    - '&e&l● &7&lProgreso'
+    - '&7Nivel: &e{level}'
+    - '&7EXP: &e{exp} &7/ &e{next_level}'
+    - '&8[&e{progress}&8] &e{percent}%'
+    - ''
+    - '&e&l● &7&lIdentidad'
+    - '&7Raza: &c{class}'
+    - '&7Título: &r%mdvsocial_title_colored_of_{player}%'
+    - '&7Clan: &r%mdvclans_clan_line_of_{player}%'
+    - ''
+    - '&eClick para abrir tu perfil.'
+    action: OPEN_MENU
+    target-menu: menuperfil
+  homes:
+    slot: 4
+    material: RED_BED
+    name: '&6&lTus Hogares'
+    lore:
+    - ''
+    - '&6&l● &7&lCasas personales'
+    - '&7Revisa, crea, elimina'
+    - '&7y viaja a tus hogares.'
+    - ''
+    - '&eClick para abrir.'
     action: COMMAND_PLAYER
     commands:
-      - 'mdvsocial:protes'
-    permission: mdvsocial.protections.use
-  titulos:
-    slot: 11
-    material: NAME_TAG
-    name: '&eTitulos y rangos'
-    lore:
-      - '&7Compra, equipa o revisa titulos.'
-      - '&eClick para abrir.'
-    action: OPEN_TITLES
-    sound: open
-
+    - mdvsocial:casa
   clan:
-    slot: 13
+    slot: 11
     material: GREEN_BANNER
     use-clan-banner: true
-    name: '&aClan'
+    name: '&5&lClan'
     lore:
-      - '&7Abre el menu de clan.'
-      - '&8Si tienes clan, muestra su banner.'
-      - '&eClick para abrir.'
+    - ''
+    - '&5&l● &7&lClan'
+    - '&7Accede a miembros, bases,'
+    - '&7banco y relaciones del clan.'
+    - ''
+    - '&eClick para abrir.'
     action: OPEN_CONDITIONAL_MENU
-    sound: open
     condition-placeholder: '%mdvclans_is_in_clan%'
     condition-equals: 'true'
     true-menu: clan_con_clan
     false-menu: clan_sin_clan
-
-  ayuda:
-    slot: 15
-    material: BOOK
-    name: '&bAyuda social'
+  
+  amigos:
+    slot: 12
+    material: BELL
+    name: '&a&lAmigos'
     lore:
-      - '&7Comandos sociales utiles.'
-      - '&eClick para abrir.'
+    - ''
+    - '&a&l● &7&lSocial'
+    - '&7Revisa contactos, cartas,'
+    - '&7jugadores cercanos a ti.'
+    - ''
+    - '&7O crea un grupo de aventura.'
+    - ''
+    - '&eClick para abrir.'
     action: OPEN_MENU
-    sound: open
-    target-menu: ayuda
-
-  cerrar:
+    target-menu: menuamigos
+  
+  
+  recetas:
+    slot: 13
+    material: CRAFTING_TABLE
+    name: '&a&lRecetas'
+    lore:
+    - ''
+    - '&a&l● &7&lCrafteos'
+    - '&7Consulta materiales, armas,'
+    - '&7armaduras, consumibles y más.'
+    - ''
+    - '&8Explora las recetas disponibles'
+    - '&8para progresar en MDVCRAFT.'
+    - ''
+    - '&eClick para abrir recetas.'
+    action: COMMAND_PLAYER
+    close-on-click: true
+    commands:
+    - mdvrecetas
+  
+  kits:
+    slot: 14
+    material: CHEST
+    name: '&b&lSuministros'
+    lore:
+    - ''
+    - '&b&l● &7&lProvisiones'
+    - '&7Reclama equipo básico'
+    - '&7y ayudas de aventura.'
+    - ''
+    - '&eClick para abrir suministros.'
+    action: COMMAND_PLAYER
+    close-on-click: true
+    commands:
+    - suministros
+  
+  titulos:
+    slot: 15
+    material: NAME_TAG
+    name: '&6&lTítulos y Rangos'
+    lore:
+    - ''
+    - '&6&l● &7&lPrestigio'
+    - '&7Compra, equipa y revisa'
+    - '&7títulos sociales o rangos.'
+    - ''
+    - '&eClick para abrir.'
+    action: OPEN_TITLES
+  warps:
+    slot: 22
+    material: LODESTONE
+    name: '&b&lLugares del Mundo'
+    lore:
+    - ''
+    - '&b&l● &7&lViajes'
+    - '&7Abre el mapa de lugares'
+    - '&7disponibles de MDVCRAFT.'
+    - ''
+    - '&8Viaja al lobby, survival,'
+    - '&8mercado y otros puntos.'
+    - ''
+    - '&eClick para abrir.'
+    action: OPEN_MENU
+    target-menu: warps
+  protes:
+    slot: 16
+    material: COAL_ORE
+    name: '&b&lProtecciones'
+    lore:
+      - ''
+      - '&b&l● &7&lTus territorios'
+      - '&7Administra tus protecciones'
+      - '&7y quién puede acceder a ellas.'
+      - ''
+      - '&7Consulta sus coordenadas,'
+      - '&7gestiona miembros o elimina'
+      - '&7las que ya no necesites.'
+      - ''
+      - '&eClick para abrir.'
+    action: COMMAND_PLAYER
+    close-on-click: true
+    commands:
+      - 'protes' 
+  ayuda:
     slot: 26
+    material: PLAYER_HEAD
+    texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMmZjYWM2OTI4ZTBjMDlmMjIwNjMxNjZjZjFlYmNhODMwMjE1NzY4OGM3YjA4OGY3ZTQyNGU5M2M5ZTRlODQwYyJ9fX0=
+    name: '&d&lAyuda'
+    lore:
+    - ''
+    - '&d&l● &7&lGuía rápida'
+    - '&7Consulta comandos útiles'
+    - '&7y accesos de MDVCRAFT.'
+    - ''
+    - '&eClick para abrir.'
+    action: OPEN_MENU
+    target-menu: ayuda
+  
+  cerrar:
+    slot: 8
     material: BARRIER
-    name: '&cCerrar'
+    name: '&c&lCerrar'
+    lore:
+    - ''
+    - '&c&l● &7&lSalir'
+    - '&7Cierra este menú.'
     action: CLOSE
-    sound: close
+  misiones:
+    slot: 10
+    material: COMPASS
+    name: '&6&lContratos'
+    lore:
+    - ''
+    - '&6&l● &7&lContratos'
+    - '&7Consulta las misiones disponibles,'
+    - '&7su progreso y sus recompensas.'
+    - ''
+    - '&7Este menú es solo de visualización.'
+    - '&7Para aceptar contratos, habla'
+    - '&7con &2Thurg &7en el mercado.'
+    - ''
+    - '&eClick para abrir.'
+    action: COMMAND_PLAYER
+    commands:
+    - mdvquest
+    close-on-click: true
+    sound: open
+# misiones:
+# slot: 10
+# material: COMPASS
+# name: '&dMisiones'
+# lore:
+# - '&7Consulta tus encargos activos.'
+# - '&7El progreso es automatico.'
+# - '&eClick para abrir.'
+# action: COMMAND_PLAYER
+# commands:
+# - mdvquest
+# close-on-click: true
+# sound: open
+
