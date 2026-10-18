@@ -34,7 +34,7 @@ buttons:
     target-menu: warps
   amigos:
     text: |-
-      &2&lSocial y Amigos
+      &2&lSocial y Amigos{social_notifications_badge}
       &r&8Peticiones, TP y más
     image:
       type: URL

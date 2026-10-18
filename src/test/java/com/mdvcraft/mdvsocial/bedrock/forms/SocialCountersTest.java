@@ -68,6 +68,20 @@ class SocialCountersTest {
     }
 
     @Test
+    void socialNotificationsAddEverythingUpAndHideZero() {
+        when(social.pendingRequests(player, SocialPort.FRIEND_REQUEST)).thenReturn(List.of(new Object()));
+        when(social.pendingRequests(player, SocialPort.PARTY_INVITE)).thenReturn(List.of());
+        when(mail.unreadCount(uuid)).thenReturn(2);
+        when(teleport.pending(player)).thenReturn(List.of(new TeleportPort.RequestView(uuid, "Steve", 30)));
+        assertEquals("Social y Amigos (4)", counters.apply("Social y Amigos{social_notifications_badge}", player));
+
+        when(social.pendingRequests(player, SocialPort.FRIEND_REQUEST)).thenReturn(List.of());
+        when(mail.unreadCount(uuid)).thenReturn(0);
+        when(teleport.pending(player)).thenReturn(List.of());
+        assertEquals("Social y Amigos", counters.apply("Social y Amigos{social_notifications_badge}", player));
+    }
+
+    @Test
     void tpaRequestsAreCounted() {
         when(teleport.pending(player)).thenReturn(List.of(new TeleportPort.RequestView(uuid, "Steve", 30)));
         assertEquals("Viajes (1)", counters.apply("Viajes{tpa_requests_badge}", player));

@@ -48,6 +48,8 @@ Los botones muestran pendientes solo cuando hay alguno:
 | Viajes (TPA) | `{tpa_requests_badge}` | solicitudes de TPA recibidas |
 | Cartas y Buzón | `{unread_mail_badge}` | cartas sin leer |
 
+- En el menú principal, el botón "Social y Amigos" usa `{social_notifications_badge}`: la
+  suma de todo lo anterior (cartas nuevas y solicitudes de amistad, grupo y TPA).
 - Con 0 la marca desaparece. Formato: `bedrock.badges.format` (por defecto `' ({count})'`).
 - En menús internos se usan `{friend_requests}`, `{party_invites}`, `{tpa_requests}` y `{unread_mail}`,
   que sí muestran 0 (por ejemplo "Ver Cartas (0)").

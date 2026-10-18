@@ -18,6 +18,8 @@ import java.util.function.IntSupplier;
  * <li>{@code {friend_requests_badge}}, {@code {party_invites_badge}},
  * {@code {unread_mail_badge}}, {@code {tpa_requests_badge}}: " (n)" formatted with
  * {@code bedrock.badges.format}, or nothing when n is 0 (for the main menu).</li>
+ * <li>{@code {social_notifications}} and {@code {social_notifications_badge}}: all of
+ * the above added up (new letters, friend requests, party invites, TPA requests).</li>
  * </ul>
  *
  * Each count is computed only if the text uses one of its tokens.
@@ -46,6 +48,12 @@ public final class SocialCounters {
                 () -> social.pendingRequests(player, SocialPort.PARTY_INVITE).size());
         text = replace(text, "unread_mail", () -> mail.unreadCount(player.getUniqueId()));
         text = replace(text, "tpa_requests", () -> teleport.pending(player).size());
+        // Everything above together, for the "Social y Amigos" button of the main menu.
+        text = replace(text, "social_notifications",
+                () -> social.pendingRequests(player, SocialPort.FRIEND_REQUEST).size()
+                + social.pendingRequests(player, SocialPort.PARTY_INVITE).size()
+                + mail.unreadCount(player.getUniqueId())
+                + teleport.pending(player).size());
         return text;
     }
 
