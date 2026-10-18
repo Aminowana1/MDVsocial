@@ -61,11 +61,13 @@ public final class PartyCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
+        boolean created = false;
         if (plugin.getMMOCoreParty(player) == null) {
             if (!plugin.createPartyFor(player)) {
                 plugin.msg(player, "party-create-error");
                 return true;
             }
+            created = true;
             plugin.msg(player, "party-created");
         } else if (names.isEmpty()) {
             plugin.msg(player, "party-already-in-party");
@@ -78,13 +80,13 @@ public final class PartyCommand implements CommandExecutor, TabCompleter {
             else
                 plugin.invitePlayerToParty(player, target);
         }
-        openMenu(player, names.isEmpty());
+        openMenu(player, names.isEmpty(), created);
         return true;
     }
 
-    private void openMenu(Player player, boolean nothingInvited) {
+    private void openMenu(Player player, boolean nothingInvited, boolean created) {
         if (plugin.isBedrockPlayer(player)) {
-            plugin.bedrock().party().open(player);
+            plugin.bedrock().party().open(player, created);
             return;
         }
         // Java: keep the chat visible when invitations were just sent.

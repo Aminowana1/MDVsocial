@@ -10,6 +10,8 @@ content-party:
   - "&7Integrantes: &f{member_count}&7/&f{max_members}"
   - "&7Invitaciones pendientes: &e{request_count}"
 member-line: "&7• &f{member_name}"
+# Primera línea del formulario cuando /grupo o "Crear" acaban de crear el grupo.
+created-line: "&aCreaste un nuevo Grupo de Aventura."
 
 buttons:
   create:

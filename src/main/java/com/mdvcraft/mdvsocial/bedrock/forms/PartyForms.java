@@ -35,6 +35,15 @@ public final class PartyForms {
     }
 
     public void open(Player player) {
+        open(player, false);
+    }
+
+    /**
+     * @param justCreated the party was created right now (by /grupo or "Crear"):
+     *                    the form says so, because on Bedrock the chat message
+     *                    ends up hidden behind the form
+     */
+    public void open(Player player, boolean justCreated) {
         YamlConfiguration ui = forms.ui("party");
         PartyView party = social.party(player);
         List<Object> pending = social.pendingRequests(player, SocialPort.PARTY_INVITE);
@@ -47,7 +56,11 @@ public final class PartyForms {
         List<String> defaults = party.exists()
                 ? List.of("&7Integrantes: &f{member_count}&7/&f{max_members}")
                 : List.of("&7No perteneces a un Grupo de Aventura.", "&7Puedes crear uno o aceptar una invitación.");
-        StringBuilder content = new StringBuilder(forms.uiLines(ui, contentPath, defaults, player, tokens));
+        StringBuilder content = new StringBuilder();
+        if (justCreated && party.exists())
+            content.append(forms.uiText(ui, "created-line", "&aCreaste un nuevo Grupo de Aventura.", player, tokens))
+                    .append('\n');
+        content.append(forms.uiLines(ui, contentPath, defaults, player, tokens));
         if (party.exists()) {
             for (String member : party.members()) {
                 Map<String, String> memberTokens = new HashMap<>(tokens);
@@ -75,8 +88,9 @@ public final class PartyForms {
             forms.addButton(builder, ui, "buttons.create",
                     forms.uiText(ui, "buttons.create.text", "&aCrear Grupo de Aventura", player, tokens));
             actions.add(() -> {
-                forms.host().message(player, social.createParty(player) ? "party-created" : "party-create-error");
-                open(player);
+                boolean created = social.createParty(player);
+                forms.host().message(player, created ? "party-created" : "party-create-error");
+                open(player, created);
             });
         }
         if (ui.getBoolean("buttons.requests.enabled", true)) {
@@ -87,7 +101,7 @@ public final class PartyForms {
         if (party.exists() && ui.getBoolean("buttons.leave.enabled", true)) {
             forms.addButton(builder, ui, "buttons.leave",
                     forms.uiText(ui, "buttons.leave.text", "&c&lSalir del grupo", player, tokens));
-            actions.add(() -> openLeaveConfirm(player));
+            actions.add(() -> leave(player));
         }
         forms.addButton(builder, ui, "buttons.back",
                 forms.uiText(ui, "buttons.back.text", "&6Volver", player, tokens));
@@ -113,6 +127,16 @@ public final class PartyForms {
                 },
                 this::openInviteForm,
                 this::open), page);
+    }
+
+    /** Asks first unless the player is the only member left. */
+    private void leave(Player player) {
+        if (social.party(player).memberCount() <= 1) {
+            social.leaveParty(player);
+            open(player);
+        } else {
+            openLeaveConfirm(player);
+        }
     }
 
     private void openLeaveConfirm(Player player) {

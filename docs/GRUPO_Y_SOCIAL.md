@@ -62,6 +62,11 @@ Los botones muestran pendientes solo cuando hay alguno:
 | Volver | Salir del grupo |
 | | Volver |
 
+- Si `/grupo` o "Crear" acaban de crear el grupo, el formulario lo dice en su primera
+  línea (`created-line` en `party.yml`), además del mensaje `party-created` en el chat,
+  que en Bedrock queda tapado por el formulario.
+- "Salir del grupo" no pide confirmación si eres el único integrante.
+
 "Invitar desde Amigos" desaparece: el selector de "Invitar jugador" ya muestra a
 tus amigos primero.
 
