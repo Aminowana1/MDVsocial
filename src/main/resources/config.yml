@@ -106,6 +106,8 @@ messages:
   party-create-error: '&cNo se pudo crear el Grupo de Aventura.'
   party-already-in-party: '&eYa perteneces a un Grupo de Aventura.'
   party-command-too-many: '&cPuedes invitar como máximo a &e{max} &cjugadores a la vez.'
+  # Se usa cuando el invitado te bloqueó. Es genérico a propósito: no revela el bloqueo.
+  party-invite-not-delivered: '&cNo se pudo invitar a &e{target} &cal grupo.'
   private-message-suggest: '&bHaz clic aquí para escribirle a &e{target}&b.'
 settings:
   # Menu inicial que abre /social.
@@ -630,11 +632,17 @@ social-friend-options:
 # ==========================================================
 # Jugadores bloqueados (general, no solo cartas)
 # Comandos: /bloquear <jugador>, /desbloquear <jugador>, /bloqueados
+# Impide: recibir cartas, invitaciones de clan por carta e invitaciones a grupos.
 # API: MDVSocialAPI.isBlocked(dueño, objetivo)
 # ==========================================================
 blocked-players:
   # Máximo de jugadores que cada uno puede bloquear (0 = sin límite).
   max-entries: 200
+  # Comandos de invitación de MMOCore que también respetan los bloqueos si el
+  # jugador los escribe a mano (las invitaciones de MDVSocial ya se revisan).
+  party-invite-commands:
+    - 'party invite'
+    - 'mmocore:party invite'
   # Textos del menú Java. Bedrock usa MenusBedrock/bloqueados.yml.
   menu:
     title: '&8&lJugadores Bloqueados &7({count})'

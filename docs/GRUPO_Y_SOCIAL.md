@@ -16,6 +16,15 @@
   con nombres no abre nada para que se vean los avisos en el chat.
 - Permiso: `mdvsocial.party.use` (por defecto todos).
 
+## Bloqueos y grupos
+
+Si un jugador te bloqueó, no puedes invitarlo a tu grupo desde ningún sitio:
+`/grupo`, "Invitar jugador", el selector, las opciones de amigo ni escribiendo
+`/party invite <nombre>` (comandos en `blocked-players.party-invite-commands`).
+Igual que con las cartas, el aviso es genérico (`party-invite-not-delivered`):
+"No se pudo invitar a X al grupo", sin revelar el bloqueo. El jugador sigue
+apareciendo en el selector y en el autocompletado, por la misma razón.
+
 ## Menú Bedrock "Social y Amigos" (menuamigos.yml)
 
 Los botones muestran pendientes solo cuando hay alguno:

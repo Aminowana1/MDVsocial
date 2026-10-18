@@ -204,6 +204,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         blockedPlayersMenu = new BlockedPlayersMenuManager(this);
         blockedPlayersMenu.enable();
         new PartyCommand(this).enable();
+        new PartyInviteGuard(this).enable();
         mmoItemsBrowserManager = new MMOItemsBrowserManager(this);
         mmoItemsBrowserManager.enable();
         startInteractiveChatProfileTask();
@@ -5428,6 +5429,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             msg(player, "party-self");
             return;
         }
+        if (isPartyInviteBlocked(player, target.getUniqueId(), target.getName()))
+            return;
         if (!Bukkit.getPluginManager().isPluginEnabled("MMOCore")) {
             msg(player, "party-mmocore-missing");
             return;
@@ -5480,6 +5483,18 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
                 && getConfig().getBoolean("bedrock.party.java-fallback-buttons", true)) {
             sendJavaPartyInviteFallbackControls(target, player);
         }
+    }
+
+    /**
+     * Players who blocked {@code inviter} cannot be invited to a party. The message
+     * is generic on purpose, like letters: the inviter must not learn about the block.
+     */
+    boolean isPartyInviteBlocked(Player inviter, UUID target, String targetName) {
+        if (blocks == null || !blocks.isBlocked(target, inviter.getUniqueId()))
+            return false;
+        msg(inviter, "party-invite-not-delivered",
+                Map.of("target", targetName == null || targetName.isBlank() ? "ese jugador" : targetName));
+        return true;
     }
 
     private boolean hasPendingMMOCoreRequestFrom(Player target, String simpleClassName, UUID creatorUuid) {
@@ -5613,6 +5628,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             msg(player, "party-self");
             return;
         }
+        if (isPartyInviteBlocked(player, targetUuid, targetName))
+            return;
         if (!Bukkit.getPluginManager().isPluginEnabled("MMOCore")) {
             msg(player, "party-mmocore-missing");
             return;
@@ -6429,6 +6446,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             case "party-created" -> "&aCreaste un nuevo Grupo de Aventura.";
             case "party-create-error" -> "&cNo se pudo crear el Grupo de Aventura.";
             case "party-already-in-party" -> "&eYa perteneces a un Grupo de Aventura.";
+            case "party-invite-not-delivered" -> "&cNo se pudo invitar a &e{target} &cal grupo.";
             case "party-command-too-many" -> "&cPuedes invitar como máximo a &e{max} &cjugadores a la vez.";
             case "mail-not-delivered" -> "&cNo se pudo enviar la carta a &e{target}&c.";
             case "mail-cooldown" -> "&cEspera &e{seconds}s &cantes de enviar otra carta.";
