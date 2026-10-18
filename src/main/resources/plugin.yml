@@ -115,6 +115,9 @@ permissions:
   mdvsocial.party.use:
     description: Permite usar /grupo.
     default: true
+  mdvsocial.friends.cooldown.bypass:
+    description: Permite enviar solicitudes de amistad sin esperar entre envios.
+    default: op
   mdvsocial.tpa:
     description: Permite usar el TPA (/tpa, /tpaccept, /tpdeny...).
     default: true

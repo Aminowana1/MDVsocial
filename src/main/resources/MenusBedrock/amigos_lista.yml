@@ -58,3 +58,5 @@ requests-menu:
     accept: "&aAceptar solicitud"
     deny: "&cRechazar solicitud"
     back: "&6Volver"
+    # Botón del formulario abierto con quick accept (en vez de "Volver").
+    later: "&7Más tarde"

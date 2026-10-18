@@ -25,8 +25,8 @@ El menú "correo" ya no bloquea ni desbloquea: eso vive en "Jugadores Bloqueados
   ```
 
 - Es unidireccional: si A bloquea a B, B no puede enviarle cartas a A.
-- Hoy lo respetan las cartas, las invitaciones de clan por carta y las
-  invitaciones a Grupos de Aventura.
+- Hoy lo respetan las cartas, las invitaciones de clan por carta, las
+  invitaciones a Grupos de Aventura, las solicitudes de amistad y el TPA.
 - Comandos: `/bloquear <jugador>`, `/desbloquear <jugador>`, `/bloqueados`.
   `/carta bloquear|desbloquear|bloqueados` siguen funcionando.
 - Acciones de menú: `OPEN_BLOCKED_PLAYERS`, `START_BLOCK_PLAYER`,

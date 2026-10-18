@@ -92,6 +92,10 @@ messages:
   friend-target-not-found: '&cEse jugador no está conectado o el nombre no es válido.'
   friend-request-accepted: '&aAceptaste la solicitud de amistad de &e{target}&a.'
   friend-request-denied: '&eRechazaste la solicitud de amistad de &c{target}&e.'
+  # Si el destinatario te bloqueó. No revela el bloqueo.
+  friend-request-not-delivered: '&cNo se pudo enviar la solicitud de amistad a &e{target}&c.'
+  friend-request-already-sent: '&eYa le enviaste una solicitud de amistad a &6{target}&e.'
+  friend-request-cooldown: '&cEspera &f{seconds}s &cantes de enviar otra solicitud de amistad.'
   party-target-not-found: '&cEse jugador no está conectado o el nombre no es válido.'
   party-request-accepted: '&aAceptaste la invitación al grupo de &e{target}&a.'
   party-request-denied: '&eRechazaste la invitación al grupo de &c{target}&e.'
@@ -539,18 +543,24 @@ bedrock:
     direct-invite-command: 'party invite {target}'
 
 # ==========================================================
-# Avisos de invitación a Grupo de Aventura
-# Reemplazan el mensaje de MMOCore, que debe estar silenciado en su messages.yml.
-# Detecta cualquier invitación (/grupo, menús, GUI de MMOCore, otros plugins).
+# Solicitudes de MMOCore (invitaciones a grupo y solicitudes de amistad)
+# Detecta cualquier solicitud (menús de MDVSocial, GUI de MMOCore, otros plugins).
+# Las de jugadores que bloqueaste se retiran en silencio.
 # ==========================================================
-party-invites:
-  enabled: true
-  # Cada cuánto se revisan invitaciones nuevas (20 ticks = 1 s). Las de MDVSocial
+mmocore-requests:
+  # Cada cuánto se revisan solicitudes nuevas (20 ticks = 1 s). Las de MDVSocial
   # se avisan al instante; esto cubre las que vienen de fuera.
   check-interval-ticks: 20
 
+# ==========================================================
+# Avisos de invitación a Grupo de Aventura
+# Reemplazan el mensaje "party-invite" de MMOCore, que debe estar silenciado en su messages.yml.
+# ==========================================================
+party-invites:
+  enabled: true
+
   # Jugadores Java. Cada línea es JSON de chat (o texto normal); se aceptan códigos &.
-  # Tokens: {player} = quien invita, {uuid} = su UUID.
+  # Tokens: {player} = quien invita, {uuid} = id de la invitación (lo usa /mmocore:party accept|deny).
   java:
     enabled: true
     format:
@@ -579,6 +589,47 @@ party-invites:
     skip-confirmation-for-friends: true
 
 # ==========================================================
+# Solicitudes de amistad
+# Reemplazan el mensaje "friend-request" de MMOCore, que debe estar silenciado en su messages.yml.
+# - Si el destinatario te bloqueó, no le llega (aviso genérico friend-request-not-delivered).
+# - Una solicitud repetida no se duplica; si el otro ya te había enviado una, se aceptan y quedan como amigos.
+# ==========================================================
+friend-requests:
+  enabled: true
+  # Espera entre solicitudes enviadas desde MDVSocial (0 = sin espera).
+  # Permiso para saltarla: mdvsocial.friends.cooldown.bypass
+  send-cooldown-seconds: 10
+
+  # Jugadores Java. Tokens: {player} = quien la envía, {uuid} = id de la solicitud
+  # (lo usa /mmocore:friends accept|deny).
+  java:
+    enabled: true
+    format:
+      - '{"text":""}'
+      - '{"text":"&6&l[&5&lMDVCRAFT&6&l]  &4»&r &6{player} &ete ha enviado una solicitud de amistad."}'
+      - '[{"text":"        "},{"text":"&8[&a&lACEPTAR&8]","clickEvent":{"action":"run_command","value":"/mmocore:friends accept {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick para aceptar."}},{"text":"&r             "},{"text":"&8[&c&lRECHAZAR&8]","clickEvent":{"action":"run_command","value":"/mmocore:friends deny {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick para rechazar."}}]'
+      - '{"text":""}'
+
+  # Jugadores Bedrock (sin clicks en el chat). Tokens: {player}, {sneaks}, {seconds}.
+  bedrock:
+    enabled: true
+    # Se usa cuando quick accept está activo para amistad (quick-accept.types.friend-request).
+    message:
+      - ''
+      - '&6&l[&5&lMDVCRAFT&6&l]  &4»&r &6{player} &ete ha enviado una solicitud de amistad.'
+      - '&7Revísala en &fSocial y Amigos &8» &fAmigos y Solicitudes'
+      - '&7o &eagáchate {sneaks} veces rápido &7en los próximos &e{seconds}s &7para responder.'
+      - ''
+    # Se usa cuando quick accept está desactivado.
+    message-without-quick-accept:
+      - ''
+      - '&6&l[&5&lMDVCRAFT&6&l]  &4»&r &6{player} &ete ha enviado una solicitud de amistad.'
+      - '&7Revísala en &fSocial y Amigos &8» &fAmigos y Solicitudes'
+      - ''
+    # true: el quick accept acepta directamente. false: abre "Solicitud de X" para confirmar.
+    skip-confirmation: false
+
+# ==========================================================
 # Quick accept: agacharse varias veces rápido para responder una solicitud.
 # Sistema genérico: cada tipo puede sobrescribir cualquier valor en types.<tipo>.
 # ==========================================================
@@ -603,6 +654,8 @@ quick-accept:
       # Ejemplo de ajuste solo para invitaciones:
       # sneaks-required: 3
       # window-seconds: 20
+    friend-request:
+      enabled: true
     tpa:
       enabled: true
       # sneaks-required: 3

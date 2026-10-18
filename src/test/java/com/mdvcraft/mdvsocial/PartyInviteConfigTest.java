@@ -46,6 +46,23 @@ class PartyInviteConfigTest {
     }
 
     @Test
+    void friendRequestNoticesAndDefaults() {
+        YamlConfiguration config = bundledConfig();
+        List<String> commands = JsonChatFormat.render(config.getStringList("friend-requests.java.format"),
+                        Map.of("player", "Steve", "uuid", "r-1")).stream()
+                .flatMap(line -> flatten(line).stream())
+                .map(Component::clickEvent)
+                .filter(e -> e != null && e.action() == ClickEvent.Action.RUN_COMMAND)
+                .map(ClickEvent::value).distinct().toList();
+        assertEquals(List.of("/mmocore:friends accept r-1", "/mmocore:friends deny r-1"), commands);
+        assertFalse(config.getStringList("friend-requests.bedrock.message").isEmpty());
+        assertFalse(config.getBoolean("friend-requests.bedrock.skip-confirmation"));
+        assertEquals(20, config.getInt("mmocore-requests.check-interval-ticks"));
+        assertTrue(QuickAcceptSettings.from(config.getConfigurationSection("quick-accept"),
+                MMOCoreRequestNotifier.FRIEND_REQUEST_TYPE).enabled());
+    }
+
+    @Test
     void tpaJavaNoticeHasAcceptAndDenyButtons() {
         YamlConfiguration config = bundledConfig();
         List<String> commands = JsonChatFormat.render(config.getStringList("tpa.notice.java.format"),
@@ -67,7 +84,7 @@ class PartyInviteConfigTest {
         assertTrue(config.getBoolean("party-invites.bedrock.skip-confirmation-for-friends"));
 
         QuickAcceptSettings settings = QuickAcceptSettings.from(config.getConfigurationSection("quick-accept"),
-                PartyInviteNotifier.QUICK_ACCEPT_TYPE);
+                MMOCoreRequestNotifier.PARTY_INVITE_TYPE);
         assertTrue(settings.enabled());
         assertTrue(settings.bedrockOnly());
         assertEquals(2, settings.sneaksRequired());

@@ -111,9 +111,10 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     private PlayerBlockService blocks;
     private BlockedPlayersMenuManager blockedPlayersMenu;
     private QuickAcceptService quickAccept;
-    private PartyInviteWatcher partyInviteWatcher;
+    private MMOCoreRequestWatcher requestWatcher;
     private TpaModule tpa;
     private final Map<UUID, Long> lastMailSentAt = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> lastFriendRequestAt = new ConcurrentHashMap<>();
 
     private org.bukkit.NamespacedKey keyAction;
     private org.bukkit.NamespacedKey keyTitle;
@@ -215,8 +216,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         quickAccept = new QuickAcceptService(this, this::isBedrockPlayer, this::playUiSound,
                 (player, message) -> player.sendMessage(color(message)));
         quickAccept.enable();
-        partyInviteWatcher = new PartyInviteWatcher(this, new PartyInviteNotifier(this, quickAccept));
-        partyInviteWatcher.enable();
+        requestWatcher = MMOCoreRequestWatcher.create(this, quickAccept);
+        requestWatcher.enable();
         tpa = new TpaModule(new TpaHostAdapter(this), quickAccept);
         tpa.enable();
         mmoItemsBrowserManager = new MMOItemsBrowserManager(this);
@@ -248,8 +249,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         resetAllScoreboardPartyPermissions();
         if (bedrock != null)
             bedrock.shutdown();
-        if (partyInviteWatcher != null)
-            partyInviteWatcher.disable();
+        if (requestWatcher != null)
+            requestWatcher.disable();
         if (tpa != null)
             tpa.shutdown();
         if (quickAccept != null)
@@ -297,9 +298,9 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             bedrock.reload();
         if (mmoItemsBrowserManager != null)
             mmoItemsBrowserManager.reload();
-        if (partyInviteWatcher != null) {
-            partyInviteWatcher.disable();
-            partyInviteWatcher.enable();
+        if (requestWatcher != null) {
+            requestWatcher.disable();
+            requestWatcher.enable();
         }
         if (tpa != null)
             tpa.reload();
@@ -2853,6 +2854,19 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         return false;
     }
 
+    /** @return true when the player may send a friend request now; otherwise tells them how long to wait. */
+    private boolean checkFriendRequestCooldown(Player player) {
+        long cooldownMillis = Math.max(0L, getConfig().getLong("friend-requests.send-cooldown-seconds", 10L)) * 1000L;
+        Long last = lastFriendRequestAt.get(player.getUniqueId());
+        if (cooldownMillis <= 0L || last == null || player.hasPermission("mdvsocial.friends.cooldown.bypass"))
+            return true;
+        long remaining = last + cooldownMillis - System.currentTimeMillis();
+        if (remaining <= 0L)
+            return true;
+        msg(player, "friend-request-cooldown", Map.of("seconds", String.valueOf((remaining + 999L) / 1000L)));
+        return false;
+    }
+
     private long mailCooldownRemainingSeconds(Player player) {
         long cooldownMillis = Math.max(0L, getConfig().getLong("mail.send-cooldown-seconds", 30L)) * 1000L;
         if (cooldownMillis <= 0L || player.hasPermission("mdvsocial.mail.cooldown.bypass"))
@@ -4063,7 +4077,29 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         return bedrock.mmocore().openClasses(player);
     }
 
+    /**
+     * Pending MMOCore requests received by {@code player}, as menus and counters
+     * show them: without requests from players they blocked and with one request
+     * per sender, sorted by sender name.
+     */
     List<Object> getMMOCorePendingRequests(Player player, String simpleClassName) {
+        Map<UUID, Object> bySender = new LinkedHashMap<>();
+        List<Object> unknownSender = new ArrayList<>();
+        for (Object request : rawMMOCorePendingRequests(player, simpleClassName)) {
+            UUID creator = getMMOCoreRequestCreatorUuid(request);
+            if (creator == null)
+                unknownSender.add(request);
+            else if (blocks == null || !blocks.isBlocked(player.getUniqueId(), creator))
+                bySender.putIfAbsent(creator, request);
+        }
+        List<Object> out = new ArrayList<>(bySender.values());
+        out.addAll(unknownSender);
+        out.sort(Comparator.comparing(this::getMMOCoreRequestCreatorName, String.CASE_INSENSITIVE_ORDER));
+        return out;
+    }
+
+    /** Every pending, not timed out MMOCore request of a kind received by {@code player}. */
+    private List<Object> rawMMOCorePendingRequests(Player player, String simpleClassName) {
         List<Object> out = new ArrayList<>();
         if (player == null || simpleClassName == null || !Bukkit.getPluginManager().isPluginEnabled("MMOCore"))
             return out;
@@ -4097,7 +4133,6 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
                 } catch (Throwable ignored) {
                 }
             }
-            out.sort(Comparator.comparing(this::getMMOCoreRequestCreatorName, String.CASE_INSENSITIVE_ORDER));
         } catch (Throwable ex) {
             getLogger().fine("No se pudieron leer solicitudes MMOCore para Bedrock: " + ex.getMessage());
         }
@@ -4165,6 +4200,42 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         if (value instanceof Collection<?> collection)
             return new ArrayList<>(collection);
         return Collections.emptyList();
+    }
+
+    UUID getMMOCoreRequestCreatorUuid(Object request) {
+        if (request == null)
+            return null;
+        try {
+            return extractUuid(request.getClass().getMethod("getCreator").invoke(request));
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    /**
+     * A pending request of {@code kind} sent by {@code creator} to {@code target},
+     * ignoring {@code exclude}; null when there is none. Block lists are not applied.
+     */
+    Object findPendingMMOCoreRequest(Player target, String kind, UUID creator, Object exclude) {
+        if (target == null || creator == null)
+            return null;
+        for (Object request : rawMMOCorePendingRequests(target, kind))
+            if (request != exclude && creator.equals(getMMOCoreRequestCreatorUuid(request)))
+                return request;
+        return null;
+    }
+
+    /** Removes a request from MMOCore without answering it, so nobody is told. */
+    void dropMMOCoreRequest(UUID requestId) {
+        if (requestId == null)
+            return;
+        try {
+            Object requestManager = getMMOCoreRequestManager();
+            if (requestManager != null)
+                requestManager.getClass().getMethod("unregisterRequest", UUID.class).invoke(requestManager, requestId);
+        } catch (Throwable ex) {
+            getLogger().fine("No se pudo retirar una solicitud de MMOCore: " + ex.getMessage());
+        }
     }
 
     String getMMOCoreRequestCreatorName(Object request) {
@@ -4416,6 +4487,10 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         mailSessions.remove(player.getUniqueId());
         if (mailCooldownRemainingSeconds(player) <= 0)
             lastMailSentAt.remove(player.getUniqueId());
+        // Kept while still cooling down, so leaving and rejoining does not skip the wait.
+        long friendCooldownMillis = Math.max(0L, getConfig().getLong("friend-requests.send-cooldown-seconds", 10L)) * 1000L;
+        lastFriendRequestAt.computeIfPresent(player.getUniqueId(),
+                (uuid, last) -> last + friendCooldownMillis > System.currentTimeMillis() ? last : null);
         if (data != null)
             data.forget(player.getUniqueId());
         interactiveChatProfiles.remove(player.getUniqueId());
@@ -4805,6 +4880,25 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             msg(player, "friend-already", Map.of("target", targetName));
             return;
         }
+        // They already asked you: accepting their request makes you friends (MMOCore tells both).
+        Object reverse = findPendingMMOCoreRequest(player, MMOCoreRequestWatcher.FRIEND_REQUEST, targetUuid, null);
+        if (reverse != null) {
+            resolveMMOCoreRequest(player, reverse, true);
+            return;
+        }
+        if (findPendingMMOCoreRequest(target, MMOCoreRequestWatcher.FRIEND_REQUEST, player.getUniqueId(),
+                null) != null) {
+            msg(player, "friend-request-already-sent", Map.of("target", targetName));
+            return;
+        }
+        if (!checkFriendRequestCooldown(player))
+            return;
+        lastFriendRequestAt.put(player.getUniqueId(), System.currentTimeMillis());
+        // Like letters and party invites, a block is never revealed to the sender.
+        if (blocks != null && blocks.isBlocked(targetUuid, player.getUniqueId())) {
+            msg(player, "friend-request-not-delivered", Map.of("target", targetName));
+            return;
+        }
 
         try {
             Object playerData = getMMOCorePlayerData(player);
@@ -4816,6 +4910,9 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             Method sendFriendRequest = playerData.getClass().getMethod("sendFriendRequest", playerData.getClass());
             sendFriendRequest.invoke(playerData, targetData);
             msg(player, "friend-request-sent", Map.of("target", targetName));
+            // The receiver is told right away (Java JSON / Bedrock quick accept).
+            if (requestWatcher != null)
+                requestWatcher.scanNow();
         } catch (Throwable ex) {
             getLogger().warning("No se pudo enviar solicitud de amistad MMOCore: " + ex.getClass().getSimpleName()
                     + " - " + ex.getMessage());
@@ -5523,8 +5620,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             syncScoreboardPartyPermission(player);
         }
         // The invited player is told right away (Java JSON / Bedrock quick accept).
-        if (partyInviteWatcher != null)
-            partyInviteWatcher.scanNow();
+        if (requestWatcher != null)
+            requestWatcher.scanNow();
     }
 
     /**
@@ -5540,22 +5637,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     }
 
     private boolean hasPendingMMOCoreRequestFrom(Player target, String simpleClassName, UUID creatorUuid) {
-        if (target == null || creatorUuid == null)
-            return false;
-        for (Object request : getMMOCorePendingRequests(target, simpleClassName)) {
-            try {
-                Method getCreator = request.getClass().getMethod("getCreator");
-                UUID uuid = extractUuid(getCreator.invoke(request));
-                if (creatorUuid.equals(uuid))
-                    return true;
-            } catch (Throwable ignored) {
-                String creator = getMMOCoreRequestCreatorName(request);
-                OfflinePlayer off = Bukkit.getOfflinePlayer(creatorUuid);
-                if (off.getName() != null && off.getName().equalsIgnoreCase(creator))
-                    return true;
-            }
-        }
-        return false;
+        return findPendingMMOCoreRequest(target, simpleClassName, creatorUuid, null) != null;
     }
 
     boolean removeMMOCoreFriend(Player player, UUID targetUuid, String fallbackName) {
@@ -5721,8 +5803,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             invite.invoke(party, playerData, targetData);
             syncScoreboardPartyPermission(player);
             msg(player, "party-invite-sent", Map.of("target", targetName));
-            if (partyInviteWatcher != null)
-                partyInviteWatcher.scanNow();
+            if (requestWatcher != null)
+                requestWatcher.scanNow();
         } catch (Throwable ex) {
             getLogger().warning(
                     "No se pudo invitar amigo a party: " + ex.getClass().getSimpleName() + " - " + ex.getMessage());

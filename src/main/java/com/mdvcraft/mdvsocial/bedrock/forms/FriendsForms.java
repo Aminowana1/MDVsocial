@@ -171,7 +171,23 @@ public final class FriendsForms {
         forms.show(player, builder, actions);
     }
 
+    /** Confirmation form for one received request (used by quick accept); "Más tarde" just closes it. */
+    public void openRequest(Player player, Object request) {
+        openRequestDetail(player, request, 0, false);
+    }
+
+    /** Accepts a request and shows the friend list (quick accept without confirmation). */
+    public void acceptRequest(Player player, Object request) {
+        if (social.resolveRequest(player, request, true))
+            openList(player, 0);
+    }
+
     private void openRequestDetail(Player player, Object request, int returnPage) {
+        openRequestDetail(player, request, returnPage, true);
+    }
+
+    /** @param fromList whether "back"/failures return to the request list (false: just close). */
+    private void openRequestDetail(Player player, Object request, int returnPage, boolean fromList) {
         YamlConfiguration ui = forms.ui("amigos_lista");
         String creator = social.requestCreatorName(request);
         Map<String, String> tokens = Map.of("creator", creator);
@@ -184,17 +200,21 @@ public final class FriendsForms {
         forms.addButton(builder, ui, "requests-menu.detail.deny",
                 forms.uiText(ui, "requests-menu.detail.deny", "&cRechazar solicitud", player, tokens));
         forms.addButton(builder, ui, "requests-menu.detail.back",
-                forms.uiText(ui, "requests-menu.detail.back", "&6Volver", player, tokens));
+                forms.uiText(ui, fromList ? "requests-menu.detail.back" : "requests-menu.detail.later",
+                        fromList ? "&6Volver" : "&7Más tarde", player, tokens));
+        Runnable afterwards = fromList ? () -> openRequests(player, returnPage) : () -> { };
         forms.show(player, builder, List.of(
                 () -> {
-                    social.resolveRequest(player, request, true);
-                    openList(player, returnPage);
+                    if (social.resolveRequest(player, request, true))
+                        openList(player, returnPage);
+                    else
+                        afterwards.run();
                 },
                 () -> {
                     social.resolveRequest(player, request, false);
-                    openRequests(player, returnPage);
+                    afterwards.run();
                 },
-                () -> openRequests(player, returnPage)));
+                afterwards));
     }
 
     public void openRemoveConfirm(Player player, UUID targetUuid, String targetName, boolean targetOnline) {
