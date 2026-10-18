@@ -4,6 +4,7 @@ import com.mdvcraft.mdvsocial.bedrock.action.BedrockActionRegistry;
 import com.mdvcraft.mdvsocial.bedrock.action.BedrockNavigation;
 import com.mdvcraft.mdvsocial.bedrock.action.BuiltinBedrockActions;
 import com.mdvcraft.mdvsocial.bedrock.forms.BedrockFormSupport;
+import com.mdvcraft.mdvsocial.bedrock.forms.BlockedPlayersForms;
 import com.mdvcraft.mdvsocial.bedrock.forms.FriendsForms;
 import com.mdvcraft.mdvsocial.bedrock.forms.LinkMessages;
 import com.mdvcraft.mdvsocial.bedrock.forms.MMOCoreForms;
@@ -15,6 +16,7 @@ import com.mdvcraft.mdvsocial.bedrock.menu.BedrockMenuRenderer;
 import com.mdvcraft.mdvsocial.bedrock.menu.BedrockMenuRepository;
 import com.mdvcraft.mdvsocial.bedrock.platform.FloodgateGateway;
 import com.mdvcraft.mdvsocial.bedrock.port.BedrockHost;
+import com.mdvcraft.mdvsocial.bedrock.port.BlocksPort;
 import com.mdvcraft.mdvsocial.bedrock.port.MailPort;
 import com.mdvcraft.mdvsocial.bedrock.port.SocialPort;
 import com.mdvcraft.mdvsocial.bedrock.port.TitlesPort;
@@ -42,9 +44,11 @@ public final class BedrockModule {
     private final FriendsForms friends;
     private final PartyForms party;
     private final MMOCoreForms mmocore;
+    private final BlockedPlayersForms blocked;
     private final LinkMessages links;
 
-    public BedrockModule(BedrockHost host, TitlesPort titlesPort, MailPort mailPort, SocialPort socialPort) {
+    public BedrockModule(BedrockHost host, TitlesPort titlesPort, MailPort mailPort, SocialPort socialPort,
+            BlocksPort blocksPort) {
         this.host = host;
         this.gateway = new FloodgateGateway(host.plugin());
         this.sessions = new BedrockUiSessionManager(host.plugin(), gateway);
@@ -56,12 +60,13 @@ public final class BedrockModule {
         this.friends = new FriendsForms(forms, socialPort);
         this.party = new PartyForms(forms, socialPort, friends);
         this.mmocore = new MMOCoreForms(forms, party);
+        this.blocked = new BlockedPlayersForms(forms, blocksPort);
         this.links = new LinkMessages(forms);
 
         BedrockNavigation navigation = new BedrockNavigation(host);
         this.renderer = new BedrockMenuRenderer(repository, forms, sessions, actions, navigation, socialPort);
         BuiltinBedrockActions.registerAll(actions, new BuiltinBedrockActions.Dependencies(
-                host, navigation, titlesPort, socialPort, titles, mail, friends, party, mmocore, links));
+                host, navigation, titlesPort, socialPort, titles, mail, friends, party, mmocore, blocked, links));
     }
 
     public void enable() {
@@ -135,6 +140,10 @@ public final class BedrockModule {
 
     public MMOCoreForms mmocore() {
         return mmocore;
+    }
+
+    public BlockedPlayersForms blocked() {
+        return blocked;
     }
 
     public LinkMessages links() {

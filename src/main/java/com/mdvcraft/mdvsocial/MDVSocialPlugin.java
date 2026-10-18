@@ -106,6 +106,9 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     private PlayerProtectionsMenuManager playerProtectionsMenuManager;
     private MMOItemsBrowserManager mmoItemsBrowserManager;
     private BedrockModule bedrock;
+    private PlayerBlockService blocks;
+    private BlockedPlayersMenuManager blockedPlayersMenu;
+    private final Map<UUID, Long> lastMailSentAt = new ConcurrentHashMap<>();
 
     private org.bukkit.NamespacedKey keyAction;
     private org.bukkit.NamespacedKey keyTitle;
@@ -155,7 +158,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         workQueue = new TickWorkQueue(this);
         loadAll();
         bedrock = new BedrockModule(new BedrockHostAdapter(this), new BedrockTitlesAdapter(this),
-                new BedrockMailAdapter(this), new BedrockSocialAdapter(this));
+                new BedrockMailAdapter(this), new BedrockSocialAdapter(this), new BedrockBlocksAdapter(this));
         bedrock.enable();
         setupEconomy();
 
@@ -198,6 +201,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         playerHomesMenuManager.enable();
         playerProtectionsMenuManager = new PlayerProtectionsMenuManager(this);
         playerProtectionsMenuManager.enable();
+        blockedPlayersMenu = new BlockedPlayersMenuManager(this);
+        blockedPlayersMenu.enable();
         mmoItemsBrowserManager = new MMOItemsBrowserManager(this);
         mmoItemsBrowserManager.enable();
         startInteractiveChatProfileTask();
@@ -258,6 +263,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         reloadConfig();
         loadData();
         loadMailData();
+        migrateLegacyMailBlocks();
         cleanupExpiredMail();
         loadTitles();
         loadRanks();
@@ -288,6 +294,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
                 data.close();
             data = new PlayerDataStore(this, dataFile);
             data.open(legacyYaml);
+            blocks = new PlayerBlockService(data, () -> getConfig().getInt("blocked-players.max-entries", 200));
         } catch (Exception e) {
             getLogger().severe("No se pudo abrir/migrar " + dataFile.getName() + ": " + e.getMessage());
             getServer().getPluginManager().disablePlugin(this);
@@ -326,6 +333,38 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     void saveMailData() {
         if (mailData != null && mailStore != null)
             mailStore.flush(mailData);
+    }
+
+    /**
+     * Before the general block system, block lists lived in each mailbox
+     * (mailbox.<uuid>.blocked). They are moved once into player-data.db.
+     */
+    private void migrateLegacyMailBlocks() {
+        String flag = "legacy_mail_blocks_migrated";
+        if (data == null || mailData == null || data.isMetaTrue(flag))
+            return;
+        Map<UUID, List<UUID>> parsed = new LinkedHashMap<>();
+        for (Map.Entry<String, List<String>> entry : mailData.legacyBlockLists().entrySet()) {
+            try {
+                List<UUID> blockedList = new ArrayList<>();
+                for (String raw : entry.getValue()) {
+                    try {
+                        blockedList.add(UUID.fromString(raw));
+                    } catch (IllegalArgumentException ignored) {
+                    }
+                }
+                parsed.put(UUID.fromString(entry.getKey()), blockedList);
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        int imported = data.importBlocksOnce(flag, parsed);
+        if (imported < 0)
+            return;
+        for (UUID owner : parsed.keySet())
+            mailData.set(mailPath(owner, "blocked"), null);
+        saveMailData();
+        getLogger().info("Bloqueos migrados desde el correo al sistema general: " + imported
+                + " entradas de " + parsed.size() + " jugadores.");
     }
 
     private void loadTitles() {
@@ -960,6 +999,14 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
                 getLogger().warning("No se pudo crear Menus/correo.yml: " + e.getMessage());
             }
         }
+        File menuAmigos = new File(folder, "menuamigos.yml");
+        if (!menuAmigos.exists()) {
+            try {
+                Files.writeString(menuAmigos.toPath(), defaultMenuAmigosMenuYaml(), StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                getLogger().warning("No se pudo crear Menus/menuamigos.yml: " + e.getMessage());
+            }
+        }
         File amigoOpciones = new File(folder, "amigo_opciones.yml");
         if (!amigoOpciones.exists()) {
             try {
@@ -1310,7 +1357,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
                     action: OPEN_MAILBOX
 
                   enviar:
-                    slot: 13
+                    slot: 15
                     material: WRITABLE_BOOK
                     name: '&e&lEnviar carta'
                     lore:
@@ -1322,32 +1369,6 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
                     action: START_MAIL_SEND
                     close-on-click: true
 
-                  bloquear:
-                    slot: 15
-                    material: RED_DYE
-                    name: '&c&lBloquear cartas'
-                    lore:
-                      - ''
-                      - '&7Bloquea a un jugador para'
-                      - '&7que no pueda enviarte cartas.'
-                      - ''
-                      - '&eClick para escribir su nombre.'
-                    action: START_MAIL_BLOCK
-                    close-on-click: true
-
-                  desbloquear:
-                    slot: 16
-                    material: LIME_DYE
-                    name: '&a&lDesbloquear jugador'
-                    lore:
-                      - ''
-                      - '&7Permite que un jugador bloqueado'
-                      - '&7vuelva a enviarte cartas.'
-                      - ''
-                      - '&eClick para escribir su nombre.'
-                    action: START_MAIL_UNBLOCK
-                    close-on-click: true
-
                   volver:
                     slot: 22
                     material: PLAYER_HEAD
@@ -1357,6 +1378,74 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
                       - '&7Regresa al menu social.'
                     action: OPEN_MENU
                     target-menu: menuamigos
+                """;
+    }
+
+    private String defaultMenuAmigosMenuYaml() {
+        return """
+                title: '&8&lAmigos'
+                size: 27
+                items:
+                  lista:
+                    slot: 10
+                    material: PLAYER_HEAD
+                    name: '&a&lLista de Amigos'
+                    lore:
+                      - ''
+                      - '&7Consulta tu lista de amigos.'
+                      - ''
+                      - '&eClick para abrir.'
+                    action: COMMAND_PLAYER
+                    commands:
+                      - 'friends'
+
+                  party:
+                    slot: 12
+                    material: GOLDEN_SWORD
+                    name: '&d&lGrupo de Aventura'
+                    lore:
+                      - ''
+                      - '&7Crea una party para explorar'
+                      - '&7junto a tus amigos.'
+                      - ''
+                      - '&eClick para abrir.'
+                    action: COMMAND_PLAYER
+                    commands:
+                      - 'party'
+
+                  correo:
+                    slot: 14
+                    material: WRITABLE_BOOK
+                    name: '&6&lCartas y Buzón'
+                    lore:
+                      - ''
+                      - '&7Lee tus cartas o escribe'
+                      - '&7una nueva a otro jugador.'
+                      - ''
+                      - '&eClick para abrir.'
+                    action: OPEN_MENU
+                    target-menu: correo
+
+                  bloqueados:
+                    slot: 16
+                    material: BARRIER
+                    name: '&c&lJugadores Bloqueados'
+                    lore:
+                      - ''
+                      - '&7Revisa a quién bloqueaste'
+                      - '&7o bloquea a un jugador.'
+                      - ''
+                      - '&eClick para abrir.'
+                    action: OPEN_BLOCKED_PLAYERS
+
+                  volver:
+                    slot: 22
+                    material: ARROW
+                    name: '&6&lVolver'
+                    lore:
+                      - '&7Regresa al menu principal.'
+                    action: OPEN_MENU
+                    target-menu: main
                 """;
     }
 
@@ -1874,6 +1963,11 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             openTitlesHome(player);
             return;
         }
+        if (menu.equals(BlockedPlayersMenuManager.MENU_ID) || menu.equals("blocked")
+                || menu.equals("jugadores_bloqueados")) {
+            openBlockedPlayersMenu(player);
+            return;
+        }
         if (menu.equals("correo") || menu.equals("mail") || menu.equals("cartas") || menu.equals("carta")) {
             if (customMenus.containsKey("correo"))
                 openCustomMenu(player, "correo", 1, "menuamigos", 1);
@@ -1992,8 +2086,14 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
                 "INVITE_FRIEND_TARGET";
             case "SUGGEST_MSG_TARGET", "PREPARE_MSG_TARGET", "PRIVATE_MESSAGE_TARGET", "MENSAJE_PRIVADO_TARGET" ->
                 "SUGGEST_MSG_TARGET";
-            case "START_MAIL_BLOCK", "BLOCK_MAIL", "BLOQUEAR_CARTAS" -> "START_MAIL_BLOCK";
-            case "START_MAIL_UNBLOCK", "UNBLOCK_MAIL", "DESBLOQUEAR_CARTAS" -> "START_MAIL_UNBLOCK";
+            case "START_BLOCK_PLAYER", "BLOCK_PLAYER", "BLOQUEAR_JUGADOR", "START_MAIL_BLOCK", "BLOCK_MAIL",
+                    "BLOQUEAR_CARTAS" ->
+                "START_BLOCK_PLAYER";
+            case "START_UNBLOCK_PLAYER", "UNBLOCK_PLAYER", "DESBLOQUEAR_JUGADOR", "START_MAIL_UNBLOCK",
+                    "UNBLOCK_MAIL", "DESBLOQUEAR_CARTAS" ->
+                "START_UNBLOCK_PLAYER";
+            case "OPEN_BLOCKED_PLAYERS", "BLOCKED_PLAYERS", "OPEN_BLOCKED", "BLOQUEADOS", "JUGADORES_BLOQUEADOS" ->
+                "OPEN_BLOCKED_PLAYERS";
             default -> a;
         };
     }
@@ -2030,6 +2130,10 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     void openCustomMenu(Player player, String menuId, int page, String previousMenu, int previousPage,
             UUID targetUuid, String targetName, boolean targetOnline) {
         menuId = normalize(menuId);
+        if (menuId.equals(BlockedPlayersMenuManager.MENU_ID)) {
+            openBlockedPlayersMenu(player);
+            return;
+        }
         if (isBedrockPlayer(player)) {
             boolean opened = bedrock.openMenu(player, menuId, page, previousMenu, previousPage,
                     targetUuid, targetName, targetOnline);
@@ -2434,17 +2538,17 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             }
             case "bloquear", "block" -> {
                 if (args.length >= 2)
-                    blockMailByName(player, args[1]);
+                    blockPlayerByName(player, args[1]);
                 else
-                    startMailBlockPrompt(player, true);
+                    startBlockPlayerPrompt(player, true, BlockedPlayersMenuManager.MENU_ID, 1);
             }
             case "desbloquear", "unblock" -> {
                 if (args.length >= 2)
-                    unblockMailByName(player, args[1]);
+                    unblockPlayerByName(player, args[1]);
                 else
-                    startMailBlockPrompt(player, false);
+                    startBlockPlayerPrompt(player, false, BlockedPlayersMenuManager.MENU_ID, 1);
             }
-            case "bloqueados", "blocked" -> sendBlockedList(player);
+            case "bloqueados", "blocked" -> openBlockedPlayersMenu(player);
             case "cancelar", "cancel" -> {
                 MailComposeSession session = mailSessions.remove(player.getUniqueId());
                 msg(player, "mail-cancelled");
@@ -2453,8 +2557,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             default -> {
                 player.sendMessage(color(getPrefix() + "&e/correo &7- abre el menu de correo"));
                 player.sendMessage(color(getPrefix() + "&e/carta enviar <jugador> <mensaje>"));
-                player.sendMessage(color(getPrefix() + "&e/carta bloquear <jugador>"));
-                player.sendMessage(color(getPrefix() + "&e/carta desbloquear <jugador>"));
+                player.sendMessage(color(getPrefix() + "&e/bloquear <jugador> &7- ya no podrá enviarte cartas"));
+                player.sendMessage(color(getPrefix() + "&e/bloqueados &7- tu lista de jugadores bloqueados"));
             }
         }
     }
@@ -2464,6 +2568,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     }
 
     private void startMailRecipientPrompt(Player player, String returnMenu, int returnPage) {
+        if (!checkMailCooldown(player))
+            return;
         if (isBedrockPlayer(player)) {
             bedrock.mail().openCompose(player, returnMenu, returnPage);
             return;
@@ -2483,6 +2589,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
 
     private void startMailMessagePromptToTarget(Player player, UUID targetUuid, String fallbackName, String returnMenu,
             int returnPage) {
+        if (!checkMailCooldown(player))
+            return;
         if (isBedrockPlayer(player)) {
             bedrock.mail().openMessageToTarget(player, targetUuid, fallbackName, returnMenu, returnPage);
             return;
@@ -2512,21 +2620,22 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         msg(player, "mail-message-prompt", Map.of("target", targetName, "max", String.valueOf(getMaxMailLength())));
     }
 
-    private void startMailBlockPrompt(Player player, boolean block) {
-        startMailBlockPrompt(player, block, "correo", 1);
-    }
-
-    private void startMailBlockPrompt(Player player, boolean block, String returnMenu, int returnPage) {
+    void startBlockPlayerPrompt(Player player, boolean block, String returnMenu, int returnPage) {
         if (isBedrockPlayer(player)) {
-            bedrock.mail().openBlockForm(player, block, returnMenu, returnPage);
+            if (block)
+                bedrock.blocked().openBlockForm(player);
+            else
+                bedrock.blocked().openUnblockForm(player);
             return;
         }
-        mailSessions.put(player.getUniqueId(),
-                new MailComposeSession(block ? MailStage.BLOCK : MailStage.UNBLOCK, null, returnMenu, returnPage));
-        msg(player, block ? "mail-block-prompt" : "mail-unblock-prompt");
+        mailSessions.put(player.getUniqueId(), new MailComposeSession(
+                block ? MailStage.BLOCK_PLAYER : MailStage.UNBLOCK_PLAYER, null, returnMenu, returnPage));
+        msg(player, block ? "player-block-prompt" : "player-unblock-prompt");
     }
 
     private void startMailReplyFromMail(Player player, String mailId, int returnPage) {
+        if (!checkMailCooldown(player))
+            return;
         if (isBedrockPlayer(player)) {
             bedrock.mail().openReply(player, mailId, returnPage);
             return;
@@ -2612,14 +2721,16 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
                 sendMailByName(player, targetName, text);
             return;
         }
-        if (session.stage == MailStage.BLOCK) {
+        if (session.stage == MailStage.BLOCK_PLAYER) {
             mailSessions.remove(player.getUniqueId());
-            blockMailByName(player, text);
+            blockPlayerByName(player, text);
+            returnToMailSessionMenu(player, session);
             return;
         }
-        if (session.stage == MailStage.UNBLOCK) {
+        if (session.stage == MailStage.UNBLOCK_PLAYER) {
             mailSessions.remove(player.getUniqueId());
-            unblockMailByName(player, text);
+            unblockPlayerByName(player, text);
+            returnToMailSessionMenu(player, session);
         }
     }
 
@@ -2672,7 +2783,9 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             msg(sender, "mail-self");
             return;
         }
-        String clean = sanitizeMailMessage(message);
+        if (!checkMailCooldown(sender))
+            return;
+        String clean = TextSanitizer.stripFormatting(sanitizeMailMessage(message)).trim();
         if (clean.isBlank()) {
             msg(sender, "mail-empty");
             return;
@@ -2682,8 +2795,9 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             msg(sender, "mail-too-long", Map.of("max", String.valueOf(max)));
             return;
         }
-        if (isMailBlocked(target.getUniqueId(), sender.getUniqueId())) {
-            msg(sender, "mail-blocked-by-target",
+        if (blocks.isBlocked(target.getUniqueId(), sender.getUniqueId())) {
+            // Generic on purpose: the sender must not learn that they were blocked.
+            msg(sender, "mail-not-delivered",
                     Map.of("target", target.getName() == null ? "ese jugador" : target.getName()));
             return;
         }
@@ -2698,7 +2812,28 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         storeMail(target.getUniqueId(), target.getName() == null ? "jugador" : target.getName(),
                 sender.getUniqueId().toString(), sender.getName(), clean, expiresAt);
         saveMailData();
+        lastMailSentAt.put(sender.getUniqueId(), System.currentTimeMillis());
         msg(sender, "mail-sent", Map.of("target", target.getName() == null ? "jugador" : target.getName()));
+    }
+
+    /** @return true when the player may send a letter now; otherwise tells them how long to wait. */
+    boolean checkMailCooldown(Player player) {
+        long seconds = mailCooldownRemainingSeconds(player);
+        if (seconds <= 0)
+            return true;
+        msg(player, "mail-cooldown", Map.of("seconds", String.valueOf(seconds)));
+        return false;
+    }
+
+    private long mailCooldownRemainingSeconds(Player player) {
+        long cooldownMillis = Math.max(0L, getConfig().getLong("mail.send-cooldown-seconds", 30L)) * 1000L;
+        if (cooldownMillis <= 0L || player.hasPermission("mdvsocial.mail.cooldown.bypass"))
+            return 0L;
+        Long last = lastMailSentAt.get(player.getUniqueId());
+        if (last == null)
+            return 0L;
+        long remaining = last + cooldownMillis - System.currentTimeMillis();
+        return remaining <= 0L ? 0L : (remaining + 999L) / 1000L;
     }
 
     private void sendServerMailAll(CommandSender sender, String message, long expireDays) {
@@ -2989,6 +3124,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             String clanTag, String clanName, String message, String clanBannerData, long expiresAt) {
         if (!mailEnabled() || targetUuid == null || clanTag == null || clanTag.isBlank())
             return false;
+        if (inviterUuid != null && blocks.isBlocked(targetUuid, inviterUuid))
+            return false;
         String clean = sanitizeMailMessage(message);
         if (clean.isBlank())
             clean = "El clan " + clanName + " [" + clanTag + "] te invitó a unirte.";
@@ -3034,19 +3171,35 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     }
 
     int getMailboxLimit(OfflinePlayer player) {
-        int limit = Math.max(1, getConfig().getInt("mail.default-mailbox-size", 10));
-        if (player != null && player.isOnline()) {
-            ConfigurationSection sec = getConfig().getConfigurationSection("mail.mailbox-size-permissions");
-            if (sec != null) {
-                Player online = player.getPlayer();
-                for (String perm : sec.getKeys(false)) {
-                    int value = sec.getInt(perm, limit);
-                    if (online.hasPermission(perm) && value > limit)
-                        limit = value;
-                }
+        int base = Math.max(1, getConfig().getInt("mail.default-mailbox-size", 10));
+        if (player == null)
+            return base;
+        Player online = player.getPlayer();
+        if (online == null) {
+            // Permissions of offline players cannot be read: use the last limit seen online.
+            int remembered = data == null ? -1 : data.mailboxLimit(player.getUniqueId());
+            return Math.max(base, remembered);
+        }
+        int limit = base;
+        ConfigurationSection sec = getConfig().getConfigurationSection("mail.mailbox-size-permissions");
+        if (sec != null) {
+            for (String perm : sec.getKeys(false)) {
+                int value = sec.getInt(perm, limit);
+                if (online.hasPermission(perm) && value > limit)
+                    limit = value;
             }
         }
+        if (data != null)
+            data.setMailboxLimit(player.getUniqueId(), limit);
         return limit;
+    }
+
+    /** Letter text as shown to players: formatting codes are removed from player-written letters. */
+    String mailMessageForDisplay(String base) {
+        String message = mailData.getString(base + ".message", "");
+        boolean playerLetter = !mailData.getString(base + ".from-uuid", "").isBlank()
+                && mailData.getString(base + ".type", "").isBlank();
+        return playerLetter ? TextSanitizer.stripFormatting(message) : message;
     }
 
     String mailPath(UUID uuid, String child) {
@@ -3166,7 +3319,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         String base = mailPath(viewer.getUniqueId(), "letters." + id);
         String fromName = mailData.getString(base + ".from-name", "Desconocido");
         String fromUuidText = mailData.getString(base + ".from-uuid", "");
-        String message = mailData.getString(base + ".message", "");
+        String message = mailMessageForDisplay(base);
         boolean read = mailData.getBoolean(base + ".read", false);
         long sentAt = mailData.getLong(base + ".sent-at", 0L);
         long expiresAt = mailData.getLong(base + ".expires-at", 0L);
@@ -3224,7 +3377,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         saveMailData();
         String fromName = mailData.getString(base + ".from-name", "Desconocido");
         String fromUuid = mailData.getString(base + ".from-uuid", "");
-        String message = mailData.getString(base + ".message", "");
+        String message = mailMessageForDisplay(base);
         String mailType = mailData.getString(base + ".type", "");
         boolean clanInviteMail = "MDVCLANS_INVITE".equalsIgnoreCase(mailType);
         String clanBannerData = mailData.getString(base + ".clan-banner", "");
@@ -3368,77 +3521,89 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         });
     }
 
+    public PlayerBlockService getBlockService() {
+        return blocks;
+    }
+
+    void openBlockedPlayersMenu(Player player) {
+        blockedPlayersMenu.open(player, 0);
+    }
+
+    /** Blocks the sender of a letter. Server letters have no sender and cannot be blocked. */
     boolean blockMailSender(Player player, String senderUuidText) {
-        if (senderUuidText == null || senderUuidText.isBlank()) {
-            msg(player, "mail-cannot-block-server");
-            return false;
-        }
+        UUID uuid = null;
         try {
-            UUID uuid = UUID.fromString(senderUuidText);
-            addBlockedMail(player.getUniqueId(), uuid);
-            OfflinePlayer off = Bukkit.getOfflinePlayer(uuid);
-            msg(player, "mail-blocked", Map.of("target", off.getName() == null ? "jugador" : off.getName()));
-            return true;
-        } catch (Exception ignored) {
-            msg(player, "mail-cannot-block-server");
+            if (senderUuidText != null && !senderUuidText.isBlank())
+                uuid = UUID.fromString(senderUuidText);
+        } catch (IllegalArgumentException ignored) {
+        }
+        if (uuid == null) {
+            msg(player, "player-cannot-block-server");
             return false;
         }
+        return blockPlayer(player, uuid, Bukkit.getOfflinePlayer(uuid).getName());
     }
 
-    void blockMailByName(Player player, String targetName) {
+    void blockPlayerByName(Player player, String targetName) {
         OfflinePlayer target = findKnownOfflinePlayer(targetName);
         if (target == null) {
             sendPlayerNotFound(player, targetName);
             return;
         }
-        if (target.getUniqueId().equals(player.getUniqueId())) {
-            msg(player, "mail-self-block");
-            return;
-        }
-        addBlockedMail(player.getUniqueId(), target.getUniqueId());
-        msg(player, "mail-blocked", Map.of("target", target.getName() == null ? targetName : target.getName()));
+        blockPlayer(player, target.getUniqueId(), target.getName() == null ? targetName : target.getName());
     }
 
-    void unblockMailByName(Player player, String targetName) {
-        OfflinePlayer target = findKnownOfflinePlayer(targetName);
-        if (target == null) {
-            sendPlayerNotFound(player, targetName);
-            return;
-        }
-        List<String> list = new ArrayList<>(mailData.getStringList(mailPath(player.getUniqueId(), "blocked")));
-        boolean removed = list.remove(target.getUniqueId().toString());
-        mailData.set(mailPath(player.getUniqueId(), "blocked"), list);
-        saveMailData();
-        msg(player, removed ? "mail-unblocked" : "mail-not-blocked",
-                Map.of("target", target.getName() == null ? targetName : target.getName()));
-    }
-
-    private boolean isMailBlocked(UUID recipient, UUID sender) {
-        return mailData.getStringList(mailPath(recipient, "blocked")).contains(sender.toString());
-    }
-
-    private void addBlockedMail(UUID recipient, UUID sender) {
-        List<String> list = new ArrayList<>(mailData.getStringList(mailPath(recipient, "blocked")));
-        if (!list.contains(sender.toString()))
-            list.add(sender.toString());
-        mailData.set(mailPath(recipient, "blocked"), list);
-        saveMailData();
-    }
-
-    private void sendBlockedList(Player player) {
-        List<String> list = mailData.getStringList(mailPath(player.getUniqueId(), "blocked"));
-        if (list.isEmpty()) {
-            player.sendMessage(color(getPrefix() + "&7No tienes jugadores bloqueados para cartas."));
-            return;
-        }
-        player.sendMessage(color(getPrefix() + "&eJugadores bloqueados:"));
-        for (String uuidText : list) {
-            try {
-                OfflinePlayer off = Bukkit.getOfflinePlayer(UUID.fromString(uuidText));
-                player.sendMessage(color("&8- &f" + (off.getName() == null ? uuidText : off.getName())));
-            } catch (Exception ignored) {
-                player.sendMessage(color("&8- &f" + uuidText));
+    void unblockPlayerByName(Player player, String targetName) {
+        String wanted = targetName == null ? "" : targetName.trim();
+        // Match against the player's own list first so renamed accounts can still be removed.
+        for (UUID uuid : blocks.blockedPlayers(player.getUniqueId())) {
+            String name = Bukkit.getOfflinePlayer(uuid).getName();
+            if (name != null && name.equalsIgnoreCase(wanted)) {
+                unblockPlayer(player, uuid, name);
+                return;
             }
+        }
+        OfflinePlayer target = findKnownOfflinePlayer(wanted);
+        if (target == null) {
+            sendPlayerNotFound(player, wanted);
+            return;
+        }
+        unblockPlayer(player, target.getUniqueId(), target.getName() == null ? wanted : target.getName());
+    }
+
+    boolean blockPlayer(Player player, UUID target, String displayName) {
+        String name = displayName == null || displayName.isBlank() ? "jugador" : displayName;
+        switch (blocks.block(player.getUniqueId(), target)) {
+            case BLOCKED -> {
+                msg(player, "player-blocked", Map.of("target", name));
+                return true;
+            }
+            case ALREADY_BLOCKED -> msg(player, "player-already-blocked", Map.of("target", name));
+            case SELF -> msg(player, "player-self-block");
+            case LIMIT_REACHED -> msg(player, "player-block-limit",
+                    Map.of("max", String.valueOf(getConfig().getInt("blocked-players.max-entries", 200))));
+        }
+        return false;
+    }
+
+    boolean unblockPlayer(Player player, UUID target, String displayName) {
+        String name = displayName == null || displayName.isBlank() ? "jugador" : displayName;
+        boolean removed = blocks.unblock(player.getUniqueId(), target);
+        msg(player, removed ? "player-unblocked" : "player-not-blocked", Map.of("target", name));
+        return removed;
+    }
+
+    void sendBlockedPlayersList(Player player) {
+        List<UUID> list = blocks.blockedPlayers(player.getUniqueId());
+        if (list.isEmpty()) {
+            msg(player, "blocked-list-empty");
+            return;
+        }
+        msg(player, "blocked-list-header", Map.of("count", String.valueOf(list.size())));
+        String entry = getConfig().getString("messages.blocked-list-entry", defaultMessage("blocked-list-entry"));
+        for (UUID uuid : list) {
+            String name = Bukkit.getOfflinePlayer(uuid).getName();
+            player.sendMessage(color(entry.replace("{target}", name == null ? uuid.toString() : name)));
         }
     }
 
@@ -3500,6 +3665,10 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         if (session == null)
             return;
         String menu = normalize(session.returnMenu);
+        if (menu.equals(BlockedPlayersMenuManager.MENU_ID)) {
+            Bukkit.getScheduler().runTask(this, () -> openBlockedPlayersMenu(player));
+            return;
+        }
         if (menu.equals("mailbox") || menu.equals("buzon")) {
             int mailboxPage = Math.max(0, session.returnPage);
             Bukkit.getScheduler().runTask(this, () -> openMailbox(player, mailboxPage));
@@ -4178,6 +4347,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             if (!player.isOnline())
                 return;
             validateActiveTitle(player, true);
+            getMailboxLimit(player); // remembers the limit for when the player is offline
             sendWelcomeMailIfNeeded(player, firstJoin);
         }, 20L);
         Bukkit.getScheduler().runTaskLater(this, () -> validateActiveTitle(player, true), 100L);
@@ -4195,6 +4365,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         mailSessions.remove(player.getUniqueId());
+        if (mailCooldownRemainingSeconds(player) <= 0)
+            lastMailSentAt.remove(player.getUniqueId());
         if (data != null)
             data.forget(player.getUniqueId());
         interactiveChatProfiles.remove(player.getUniqueId());
@@ -5028,6 +5200,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         if (mmoItemsBrowserManager != null
                 && mmoItemsBrowserManager.isBrowserInventory(event.getView().getTopInventory()))
             return;
+        if (BlockedPlayersMenuManager.isMenu(event.getView().getTopInventory()))
+            return;
         if (!(event.getInventory().getHolder() instanceof MenuHolder holder)) {
             if (handleExternalFriendOptionsClick(event, player))
                 return;
@@ -5119,16 +5293,13 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
                     player.closeInventory();
                 suggestPrivateMessage(player, holder.targetName);
             }
-            case "START_MAIL_BLOCK" -> {
+            case "START_BLOCK_PLAYER", "START_UNBLOCK_PLAYER" -> {
                 if (shouldCloseOnClick(pdc))
                     player.closeInventory();
-                startMailBlockPrompt(player, true, holder.menuId.isBlank() ? "correo" : holder.menuId, holder.page);
+                startBlockPlayerPrompt(player, action.equals("START_BLOCK_PLAYER"),
+                        holder.menuId.isBlank() ? BlockedPlayersMenuManager.MENU_ID : holder.menuId, holder.page);
             }
-            case "START_MAIL_UNBLOCK" -> {
-                if (shouldCloseOnClick(pdc))
-                    player.closeInventory();
-                startMailBlockPrompt(player, false, holder.menuId.isBlank() ? "correo" : holder.menuId, holder.page);
-            }
+            case "OPEN_BLOCKED_PLAYERS" -> openBlockedPlayersMenu(player);
             case "CLEAR_TITLE" -> {
                 clearActiveTitle(player);
                 openTitlesHome(player);
@@ -6240,6 +6411,22 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             case "party-left" -> "&eSaliste de tu Grupo de Aventura.";
             case "party-not-in-party" -> "&cNo perteneces a ningún Grupo de Aventura.";
             case "party-leave-error" -> "&cNo se pudo abandonar el Grupo de Aventura.";
+            case "mail-not-delivered" -> "&cNo se pudo enviar la carta a &e{target}&c.";
+            case "mail-cooldown" -> "&cEspera &e{seconds}s &cantes de enviar otra carta.";
+            case "player-block-prompt" ->
+                "&eEscribe el nombre del jugador que quieres bloquear. Escribe &ccancelar &epara salir.";
+            case "player-unblock-prompt" ->
+                "&eEscribe el nombre del jugador que quieres desbloquear. Escribe &ccancelar &epara salir.";
+            case "player-blocked" -> "&eBloqueaste a &c{target}&e. Ya no podrá enviarte cartas.";
+            case "player-already-blocked" -> "&e{target} &7ya estaba bloqueado.";
+            case "player-unblocked" -> "&aDesbloqueaste a &e{target}&a.";
+            case "player-not-blocked" -> "&e{target} &7no estaba bloqueado.";
+            case "player-self-block" -> "&cNo puedes bloquearte a ti mismo.";
+            case "player-block-limit" -> "&cYa bloqueaste al máximo de jugadores (&e{max}&c).";
+            case "player-cannot-block-server" -> "&cNo puedes bloquear cartas oficiales de MDVCRAFT.";
+            case "blocked-list-header" -> "&eJugadores bloqueados &7({count}):";
+            case "blocked-list-empty" -> "&7No tienes jugadores bloqueados.";
+            case "blocked-list-entry" -> "&8- &f{target}";
             default -> "&cMensaje faltante: " + key;
         };
     }
@@ -6539,7 +6726,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     }
 
     enum MailStage {
-        RECIPIENT, MESSAGE, BLOCK, UNBLOCK
+        RECIPIENT, MESSAGE, BLOCK_PLAYER, UNBLOCK_PLAYER
     }
 
     static final class MailComposeSession {

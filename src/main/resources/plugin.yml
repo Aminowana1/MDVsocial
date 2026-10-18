@@ -28,6 +28,16 @@ commands:
     description: Envia y administra cartas de MDVSocial.
     usage: /carta
     aliases: [cartas]
+  bloquear:
+    description: Bloquea a un jugador. No podrá enviarte cartas.
+    usage: /bloquear <jugador>
+  desbloquear:
+    description: Desbloquea a un jugador.
+    usage: /desbloquear <jugador>
+  bloqueados:
+    description: Muestra tus jugadores bloqueados.
+    usage: /bloqueados
+    aliases: [bloqueos]
   tienda:
     description: Abre la tienda online de MDVCRAFT.
     usage: /tienda
@@ -81,6 +91,12 @@ permissions:
     default: true
   mdvsocial.mail.delete:
     description: Permite eliminar cartas propias.
+    default: true
+  mdvsocial.mail.cooldown.bypass:
+    description: Permite enviar cartas sin esperar entre envios.
+    default: op
+  mdvsocial.block.use:
+    description: Permite bloquear y desbloquear jugadores.
     default: true
 
   mdvsocial.homes.use:

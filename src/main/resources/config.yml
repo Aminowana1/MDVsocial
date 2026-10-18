@@ -31,30 +31,38 @@ messages:
   mail-disabled: '&cEl sistema de cartas esta desactivado.'
   mail-recipient-prompt: '&eEscribe el nombre del destinatario en el chat. Escribe &ccancelar &epara salir.'
   mail-message-prompt: '&eAhora escribe el mensaje para &a{target}&e. Maximo &a{max} &ecaracteres. Escribe &ccancelar &epara salir.'
-  mail-block-prompt: '&eEscribe el nombre del jugador que quieres bloquear para cartas. Escribe &ccancelar &epara salir.'
-  mail-unblock-prompt: '&eEscribe el nombre del jugador que quieres desbloquear. Escribe &ccancelar &epara salir.'
   mail-cancelled: '&7Accion de carta cancelada.'
   mail-sent: '&aCarta enviada a &e{target}&a.'
   mail-received: '&eHas recibido una carta de &f{sender}&e.'
   mail-player-not-found: '&cJugador no encontrado. Intenta de nuevo o cancela escribiendo &4cancelar. &cDebe haber entrado al servidor al menos una vez.'
   mail-self: '&cNo puedes enviarte una carta a ti mismo.'
-  mail-self-block: '&cNo puedes bloquearte a ti mismo.'
   mail-empty: '&cLa carta no puede estar vacia.'
   mail-too-long: '&cLa carta es demasiado larga. Maximo: &e{max}&c caracteres.'
   mail-full: '&cNo puedes enviar la carta. El buzon de &e{target} &cesta lleno (&e{limit}&c).'
-  mail-blocked-by-target: '&cNo puedes enviar cartas a &e{target}&c.'
+  # Se usa cuando el destinatario te bloqueó. Es genérico a propósito: no revela el bloqueo.
+  mail-not-delivered: '&cNo se pudo enviar la carta a &e{target}&c.'
+  mail-cooldown: '&cEspera &e{seconds}s &cantes de enviar otra carta.'
   mail-deleted: '&eCarta eliminada.'
   mail-not-found: '&cEsa carta ya no existe.'
-  mail-blocked: '&eBloqueaste las cartas de &c{target}&e.'
-  mail-unblocked: '&aDesbloqueaste las cartas de &e{target}&a.'
-  mail-not-blocked: '&e{target} &7no estaba bloqueado.'
   mail-player-not-found-suggestions: '&cJugador no encontrado. Intenta de nuevo o cancela escribiendo &ccancelar. &7Quizas quisiste decir: &e{suggestions}&7.'
   mail-broadcast-sent: '&aCarta global &e{id} &aenviada a &e{sent} &ajugadores. &7Omitidos: &e{skipped}&7.'
   mail-broadcast-not-found: '&cNo existe una campaña de correo activa con ese ID.'
   mail-broadcast-deleted: '&aCampaña &e{id} &aeliminada de &e{removed} &abuzones.'
   mail-reply-prompt: '&eEscribe la carta que le enviaras a &a{target}&e. Maximo &a{max} &ecaracteres. Escribe &ccancelar &epara salir.'
-  mail-cannot-block-server: '&cNo puedes bloquear cartas oficiales de MDVCRAFT.'
   mail-cannot-reply-server: '&cNo puedes responder cartas oficiales de MDVCRAFT.'
+  # Jugadores bloqueados (sistema general: hoy impide recibir cartas e invitaciones de clan por carta).
+  player-block-prompt: '&eEscribe el nombre del jugador que quieres bloquear. Escribe &ccancelar &epara salir.'
+  player-unblock-prompt: '&eEscribe el nombre del jugador que quieres desbloquear. Escribe &ccancelar &epara salir.'
+  player-blocked: '&eBloqueaste a &c{target}&e. Ya no podrá enviarte cartas.'
+  player-already-blocked: '&e{target} &7ya estaba bloqueado.'
+  player-unblocked: '&aDesbloqueaste a &e{target}&a.'
+  player-not-blocked: '&e{target} &7no estaba bloqueado.'
+  player-self-block: '&cNo puedes bloquearte a ti mismo.'
+  player-block-limit: '&cYa bloqueaste al máximo de jugadores (&e{max}&c).'
+  player-cannot-block-server: '&cNo puedes bloquear cartas oficiales de MDVCRAFT.'
+  blocked-list-header: '&eJugadores bloqueados &7({count}):'
+  blocked-list-empty: '&7No tienes jugadores bloqueados.'
+  blocked-list-entry: '&8- &f{target}'
   title-invalid-reset: '&eTu titulo anterior ya no estaba desbloqueado. Se equipo automaticamente {title}&e.'
   title-invalid-cleared: '&eTu titulo anterior ya no estaba desbloqueado y fue retirado.'
   punishment-title-invalid: '&cEse titulo no esta configurado como titulo de castigo.'
@@ -599,6 +607,44 @@ social-friend-options:
     when-no-party: create-and-invite
     max-members: 5  
   sound: open  
+# ==========================================================
+# Jugadores bloqueados (general, no solo cartas)
+# Comandos: /bloquear <jugador>, /desbloquear <jugador>, /bloqueados
+# API: MDVSocialAPI.isBlocked(dueño, objetivo)
+# ==========================================================
+blocked-players:
+  # Máximo de jugadores que cada uno puede bloquear (0 = sin límite).
+  max-entries: 200
+  # Textos del menú Java. Bedrock usa MenusBedrock/bloqueados.yml.
+  menu:
+    title: '&8&lJugadores Bloqueados &7({count})'
+    entry:
+      name: '&f{target}'
+      lore:
+        - ''
+        - '&7No puede enviarte cartas.'
+        - ''
+        - '&eClick para desbloquear.'
+    empty:
+      name: '&7No tienes jugadores bloqueados'
+      lore:
+        - ''
+        - '&7Los jugadores bloqueados'
+        - '&7no pueden enviarte cartas.'
+    block:
+      name: '&c&lBloquear jugador'
+      lore:
+        - ''
+        - '&7Escribe el nombre del jugador'
+        - '&7que quieres bloquear.'
+        - ''
+        - '&eClick para comenzar.'
+    back: '&6&lVolver'
+    back-lore:
+      - '&7Regresa al menú de amigos.'
+    previous: '&ePágina anterior'
+    next: '&ePágina siguiente'
+
 mail:
   enabled: true
 
@@ -613,6 +659,10 @@ mail:
 
   # Límite máximo de caracteres por carta.
   max-message-length: 180
+
+  # Segundos de espera entre cartas de un mismo jugador (0 = sin espera).
+  # Permiso para saltarla: mdvsocial.mail.cooldown.bypass
+  send-cooldown-seconds: 30
 
   # Si está false, solo se puede mandar carta a jugadores que ya entraron al servidor.
   allow-unknown-targets: false
@@ -638,7 +688,8 @@ mail:
     # false: la bienvenida llega solo al buzón, sin avisos en el chat.
     notify-in-chat: false
   never-expires-text: 'no expira'
-  # Permisos para expandir buzón.
+  # Permisos para expandir buzón. Si el destinatario está desconectado se usa
+  # el último límite que tuvo conectado (se actualiza al entrar al servidor).
   mailbox-size-permissions:
     mdvsocial.mailbox.15: 15
     mdvsocial.mailbox.25: 25
@@ -647,6 +698,7 @@ mail:
     
   clan-invites:
     ignore-mailbox-limit: true
+    # Las invitaciones de clan por carta tampoco llegan si el invitado bloqueó a quien invita.
     
     
   # Formato de fecha visible en las cartas.

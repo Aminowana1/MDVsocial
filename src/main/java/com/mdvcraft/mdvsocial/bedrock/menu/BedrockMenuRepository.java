@@ -53,7 +53,8 @@ public final class BedrockMenuRepository {
             "discord.yml",
             "titulos.yml",
             "titulos_lista.yml",
-            "rangos.yml");
+            "rangos.yml",
+            "bloqueados.yml");
 
     private final JavaPlugin plugin;
     private final BedrockMenuParser parser;

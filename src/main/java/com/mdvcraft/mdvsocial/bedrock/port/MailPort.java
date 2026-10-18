@@ -27,15 +27,15 @@ public interface MailPort {
 
     void handleClanInvite(Player player, String id, boolean accept, int page);
 
+    /** Blocks the sender of a letter through the general block list. */
     void blockSender(Player player, String senderUuid);
+
+    /** @return true when the player may send a letter now; otherwise tells them how long to wait. */
+    boolean checkCooldown(Player player);
 
     void sendByName(Player sender, String targetName, String message);
 
     void sendByUuid(Player sender, UUID targetUuid, String fallbackName, String message);
-
-    void blockByName(Player player, String targetName);
-
-    void unblockByName(Player player, String targetName);
 
     int maxLength();
 

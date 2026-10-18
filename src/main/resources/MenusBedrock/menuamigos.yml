@@ -14,13 +14,12 @@ buttons:
     commands:
       - "party"
   correo:
-    text: "&6&lBuzón\n&7Lee cartas recibidas"
+    text: "&6&lCartas y Buzón\n&7Lee o envía cartas."
     action: "OPEN_MENU"
     target-menu: "correo"
-  enviar:
-    text: "&e&lEnviar Carta\n&7Escribe una carta a otro"
-    action: "START_MAIL_SEND"
-    close-on-click: true
+  bloqueados:
+    text: "&c&lJugadores Bloqueados\n&7Revisa o bloquea jugadores."
+    action: "OPEN_BLOCKED_PLAYERS"
   volver:
     text: "&6&lVolver\n&7Regresa al menú anterior."
     action: "OPEN_MENU"

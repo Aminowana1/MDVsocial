@@ -12,13 +12,15 @@ com.mdvcraft.mdvsocial
 ├── BedrockTitlesAdapter       implementa TitlesPort
 ├── BedrockMailAdapter         implementa MailPort
 ├── BedrockSocialAdapter       implementa SocialPort
+├── BedrockBlocksAdapter       implementa BlocksPort
 └── bedrock/
     ├── BedrockModule          fachada única del módulo
     ├── port/                  contratos con el plugin
     │   ├── BedrockHost        config, textos, mensajes, sonidos, navegación
     │   ├── TitlesPort         títulos y rangos
     │   ├── MailPort           buzón
-    │   └── SocialPort         amigos y party (MMOCore)
+    │   ├── SocialPort         amigos y party (MMOCore)
+    │   └── BlocksPort         jugadores bloqueados (sistema general)
     ├── platform/
     │   └── FloodgateGateway   detección de Floodgate y envío de Forms
     ├── session/
@@ -38,6 +40,7 @@ com.mdvcraft.mdvsocial
         ├── BedrockFormSupport textos, botones con imagen, sesiones, envío
         ├── TitlesForms  MailForms  FriendsForms  PartyForms
         ├── MMOCoreForms       perfil, atributos y razas de MMOCore
+        ├── BlockedPlayersForms lista, bloquear y desbloquear jugadores
         └── LinkMessages       mensajes de tienda/Discord por chat
 ```
 

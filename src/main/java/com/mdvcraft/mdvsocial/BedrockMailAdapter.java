@@ -40,7 +40,7 @@ final class BedrockMailAdapter implements MailPort {
                 id,
                 mail.getString(base + ".from-name", "Desconocido"),
                 mail.getString(base + ".from-uuid", ""),
-                mail.getString(base + ".message", ""),
+                plugin.mailMessageForDisplay(base),
                 mail.getString(base + ".type", ""),
                 mail.getBoolean(base + ".read", false),
                 mail.getLong(base + ".sent-at", 0L),
@@ -79,13 +79,8 @@ final class BedrockMailAdapter implements MailPort {
     }
 
     @Override
-    public void blockByName(Player player, String targetName) {
-        plugin.blockMailByName(player, targetName);
-    }
-
-    @Override
-    public void unblockByName(Player player, String targetName) {
-        plugin.unblockMailByName(player, targetName);
+    public boolean checkCooldown(Player player) {
+        return plugin.checkMailCooldown(player);
     }
 
     @Override

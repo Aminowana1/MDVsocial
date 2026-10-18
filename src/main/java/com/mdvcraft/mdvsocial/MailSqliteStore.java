@@ -77,6 +77,26 @@ final class MailSqliteStore implements AutoCloseable {
             return ids;
         }
         int residentCount() { return cache.size(); }
+        /**
+         * Block lists stored inside mailboxes by versions before the general block
+         * system (mailbox.<uuid>.blocked). Only mailboxes that mention it are parsed.
+         */
+        Map<String, List<String>> legacyBlockLists() {
+            flush();
+            Map<String, List<String>> out = new LinkedHashMap<>();
+            try (PreparedStatement ps = reader.prepareStatement(
+                    "SELECT section_key, yaml FROM mail_sections WHERE section_key LIKE 'mailbox.%' AND yaml LIKE '%blocked:%'");
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    YamlConfiguration yaml = new YamlConfiguration();
+                    try { yaml.loadFromString(rs.getString(2)); }
+                    catch (Exception e) { logger.warning("Buzon ilegible al migrar bloqueos: " + rs.getString(1)); continue; }
+                    List<String> blocked = yaml.getStringList("blocked");
+                    if (!blocked.isEmpty()) out.put(rs.getString(1).substring(8), blocked);
+                }
+            } catch (SQLException e) { throw new IllegalStateException("Cannot read legacy block lists", e); }
+            return out;
+        }
     }
 
     private record Update(String yaml) {}

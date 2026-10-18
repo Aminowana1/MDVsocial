@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-/** Native Bedrock forms for the mailbox: list, read, compose, reply and block. */
+/** Native Bedrock forms for the mailbox: list, read, compose and reply. */
 public final class MailForms {
 
     /** Pseudo menu id used to return to the native mailbox instead of a YAML menu. */
@@ -143,6 +143,8 @@ public final class MailForms {
             forms.host().message(player, "no-permission");
             return;
         }
+        if (!mail.checkCooldown(player))
+            return;
         long session = forms.begin(player);
         CustomForm.Builder builder = CustomForm.builder()
                 .title(forms.color("&6&lEnviar carta"))
@@ -174,6 +176,8 @@ public final class MailForms {
             forms.host().message(player, "no-permission");
             return;
         }
+        if (!mail.checkCooldown(player))
+            return;
         if (targetUuid == null) {
             forms.host().message(player, "social-target-not-found");
             return;
@@ -196,28 +200,6 @@ public final class MailForms {
             String message = response.asInput(0);
             forms.run(player, session, () -> {
                 mail.sendByUuid(player, targetUuid, safeTargetName, message == null ? "" : message.trim());
-                returnFrom(player, returnMenu, returnPage);
-            });
-        });
-        forms.send(player, builder.build());
-    }
-
-    public void openBlockForm(Player player, boolean block, String returnMenu, int returnPage) {
-        long session = forms.begin(player);
-        CustomForm.Builder builder = CustomForm.builder()
-                .title(forms.color(block ? "&c&lBloquear cartas" : "&a&lDesbloquear cartas"))
-                .input(forms.color("&eJugador"), "Nombre del jugador", "");
-        builder.validResultHandler(response -> {
-            String target = response.asInput(0);
-            forms.run(player, session, () -> {
-                if (target == null || target.isBlank()) {
-                    returnFrom(player, returnMenu, returnPage);
-                    return;
-                }
-                if (block)
-                    mail.blockByName(player, target.trim());
-                else
-                    mail.unblockByName(player, target.trim());
                 returnFrom(player, returnMenu, returnPage);
             });
         });

@@ -1,5 +1,6 @@
 package com.mdvcraft.mdvsocial.bedrock.action;
 
+import com.mdvcraft.mdvsocial.bedrock.forms.BlockedPlayersForms;
 import com.mdvcraft.mdvsocial.bedrock.forms.FriendsForms;
 import com.mdvcraft.mdvsocial.bedrock.forms.LinkMessages;
 import com.mdvcraft.mdvsocial.bedrock.forms.MMOCoreForms;
@@ -23,7 +24,7 @@ public final class BuiltinBedrockActions {
 
     public record Dependencies(BedrockHost host, BedrockNavigation navigation, TitlesPort titlesPort,
             SocialPort social, TitlesForms titles, MailForms mail, FriendsForms friends, PartyForms party,
-            MMOCoreForms mmocore, LinkMessages links) {
+            MMOCoreForms mmocore, BlockedPlayersForms blocked, LinkMessages links) {
     }
 
     public static void registerAll(BedrockActionRegistry registry, Dependencies d) {
@@ -70,10 +71,6 @@ public final class BuiltinBedrockActions {
         registry.register((p, b, c) -> d.mail().openCompose(p, returnMenu(c), c.page()), "START_MAIL_SEND");
         registry.register((p, b, c) -> d.mail().openMessageToTarget(p, c.targetUuid(), c.targetName(),
                 returnMenu(c), c.page()), "START_MAIL_SEND_TARGET");
-        registry.register((p, b, c) -> d.mail().openBlockForm(p, true, returnMenu(c), c.page()),
-                "START_MAIL_BLOCK");
-        registry.register((p, b, c) -> d.mail().openBlockForm(p, false, returnMenu(c), c.page()),
-                "START_MAIL_UNBLOCK");
 
         // Friends and party.
         registry.register((p, b, c) -> d.friends().openList(p, 0), "OPEN_BEDROCK_FRIENDS");
@@ -85,6 +82,11 @@ public final class BuiltinBedrockActions {
         registry.register((p, b, c) -> d.friends().openRemoveConfirm(p, c.targetUuid(), c.targetName(),
                 c.targetOnline()), "REMOVE_FRIEND_TARGET");
         registry.register((p, b, c) -> d.friends().openPrivateMessage(p, c.targetName(), c), "SUGGEST_MSG_TARGET");
+
+        // General block list (old START_MAIL_BLOCK/UNBLOCK buttons are aliases of these).
+        registry.register((p, b, c) -> d.blocked().openList(p, 0), "OPEN_BLOCKED_PLAYERS");
+        registry.register((p, b, c) -> d.blocked().openBlockForm(p), "START_BLOCK_PLAYER");
+        registry.register((p, b, c) -> d.blocked().openUnblockForm(p), "START_UNBLOCK_PLAYER");
 
         // MMOCore: native form, or the button commands when MMOCore cannot open it.
         registry.register(mmocore(nav, d.mmocore()::openProfile), "OPEN_MMOCORE_PROFILE");

@@ -94,6 +94,28 @@ public final class MDVSocialAPI {
         return plugin != null && player != null && plugin.openBedrockRaceSelection(player);
     }
 
+    /**
+     * Consulta de bloqueos general de MDVSocial.
+     *
+     * @return true si {@code owner} bloqueó a {@code target}. Ejemplo para un
+     *         sistema de mensajes: {@code if (MDVSocialAPI.isBlocked(destino, emisor)) cancelar();}
+     */
+    public static boolean isBlocked(UUID owner, UUID target) {
+        MDVSocialPlugin plugin = plugin();
+        return plugin != null && plugin.getBlockService().isBlocked(owner, target);
+    }
+
+    /** @return true si {@code from} puede contactar a {@code to} (es decir, {@code to} no bloqueó a {@code from}). */
+    public static boolean canContact(UUID from, UUID to) {
+        return !isBlocked(to, from);
+    }
+
+    /** Jugadores bloqueados por {@code owner}, del más antiguo al más reciente. */
+    public static List<UUID> getBlockedPlayers(UUID owner) {
+        MDVSocialPlugin plugin = plugin();
+        return plugin == null ? Collections.emptyList() : plugin.getBlockService().blockedPlayers(owner);
+    }
+
     /** Reproduce un sonido comun del core UI. Ejemplos: default, open, back, close, page, confirm, danger, invalid. */
     public static boolean playUISound(Player player, String soundKey) {
         MDVSocialPlugin plugin = plugin();

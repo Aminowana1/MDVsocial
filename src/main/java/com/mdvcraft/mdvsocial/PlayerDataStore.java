@@ -38,6 +38,9 @@ final class PlayerDataStore implements AutoCloseable {
     private Connection connection;
     private final java.util.LinkedHashMap<UUID, java.util.Map<String, Object>> profiles = new java.util.LinkedHashMap<>(16, .75f, true);
     private long profileLoads;
+    /** owner -> blocked players, in the order they were blocked. Bounded like profiles. */
+    private final java.util.LinkedHashMap<UUID, List<UUID>> blocks = new java.util.LinkedHashMap<>(16, .75f, true);
+    private final java.util.LinkedHashMap<UUID, Integer> mailboxLimits = new java.util.LinkedHashMap<>(16, .75f, true);
 
     private java.util.Map<String, Object> profile(UUID uuid) throws SQLException {
         java.util.Map<String, Object> result = profiles.get(uuid);
@@ -64,7 +67,7 @@ final class PlayerDataStore implements AutoCloseable {
         while (profiles.size() > capacity) profiles.remove(profiles.keySet().iterator().next());
         return result;
     }
-    synchronized void forget(UUID uuid) { profiles.remove(uuid); }
+    synchronized void forget(UUID uuid) { profiles.remove(uuid); blocks.remove(uuid); mailboxLimits.remove(uuid); }
     synchronized int residentCount() { return profiles.size(); }
     synchronized long profileLoads() { return profileLoads; }
 
@@ -74,7 +77,7 @@ final class PlayerDataStore implements AutoCloseable {
     }
 
     synchronized void open(File legacyYaml) throws SQLException, IOException {
-        closeQuietly(); profiles.clear();
+        closeQuietly(); profiles.clear(); blocks.clear(); mailboxLimits.clear();
         File parent = databaseFile.getParentFile();
         if (parent != null && !parent.exists() && !parent.mkdirs()) {
             throw new IOException("No se pudo crear la carpeta de datos para SQLite.");
@@ -117,6 +120,20 @@ final class PlayerDataStore implements AutoCloseable {
                     )
                     """);
             statement.executeUpdate("CREATE INDEX IF NOT EXISTS idx_unlocked_uuid ON player_unlocked_titles(uuid)");
+            statement.executeUpdate("""
+                    CREATE TABLE IF NOT EXISTS player_blocks (
+                        owner TEXT NOT NULL,
+                        blocked TEXT NOT NULL,
+                        created_at INTEGER NOT NULL,
+                        PRIMARY KEY (owner, blocked)
+                    )
+                    """);
+            statement.executeUpdate("""
+                    CREATE TABLE IF NOT EXISTS player_mailbox_limits (
+                        uuid TEXT PRIMARY KEY,
+                        mailbox_limit INTEGER NOT NULL
+                    )
+                    """);
         }
 
         migrateLegacyYamlIfPresent(legacyYaml);
@@ -182,6 +199,124 @@ final class PlayerDataStore implements AutoCloseable {
             profiles.remove(parsed.uuid);
             throw new IllegalStateException("Cannot persist player profile", ex);
         }
+    }
+
+    /** Players blocked by {@code owner}, oldest first. */
+    synchronized List<UUID> blockedPlayers(UUID owner) {
+        List<UUID> cached = blocks.get(owner);
+        if (cached != null) return cached;
+        List<UUID> loaded = new ArrayList<>();
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT blocked FROM player_blocks WHERE owner=? ORDER BY created_at, blocked")) {
+            ps.setString(1, owner.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    try { loaded.add(UUID.fromString(rs.getString(1))); }
+                    catch (IllegalArgumentException ignored) { }
+                }
+            }
+        } catch (SQLException ex) { throw new IllegalStateException("Cannot read blocked players", ex); }
+        List<UUID> result = List.copyOf(loaded);
+        blocks.put(owner, result);
+        int capacity = Math.max(1, plugin.getConfig().getInt("performance.profile-cache-size", 8192));
+        while (blocks.size() > capacity) blocks.remove(blocks.keySet().iterator().next());
+        return result;
+    }
+
+    /** @return false when the player was already blocked. */
+    synchronized boolean addBlock(UUID owner, UUID blocked) {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "INSERT OR IGNORE INTO player_blocks(owner, blocked, created_at) VALUES (?, ?, ?)")) {
+            ps.setString(1, owner.toString());
+            ps.setString(2, blocked.toString());
+            ps.setLong(3, System.currentTimeMillis());
+            boolean added = ps.executeUpdate() > 0;
+            blocks.remove(owner);
+            return added;
+        } catch (SQLException ex) { throw new IllegalStateException("Cannot block player", ex); }
+    }
+
+    /** @return false when the player was not blocked. */
+    synchronized boolean removeBlock(UUID owner, UUID blocked) {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "DELETE FROM player_blocks WHERE owner=? AND blocked=?")) {
+            ps.setString(1, owner.toString());
+            ps.setString(2, blocked.toString());
+            boolean removed = ps.executeUpdate() > 0;
+            blocks.remove(owner);
+            return removed;
+        } catch (SQLException ex) { throw new IllegalStateException("Cannot unblock player", ex); }
+    }
+
+    /**
+     * Imports block lists from an older storage in one transaction and marks the
+     * import as done under {@code metaKey}. Does nothing if it already ran.
+     *
+     * @return number of imported entries, or -1 when the import had already run.
+     */
+    synchronized int importBlocksOnce(String metaKey, java.util.Map<UUID, List<UUID>> legacy) {
+        try {
+            if ("true".equalsIgnoreCase(getMeta(metaKey))) return -1;
+            int imported = 0;
+            boolean oldAutoCommit = connection.getAutoCommit();
+            connection.setAutoCommit(false);
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "INSERT OR IGNORE INTO player_blocks(owner, blocked, created_at) VALUES (?, ?, ?)")) {
+                long now = System.currentTimeMillis();
+                for (var entry : legacy.entrySet()) {
+                    for (UUID blocked : entry.getValue()) {
+                        if (blocked.equals(entry.getKey())) continue;
+                        ps.setString(1, entry.getKey().toString());
+                        ps.setString(2, blocked.toString());
+                        ps.setLong(3, now);
+                        imported += ps.executeUpdate();
+                    }
+                }
+                setMeta(metaKey, "true");
+                connection.commit();
+            } catch (SQLException ex) {
+                connection.rollback();
+                throw ex;
+            } finally {
+                connection.setAutoCommit(oldAutoCommit);
+            }
+            blocks.clear();
+            return imported;
+        } catch (SQLException ex) { throw new IllegalStateException("Cannot import blocked players", ex); }
+    }
+
+    synchronized boolean isMetaTrue(String key) {
+        try { return "true".equalsIgnoreCase(getMeta(key)); }
+        catch (SQLException ex) { throw new IllegalStateException("Cannot read storage meta", ex); }
+    }
+
+    /** Last mailbox limit seen while the player was online, or -1 when unknown. */
+    synchronized int mailboxLimit(UUID uuid) {
+        Integer cached = mailboxLimits.get(uuid);
+        if (cached != null) return cached;
+        int value = -1;
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT mailbox_limit FROM player_mailbox_limits WHERE uuid=?")) {
+            ps.setString(1, uuid.toString());
+            try (ResultSet rs = ps.executeQuery()) { if (rs.next()) value = rs.getInt(1); }
+        } catch (SQLException ex) { throw new IllegalStateException("Cannot read mailbox limit", ex); }
+        mailboxLimits.put(uuid, value);
+        int capacity = Math.max(1, plugin.getConfig().getInt("performance.profile-cache-size", 8192));
+        while (mailboxLimits.size() > capacity) mailboxLimits.remove(mailboxLimits.keySet().iterator().next());
+        return value;
+    }
+
+    synchronized void setMailboxLimit(UUID uuid, int limit) {
+        if (mailboxLimit(uuid) == limit) return;
+        try (PreparedStatement ps = connection.prepareStatement("""
+                INSERT INTO player_mailbox_limits(uuid, mailbox_limit) VALUES (?, ?)
+                ON CONFLICT(uuid) DO UPDATE SET mailbox_limit = excluded.mailbox_limit
+                """)) {
+            ps.setString(1, uuid.toString());
+            ps.setInt(2, limit);
+            ps.executeUpdate();
+            mailboxLimits.put(uuid, limit);
+        } catch (SQLException ex) { throw new IllegalStateException("Cannot store mailbox limit", ex); }
     }
 
     /** Las escrituras son inmediatas; se conserva por compatibilidad con saveData(). */

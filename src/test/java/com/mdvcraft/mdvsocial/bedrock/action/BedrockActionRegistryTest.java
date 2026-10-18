@@ -1,5 +1,6 @@
 package com.mdvcraft.mdvsocial.bedrock.action;
 
+import com.mdvcraft.mdvsocial.bedrock.forms.BlockedPlayersForms;
 import com.mdvcraft.mdvsocial.bedrock.forms.FriendsForms;
 import com.mdvcraft.mdvsocial.bedrock.forms.LinkMessages;
 import com.mdvcraft.mdvsocial.bedrock.forms.MMOCoreForms;
@@ -50,7 +51,7 @@ class BedrockActionRegistryTest {
         BuiltinBedrockActions.registerAll(registry, new BuiltinBedrockActions.Dependencies(
                 host, new BedrockNavigation(host), mock(TitlesPort.class), mock(SocialPort.class), titles, mail,
                 mock(FriendsForms.class), mock(PartyForms.class), mock(MMOCoreForms.class),
-                mock(LinkMessages.class)));
+                mock(BlockedPlayersForms.class), mock(LinkMessages.class)));
     }
 
     private static BedrockMenuButton button(String action, String permission) {
