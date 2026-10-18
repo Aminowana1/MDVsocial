@@ -537,8 +537,72 @@ bedrock:
     # El formulario de "Invitar jugador" usa el comando oficial de MMOCore.
     # Así el jugador Java recibe una PartyInvite normal y /party accept|deny funciona.
     direct-invite-command: 'party invite {target}'
-    # Si el receptor es Java, añade botones clickables explícitos como respaldo.
-    java-fallback-buttons: true
+
+# ==========================================================
+# Avisos de invitación a Grupo de Aventura
+# Reemplazan el mensaje de MMOCore, que debe estar silenciado en su messages.yml.
+# Detecta cualquier invitación (/grupo, menús, GUI de MMOCore, otros plugins).
+# ==========================================================
+party-invites:
+  enabled: true
+  # Cada cuánto se revisan invitaciones nuevas (20 ticks = 1 s). Las de MDVSocial
+  # se avisan al instante; esto cubre las que vienen de fuera.
+  check-interval-ticks: 20
+
+  # Jugadores Java. Cada línea es JSON de chat (o texto normal); se aceptan códigos &.
+  # Tokens: {player} = quien invita, {uuid} = su UUID.
+  java:
+    enabled: true
+    format:
+      - '{"text":""}'
+      - '{"text":"&6&l[&5&lMDVCRAFT&6&l]  &4»&r &6{player} &ete ha invitado a su grupo."}'
+      - '[{"text":"        "},{"text":"&8[&a&lACEPTAR&8]","clickEvent":{"action":"run_command","value":"/mmocore:party accept {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick para aceptar."}},{"text":"&r             "},{"text":"&8[&c&lRECHAZAR&8]","clickEvent":{"action":"run_command","value":"/mmocore:party deny {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick para rechazar."}}]'
+      - '{"text":""}'
+
+  # Jugadores Bedrock (sin clicks en el chat). Tokens: {player}, {sneaks}, {seconds}.
+  bedrock:
+    enabled: true
+    # Se usa cuando quick accept está activo para invitaciones (quick-accept.types.party-invite).
+    message:
+      - ''
+      - '&6&l[&5&lMDVCRAFT&6&l]  &4»&r &6{player} &ete ha invitado a su grupo.'
+      - '&7Revísala en &fSocial y Amigos &8» &fGrupo de Aventura &8» &fInvitaciones'
+      - '&7o &eagáchate {sneaks} veces rápido &7en los próximos &e{seconds}s &7para responder.'
+      - ''
+    # Se usa cuando quick accept está desactivado.
+    message-without-quick-accept:
+      - ''
+      - '&6&l[&5&lMDVCRAFT&6&l]  &4»&r &6{player} &ete ha invitado a su grupo.'
+      - '&7Revísala en &fSocial y Amigos &8» &fGrupo de Aventura &8» &fInvitaciones'
+      - ''
+    # Si quien invita es tu amigo, el quick accept acepta directamente sin pedir confirmación.
+    skip-confirmation-for-friends: true
+
+# ==========================================================
+# Quick accept: agacharse varias veces rápido para responder una solicitud.
+# Sistema genérico: cada tipo puede sobrescribir cualquier valor en types.<tipo>.
+# ==========================================================
+quick-accept:
+  enabled: true
+  # Solo para jugadores Bedrock (Java ya tiene botones clicables en el chat).
+  bedrock-only: true
+  # Agachadas necesarias.
+  sneaks-required: 2
+  # Segundos que dura la oportunidad desde que llega la solicitud.
+  window-seconds: 30
+  # Tiempo máximo entre una agachada y la siguiente (ms). Si se supera, se empieza de cero.
+  max-sneak-gap-millis: 700
+  # Sonido de ui-core.sounds al completar el gesto (vacío = ninguno).
+  trigger-sound: 'confirm'
+  messages:
+    # Al terminar el tiempo sin responder (vacío = no avisar).
+    expired: ''
+  types:
+    party-invite:
+      enabled: true
+      # Ejemplo de ajuste solo para invitaciones:
+      # sneaks-required: 3
+      # window-seconds: 20
 
 # /grupo [jugador...]: crea un Grupo de Aventura e invita hasta 5 jugadores.
 party-command:

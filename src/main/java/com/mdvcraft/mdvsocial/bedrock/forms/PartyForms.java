@@ -187,7 +187,23 @@ public final class PartyForms {
         forms.show(player, builder, actions);
     }
 
+    /** Confirmation form for one received invitation (also used by quick accept). */
+    public void openInvite(Player player, Object request) {
+        openRequestDetail(player, request, false);
+    }
+
+    /** Accepts an invitation and shows the party (used by quick accept for friends). */
+    public void acceptInvite(Player player, Object request) {
+        if (social.resolveRequest(player, request, true))
+            acceptedFollowUp(player);
+    }
+
     private void openRequestDetail(Player player, Object request) {
+        openRequestDetail(player, request, true);
+    }
+
+    /** @param fromList whether "back"/failures return to the invitation list (false: just close). */
+    private void openRequestDetail(Player player, Object request, boolean fromList) {
         YamlConfiguration ui = forms.ui("party");
         String creator = social.requestCreatorName(request);
         Map<String, String> tokens = Map.of("creator", creator);
@@ -200,26 +216,32 @@ public final class PartyForms {
         forms.addButton(builder, ui, "requests-menu.detail.deny",
                 forms.uiText(ui, "requests-menu.detail.deny", "&cRechazar invitación", player, tokens));
         forms.addButton(builder, ui, "requests-menu.detail.back",
-                forms.uiText(ui, "requests-menu.detail.back", "&6Volver", player, tokens));
+                forms.uiText(ui, fromList ? "requests-menu.detail.back" : "requests-menu.detail.later",
+                        fromList ? "&6Volver" : "&7Más tarde", player, tokens));
+        Runnable afterwards = fromList ? () -> openRequests(player) : () -> { };
         forms.show(player, builder, List.of(
                 () -> {
                     if (social.resolveRequest(player, request, true)) {
-                        Bukkit.getScheduler().runTaskLater(forms.host().plugin(), () -> {
-                            if (!player.isOnline())
-                                return;
-                            player.closeInventory();
-                            social.syncPartyPermission(player);
-                            open(player);
-                        }, 2L);
+                        acceptedFollowUp(player);
                     } else {
-                        openRequests(player);
+                        afterwards.run();
                     }
                 },
                 () -> {
                     if (social.resolveRequest(player, request, false))
                         forms.host().message(player, "party-request-denied", Map.of("target", creator));
-                    openRequests(player);
+                    afterwards.run();
                 },
-                () -> openRequests(player)));
+                afterwards));
+    }
+
+    private void acceptedFollowUp(Player player) {
+        Bukkit.getScheduler().runTaskLater(forms.host().plugin(), () -> {
+            if (!player.isOnline())
+                return;
+            player.closeInventory();
+            social.syncPartyPermission(player);
+            open(player);
+        }, 2L);
     }
 }

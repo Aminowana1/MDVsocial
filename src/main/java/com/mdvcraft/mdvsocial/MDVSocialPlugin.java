@@ -1,6 +1,7 @@
 package com.mdvcraft.mdvsocial;
 
 import com.mdvcraft.mdvsocial.bedrock.BedrockModule;
+import com.mdvcraft.mdvsocial.quickaccept.QuickAcceptService;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -108,6 +109,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     private BedrockModule bedrock;
     private PlayerBlockService blocks;
     private BlockedPlayersMenuManager blockedPlayersMenu;
+    private QuickAcceptService quickAccept;
+    private PartyInviteWatcher partyInviteWatcher;
     private final Map<UUID, Long> lastMailSentAt = new ConcurrentHashMap<>();
 
     private org.bukkit.NamespacedKey keyAction;
@@ -205,6 +208,11 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         blockedPlayersMenu.enable();
         new PartyCommand(this).enable();
         new PartyInviteGuard(this).enable();
+        quickAccept = new QuickAcceptService(this, this::isBedrockPlayer, this::playUiSound,
+                (player, message) -> player.sendMessage(color(message)));
+        quickAccept.enable();
+        partyInviteWatcher = new PartyInviteWatcher(this, new PartyInviteNotifier(this, quickAccept));
+        partyInviteWatcher.enable();
         mmoItemsBrowserManager = new MMOItemsBrowserManager(this);
         mmoItemsBrowserManager.enable();
         startInteractiveChatProfileTask();
@@ -234,6 +242,10 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         resetAllScoreboardPartyPermissions();
         if (bedrock != null)
             bedrock.shutdown();
+        if (partyInviteWatcher != null)
+            partyInviteWatcher.disable();
+        if (quickAccept != null)
+            quickAccept.shutdown();
         for (PermissionAttachment attachment : scoreboardPartyAttachments.values()) {
             try {
                 attachment.remove();
@@ -277,6 +289,10 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             bedrock.reload();
         if (mmoItemsBrowserManager != null)
             mmoItemsBrowserManager.reload();
+        if (partyInviteWatcher != null) {
+            partyInviteWatcher.disable();
+            partyInviteWatcher.enable();
+        }
     }
 
     private void loadData() {
@@ -3527,6 +3543,11 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         return blocks;
     }
 
+    /** Generic "sneak to accept" service; usable for any future request type. */
+    public QuickAcceptService getQuickAccept() {
+        return quickAccept;
+    }
+
     void openBlockedPlayersMenu(Player player) {
         blockedPlayersMenu.open(player, 0);
     }
@@ -3982,7 +4003,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         return out;
     }
 
-    private UUID extractUuid(Object value) {
+    UUID extractUuid(Object value) {
         if (value == null)
             return null;
         if (value instanceof UUID uuid)
@@ -4086,6 +4107,17 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         } catch (Throwable ignored) {
         }
         return null;
+    }
+
+    /**
+     * All pending MMOCore requests (friend requests, party invites...) in one
+     * snapshot. Throws when MMOCore's internals cannot be read.
+     */
+    Collection<?> getAllMMOCoreRequests() throws Exception {
+        Object requestManager = getMMOCoreRequestManager();
+        if (requestManager == null)
+            throw new IllegalStateException("MMOCore requestManager no disponible");
+        return getMMOCoreRequestValues(requestManager);
     }
 
     private Object getMMOCoreRequestManager() throws Exception {
@@ -5472,17 +5504,12 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         boolean requestCreated = hasPendingMMOCoreRequestFrom(target, "PartyInvite", player.getUniqueId());
         if (!dispatched || !requestCreated) {
             inviteFriendToParty(player, target.getUniqueId(), target.getName());
-            requestCreated = hasPendingMMOCoreRequestFrom(target, "PartyInvite", player.getUniqueId());
         } else {
             syncScoreboardPartyPermission(player);
         }
-
-        // Para Java añadimos una línea de compatibilidad con comandos explícitos. Esto
-        // evita depender de cómo el cliente renderice el JSON clickable de MMOCore.
-        if (requestCreated && !isBedrockPlayer(target)
-                && getConfig().getBoolean("bedrock.party.java-fallback-buttons", true)) {
-            sendJavaPartyInviteFallbackControls(target, player);
-        }
+        // The invited player is told right away (Java JSON / Bedrock quick accept).
+        if (partyInviteWatcher != null)
+            partyInviteWatcher.scanNow();
     }
 
     /**
@@ -5514,21 +5541,6 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             }
         }
         return false;
-    }
-
-    private void sendJavaPartyInviteFallbackControls(Player target, Player inviter) {
-        if (target == null || inviter == null || !target.isOnline())
-            return;
-        String uuid = inviter.getUniqueId().toString();
-        Component prefix = legacyAmpersand.deserialize("&d[Grupo] &f" + inviter.getName()
-                + " &7te invitó. ");
-        Component accept = legacyAmpersand.deserialize("&8[&a&lACEPTAR&8]")
-                .clickEvent(ClickEvent.runCommand("/party accept " + uuid))
-                .hoverEvent(HoverEvent.showText(legacyAmpersand.deserialize("&aAceptar invitación")));
-        Component deny = legacyAmpersand.deserialize(" &8[&c&lRECHAZAR&8]")
-                .clickEvent(ClickEvent.runCommand("/party deny " + uuid))
-                .hoverEvent(HoverEvent.showText(legacyAmpersand.deserialize("&cRechazar invitación")));
-        target.sendMessage(prefix.append(accept).append(deny));
     }
 
     boolean removeMMOCoreFriend(Player player, UUID targetUuid, String fallbackName) {
@@ -5694,6 +5706,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             invite.invoke(party, playerData, targetData);
             syncScoreboardPartyPermission(player);
             msg(player, "party-invite-sent", Map.of("target", targetName));
+            if (partyInviteWatcher != null)
+                partyInviteWatcher.scanNow();
         } catch (Throwable ex) {
             getLogger().warning(
                     "No se pudo invitar amigo a party: " + ex.getClass().getSimpleName() + " - " + ex.getMessage());

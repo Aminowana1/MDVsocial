@@ -16,6 +16,11 @@
   con nombres no abre nada para que se vean los avisos en el chat.
 - Permiso: `mdvsocial.party.use` (por defecto todos).
 
+## Avisos de invitación
+
+Los avisos al invitado (Java con botones, Bedrock con quick accept) se
+describen en `QUICK_ACCEPT_E_INVITACIONES.md`.
+
 ## Bloqueos y grupos
 
 Si un jugador te bloqueó, no puedes invitarlo a tu grupo desde ningún sitio:
