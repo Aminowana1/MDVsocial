@@ -217,6 +217,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         new PartyInviteGuard(this).enable();
         partyJoinMenuGuard = new PartyJoinMenuGuard(this);
         partyJoinMenuGuard.enable();
+        new PartySneakInvite(this).enable();
         quickAccept = new QuickAcceptService(this, this::isBedrockPlayer, this::playUiSound,
                 (player, message) -> player.sendMessage(color(message)));
         quickAccept.enable();
@@ -5925,6 +5926,27 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
 
     int getConfiguredPartyMaxMembers() {
         return Math.max(2, getConfig().getInt("social-friend-options.party.max-members", 5));
+    }
+
+    /** True when {@code player} owns {@code party}; true as well if MMOCore can't tell. */
+    boolean isMMOCorePartyLeader(Player player, Object party) {
+        try {
+            Object owner = party.getClass().getMethod("getOwner").invoke(party);
+            if (owner == null)
+                return true;
+            Object uuid = owner.getClass().getMethod("getUniqueId").invoke(owner);
+            return !(uuid instanceof UUID ownerUuid) || ownerUuid.equals(player.getUniqueId());
+        } catch (Throwable ignored) {
+            return true;
+        }
+    }
+
+    boolean isMMOCorePartyMember(Object party, UUID uuid) {
+        try {
+            return Boolean.TRUE.equals(party.getClass().getMethod("hasMember", UUID.class).invoke(party, uuid));
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 
     int countMMOCorePartyMembers(Object party) {

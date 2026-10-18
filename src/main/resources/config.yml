@@ -116,6 +116,8 @@ messages:
   party-command-too-many: '&cPuedes invitar como máximo a &e{max} &cjugadores a la vez.'
   # Se usa cuando el invitado te bloqueó. Es genérico a propósito: no revela el bloqueo.
   party-invite-not-delivered: '&cNo se pudo invitar a &e{target} &cal grupo.'
+  # Agacharse + click derecho a un jugador estando en un grupo del que no eres líder.
+  party-sneak-invite-not-leader: '&cSolo el líder del grupo puede invitar a &e{target}&c.'
   private-message-suggest: '&bHaz clic aquí para escribirle a &e{target}&b.'
 settings:
   # Menu inicial que abre /social.
@@ -564,6 +566,14 @@ party-invites:
   enabled: true
   # Abrir el menú del grupo al unirte a uno (el de MMOCore en Java, el formulario en Bedrock).
   open-menu-on-join: false
+
+  # Agachado y con la mano vacía, click derecho a un jugador (en Bedrock: interactuar
+  # o mantener pulsado) para invitarlo a tu grupo. Si no tienes grupo se crea uno;
+  # dentro de un grupo solo el líder puede invitar. Permiso: mdvsocial.party.use.
+  sneak-interact:
+    enabled: true
+    # Tiempo mínimo entre dos invitaciones así (evita repetirlas al mantener el click).
+    cooldown-millis: 1500
 
   # Jugadores Java. Cada línea es JSON de chat (o texto normal); se aceptan códigos &.
   # Tokens: {player} = quien invita, {uuid} = id de la invitación (lo usa /mmocore:party accept|deny).

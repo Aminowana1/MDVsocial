@@ -16,6 +16,20 @@
   con nombres no abre nada para que se vean los avisos en el chat.
 - Permiso: `mdvsocial.party.use` (por defecto todos).
 
+## Invitar agachado (click derecho)
+
+Agachado y con la mano vacía, click derecho a otro jugador (en Bedrock: interactuar
+o mantener pulsado sobre él) lo invita a tu grupo.
+
+- Sin grupo: se crea uno (`party-created`) y se envía la invitación.
+- En un grupo: solo el líder puede invitar (`party-sneak-invite-not-leader`). Si ya
+  es miembro o el grupo está lleno se avisa (`party-target-already-member`, `party-full`).
+- Se respetan los bloqueos como en `/grupo`. Los NPC (Citizens) se ignoran.
+- Una invitación cada `cooldown-millis` (1500 por defecto) para no repetirla al
+  mantener el click.
+- Config: `party-invites.sneak-interact.enabled` (true) para activarlo o desactivarlo.
+  Permiso: `mdvsocial.party.use`.
+
 ## Al unirte a un grupo
 
 No se abre ningún menú: ni el formulario de Bedrock ni el menú de grupo que MMOCore

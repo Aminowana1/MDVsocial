@@ -5,7 +5,7 @@
 
     <groupId>com.mdvcraft</groupId>
     <artifactId>MDVSocial</artifactId>
-    <version>2.1.0</version>
+    <version>2.1.1</version>
     <packaging>jar</packaging>
 
     <name>MDVSocial</name>
