@@ -55,28 +55,28 @@ public final class BlockedPlayersForms {
             Map<String, String> entryTokens = new HashMap<>(tokens);
             entryTokens.put("target", name);
             forms.addButton(builder, ui, "entry",
-                    forms.uiText(ui, "entry.text", "&f{target}\n&7Toca para desbloquear", player, entryTokens));
+                    forms.uiText(ui, "entry.text", "&0&l{target}\n&r&8Toca para desbloquear", player, entryTokens));
             int returnPage = safePage;
             actions.add(() -> openUnblockConfirm(player, uuid, name, returnPage));
         }
 
         if (ui.getBoolean("buttons.block.enabled", true)) {
             forms.addButton(builder, ui, "buttons.block",
-                    forms.uiText(ui, "buttons.block.text", "&c&lBloquear jugador\n&7Escribe su nombre", player, tokens));
+                    forms.uiText(ui, "buttons.block.text", "&4&lBloquear jugador\n&r&8Escribe su nombre", player, tokens));
             actions.add(() -> openBlockForm(player));
         }
         if (safePage > 0) {
             forms.addButton(builder, ui, "buttons.previous",
-                    forms.uiText(ui, "buttons.previous.text", "&ePágina anterior", player, tokens));
+                    forms.uiText(ui, "buttons.previous.text", "&6&lPágina anterior", player, tokens));
             actions.add(() -> openList(player, safePage - 1));
         }
         if (safePage < maxPage) {
             forms.addButton(builder, ui, "buttons.next",
-                    forms.uiText(ui, "buttons.next.text", "&ePágina siguiente", player, tokens));
+                    forms.uiText(ui, "buttons.next.text", "&6&lPágina siguiente", player, tokens));
             actions.add(() -> openList(player, safePage + 1));
         }
         forms.addButton(builder, ui, "buttons.back",
-                forms.uiText(ui, "buttons.back.text", "&6Volver", player, tokens));
+                forms.uiText(ui, "buttons.back.text", "&6&lVolver", player, tokens));
         actions.add(() -> forms.host().openMenu(player, "menuamigos", 1, "main", 1, null, "", false));
 
         forms.show(player, builder, actions);
@@ -90,9 +90,9 @@ public final class BlockedPlayersForms {
                 .content(forms.uiText(ui, "unblock-confirm.content",
                         "&7¿Quieres desbloquear a &f{target}&7? Podrá volver a enviarte cartas.", player, tokens));
         forms.addButton(builder, ui, "unblock-confirm.confirm",
-                forms.uiText(ui, "unblock-confirm.confirm.text", "&aSí, desbloquear", player, tokens));
+                forms.uiText(ui, "unblock-confirm.confirm.text", "&2&lSí, desbloquear", player, tokens));
         forms.addButton(builder, ui, "unblock-confirm.back",
-                forms.uiText(ui, "unblock-confirm.back.text", "&6Volver", player, tokens));
+                forms.uiText(ui, "unblock-confirm.back.text", "&6&lVolver", player, tokens));
         forms.show(player, builder, List.of(
                 () -> {
                     blocks.unblock(player, target);

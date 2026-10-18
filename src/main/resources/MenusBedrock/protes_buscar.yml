@@ -3,10 +3,10 @@ managed-by: protections
 type: SIMPLE
 page-size: 6
 navigation:
-  back: '&eVolver'
-  previous: '&ePágina anterior'
-  next: '&ePágina siguiente'
-  close: '&cCerrar'
+  back: '&6&lVolver'
+  previous: '&6&lPágina anterior'
+  next: '&6&lPágina siguiente'
+  close: '&4&lCerrar'
 show-close: true
 title: '&8Agregar miembro'
 content: ['&7Selecciona un jugador o escribe su nombre.']
@@ -15,11 +15,11 @@ items:
     slot: 8
     material: NAME_TAG
     name: '&eEscribir un nombre'
-    text: '&eEscribir un nombre'
+    text: '&6&lEscribir un nombre'
     lore: ['&7También permite jugadores desconectados conocidos.']
   player:
     material: PLAYER_HEAD
     name: '&a{member}'
-    text: "&a{member}\n&7Agregar como miembro"
+    text: "&2&l{member}\n&r&8Agregar como miembro"
     lore: ['&7Agregar como miembro.']
 name-prompt: '&eEscribe /protes agregar <nombre exacto> &7(2 minutos). Usa /protes cancelar para volver.'

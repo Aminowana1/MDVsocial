@@ -54,22 +54,22 @@ public final class TpaForms {
         List<Runnable> actions = new ArrayList<>();
 
         forms.addButton(builder, ui, "buttons.request",
-                forms.uiText(ui, "buttons.request.text", "&a&lSolicitar viaje\n&8Elige o escribe un jugador.", player,
+                forms.uiText(ui, "buttons.request.text", "&2&lSolicitar viaje\n&r&8Elige o escribe un jugador.", player,
                         tokens));
         actions.add(() -> openPicker(player, 0));
         forms.addButton(builder, ui, "buttons.requests",
-                forms.uiText(ui, "buttons.requests.text", "&e&lSolicitudes ({request_count})", player, tokens));
+                forms.uiText(ui, "buttons.requests.text", "&6&lSolicitudes ({request_count})", player, tokens));
         actions.add(() -> openRequests(player));
         if (outgoing != null) {
             forms.addButton(builder, ui, "buttons.cancel",
-                    forms.uiText(ui, "buttons.cancel.text", "&c&lCancelar mi solicitud\n&8Enviada a {target}.", player,
+                    forms.uiText(ui, "buttons.cancel.text", "&4&lCancelar mi solicitud\n&r&8Enviada a {target}.", player,
                             tokens));
             actions.add(() -> {
                 teleport.cancelOutgoing(player);
                 open(player);
             });
         }
-        forms.addButton(builder, ui, "buttons.back", forms.uiText(ui, "buttons.back.text", "&6Volver", player, tokens));
+        forms.addButton(builder, ui, "buttons.back", forms.uiText(ui, "buttons.back.text", "&6&lVolver", player, tokens));
         actions.add(() -> forms.host().openMenu(player, "menuamigos", 1, "main", 1, null, "", false));
 
         forms.show(player, builder, actions);
@@ -134,12 +134,12 @@ public final class TpaForms {
         for (RequestView request : requests) {
             Map<String, String> requestTokens = requestTokens(request);
             forms.addButton(builder, ui, "requests-menu.request",
-                    forms.uiText(ui, "requests-menu.request.text", "&a{player}\n&8Expira en {seconds}s", player,
+                    forms.uiText(ui, "requests-menu.request.text", "&2&l{player}\n&r&8Expira en {seconds}s", player,
                             requestTokens));
             actions.add(() -> openRequestDetail(player, request, true));
         }
         forms.addButton(builder, ui, "requests-menu.back",
-                forms.uiText(ui, "requests-menu.back", "&6Volver", player, tokens));
+                forms.uiText(ui, "requests-menu.back", "&6&lVolver", player, tokens));
         actions.add(() -> open(player));
         forms.show(player, builder, actions);
     }
@@ -153,12 +153,12 @@ public final class TpaForms {
                 .content(forms.uiText(ui, "requests-menu.detail.content",
                         "&f{player} &7quiere teletransportarse hasta ti.", player, tokens));
         forms.addButton(builder, ui, "requests-menu.detail.accept",
-                forms.uiText(ui, "requests-menu.detail.accept", "&aAceptar", player, tokens));
+                forms.uiText(ui, "requests-menu.detail.accept", "&2&lSí, aceptar", player, tokens));
         forms.addButton(builder, ui, "requests-menu.detail.deny",
-                forms.uiText(ui, "requests-menu.detail.deny", "&cRechazar", player, tokens));
+                forms.uiText(ui, "requests-menu.detail.deny", "&4&lNo, rechazar", player, tokens));
         forms.addButton(builder, ui, "requests-menu.detail.back",
                 forms.uiText(ui, fromList ? "requests-menu.detail.back" : "requests-menu.detail.later",
-                        fromList ? "&6Volver" : "&7Más tarde", player, tokens));
+                        fromList ? "&6&lVolver" : "&8&lMás tarde", player, tokens));
         Runnable afterwards = fromList ? () -> openRequests(player) : () -> { };
         forms.show(player, builder, List.of(
                 () -> {

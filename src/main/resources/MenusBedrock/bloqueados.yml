@@ -8,24 +8,24 @@ content-empty:
   - "&7No tienes jugadores bloqueados."
   - "&7Los jugadores bloqueados no pueden enviarte cartas."
 entry:
-  text: "&f{target}\n&7Toca para desbloquear"
+  text: "&0&l{target}\n&r&8Toca para desbloquear"
 buttons:
   block:
     enabled: true
-    text: "&c&lBloquear jugador\n&7Escribe su nombre"
+    text: "&4&lBloquear jugador\n&r&8Escribe su nombre"
   previous:
-    text: "&ePágina anterior"
+    text: "&6&lPágina anterior"
   next:
-    text: "&ePágina siguiente"
+    text: "&6&lPágina siguiente"
   back:
-    text: "&6&lVolver\n&7Regresa a Social y Amigos."
+    text: "&6&lVolver\n&r&8Regresa a Social y Amigos."
 unblock-confirm:
   title: "&a&lDesbloquear a {target}"
   content: "&7¿Quieres desbloquear a &f{target}&7? Podrá volver a enviarte cartas."
   confirm:
-    text: "&aSí, desbloquear"
+    text: "&2&lSí, desbloquear"
   back:
-    text: "&6Volver"
+    text: "&6&lVolver"
 block-form:
   title: "&c&lBloquear jugador"
   input-label: "&eNombre del jugador"

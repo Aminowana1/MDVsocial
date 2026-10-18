@@ -102,3 +102,17 @@ Se mantiene el comportamiento de 1.6.4/1.6.5: cada Form recibe un token único
 antes de registrar su handler y solo el token activo puede consumirse una vez.
 Desde esta versión, Hogares y la Biblioteca de MMOItems también pasan por el
 gestor de sesiones, así que reciben la misma protección.
+
+## Estilo de botones (MenusBedrock)
+
+Los botones de Bedrock tienen fondo claro, así que:
+
+- Primera línea: el título, en negrita y con un color oscuro (`&2&lSolicitar viaje`).
+- Líneas siguientes (después de `\n`): empiezan con `&r` para quitar la negrita,
+  normalmente `&r&8`.
+- Nada de `&7` ni de colores claros (`&a`, `&e`, `&b`, `&d`, `&9`, `&c`, `&f`). Se usan
+  sus versiones oscuras: `&2`, `&6`, `&3`, `&5`, `&1`, `&4`, `&0`/`&8`.
+- Responder solicitudes: `&2&lSí, aceptar` y `&4&lNo, rechazar`.
+
+El texto (`content`) de los formularios va sobre fondo oscuro y puede seguir usando
+colores claros.

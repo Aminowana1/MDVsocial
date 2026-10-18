@@ -69,7 +69,7 @@ public final class FriendsForms {
             Map<String, String> friendTokens = new HashMap<>(tokens);
             friendTokens.put("friend_name", name);
             String text = forms.uiText(ui, path + ".text",
-                    (isOnline ? "&a● &f" : "&8● &7") + "{friend_name}", player, friendTokens);
+                    (isOnline ? "&2&l● &0&l" : "&8&l● &8&l") + "{friend_name}", player, friendTokens);
             forms.addButton(builder, ui, path, text);
             actions.add(() -> forms.host().openMenu(player, "amigo_opciones", 1, "menuamigos", 1,
                     uuid, name, isOnline));
@@ -77,26 +77,26 @@ public final class FriendsForms {
 
         if (ui.getBoolean("buttons.add.enabled", true)) {
             forms.addButton(builder, ui, "buttons.add",
-                    forms.uiText(ui, "buttons.add.text", "&a&lAñadir amigo", player, tokens));
+                    forms.uiText(ui, "buttons.add.text", "&2&lAñadir amigo", player, tokens));
             actions.add(() -> openAddPicker(player, safePage));
         }
         if (ui.getBoolean("buttons.requests.enabled", true)) {
             forms.addButton(builder, ui, "buttons.requests",
-                    forms.uiText(ui, "buttons.requests.text", "&eSolicitudes ({request_count})", player, tokens));
+                    forms.uiText(ui, "buttons.requests.text", "&6&lSolicitudes ({request_count})", player, tokens));
             actions.add(() -> openRequests(player, safePage));
         }
         if (safePage > 0) {
             forms.addButton(builder, ui, "buttons.previous",
-                    forms.uiText(ui, "buttons.previous.text", "&ePágina anterior", player, tokens));
+                    forms.uiText(ui, "buttons.previous.text", "&6&lPágina anterior", player, tokens));
             actions.add(() -> openList(player, safePage - 1));
         }
         if (safePage < maxPage) {
             forms.addButton(builder, ui, "buttons.next",
-                    forms.uiText(ui, "buttons.next.text", "&ePágina siguiente", player, tokens));
+                    forms.uiText(ui, "buttons.next.text", "&6&lPágina siguiente", player, tokens));
             actions.add(() -> openList(player, safePage + 1));
         }
         forms.addButton(builder, ui, "buttons.back",
-                forms.uiText(ui, "buttons.back.text", "&6Volver", player, tokens));
+                forms.uiText(ui, "buttons.back.text", "&6&lVolver", player, tokens));
         actions.add(() -> forms.host().openMenu(player, "menuamigos", 1, "main", 1, null, "", false));
 
         forms.show(player, builder, actions);
@@ -162,11 +162,11 @@ public final class FriendsForms {
             Map<String, String> requestTokens = Map.of("creator", creator, "request_count",
                     String.valueOf(requests.size()));
             forms.addButton(builder, ui, "requests-menu.request",
-                    forms.uiText(ui, "requests-menu.request.text", "&e{creator}", player, requestTokens));
+                    forms.uiText(ui, "requests-menu.request.text", "&6&l{creator}", player, requestTokens));
             actions.add(() -> openRequestDetail(player, request, returnPage));
         }
         forms.addButton(builder, ui, "requests-menu.back",
-                forms.uiText(ui, "requests-menu.back", "&6Volver a Amigos", player, tokens));
+                forms.uiText(ui, "requests-menu.back", "&6&lVolver a Amigos", player, tokens));
         actions.add(() -> openList(player, returnPage));
         forms.show(player, builder, actions);
     }
@@ -196,12 +196,12 @@ public final class FriendsForms {
                 .content(forms.uiText(ui, "requests-menu.detail.content",
                         "&7¿Quieres aceptar la solicitud de amistad de &f{creator}&7?", player, tokens));
         forms.addButton(builder, ui, "requests-menu.detail.accept",
-                forms.uiText(ui, "requests-menu.detail.accept", "&aAceptar solicitud", player, tokens));
+                forms.uiText(ui, "requests-menu.detail.accept", "&2&lSí, aceptar", player, tokens));
         forms.addButton(builder, ui, "requests-menu.detail.deny",
-                forms.uiText(ui, "requests-menu.detail.deny", "&cRechazar solicitud", player, tokens));
+                forms.uiText(ui, "requests-menu.detail.deny", "&4&lNo, rechazar", player, tokens));
         forms.addButton(builder, ui, "requests-menu.detail.back",
                 forms.uiText(ui, fromList ? "requests-menu.detail.back" : "requests-menu.detail.later",
-                        fromList ? "&6Volver" : "&7Más tarde", player, tokens));
+                        fromList ? "&6&lVolver" : "&8&lMás tarde", player, tokens));
         Runnable afterwards = fromList ? () -> openRequests(player, returnPage) : () -> { };
         forms.show(player, builder, List.of(
                 () -> {
@@ -234,9 +234,9 @@ public final class FriendsForms {
                 .content(forms.uiText(ui, "remove-friend-confirm.content",
                         "&7¿Seguro que quieres eliminar a &f{target} &7de tus amigos?", player, tokens));
         forms.addButton(builder, ui, "remove-friend-confirm.confirm",
-                forms.uiText(ui, "remove-friend-confirm.confirm.text", "&cEliminar amigo", player, tokens));
+                forms.uiText(ui, "remove-friend-confirm.confirm.text", "&4&lEliminar amigo", player, tokens));
         forms.addButton(builder, ui, "remove-friend-confirm.back",
-                forms.uiText(ui, "remove-friend-confirm.back.text", "&6Volver", player, tokens));
+                forms.uiText(ui, "remove-friend-confirm.back.text", "&6&lVolver", player, tokens));
         String finalName = name;
         forms.show(player, builder, List.of(
                 () -> {

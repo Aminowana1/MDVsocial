@@ -4,12 +4,12 @@ content:
   - "&7Gestiona las funciones sociales de tu clan."
 buttons:
   detectar:
-    text: "&a&lClanes\n&7Este menu puente detecta"
+    text: "&2&lClanes\n&r&8Este menu puente detecta"
     action: "OPEN_CONDITIONAL_MENU"
     condition-placeholder: "%mdvclans_is_in_clan%"
     condition-equals: "true"
     true-menu: "clan_con_clan"
     false-menu: "clan_sin_clan"
   volver:
-    text: "&eVolver"
+    text: "&6&lVolver"
     action: "BACK"

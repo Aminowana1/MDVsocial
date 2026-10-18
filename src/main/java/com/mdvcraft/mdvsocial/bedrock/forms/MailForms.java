@@ -54,21 +54,21 @@ public final class MailForms {
             String sender = letter == null ? "Desconocido" : letter.fromName();
             String message = letter == null ? "" : letter.message();
             boolean read = letter != null && letter.read();
-            String label = (read ? "&eCarta de &f" : "&aNueva carta de &f") + sender
-                    + "\n&8" + mail.shorten(message, 38);
+            String label = (read ? "&6&lCarta de &0&l" : "&2&lNueva carta de &0&l") + sender
+                    + "\n&r&8" + mail.shorten(message, 38);
             builder.button(forms.color(label));
             actions.add(() -> openRead(player, id, safePage));
         }
 
         if (safePage > 0) {
-            builder.button(forms.color("&ePágina anterior"));
+            builder.button(forms.color("&6&lPágina anterior"));
             actions.add(() -> openMailbox(player, safePage - 1));
         }
         if (safePage < maxPage) {
-            builder.button(forms.color("&ePágina siguiente"));
+            builder.button(forms.color("&6&lPágina siguiente"));
             actions.add(() -> openMailbox(player, safePage + 1));
         }
-        builder.button(forms.color("&6Volver a Correo"));
+        builder.button(forms.color("&6&lVolver a Correo"));
         actions.add(() -> forms.host().openMenu(player, "correo", 1, "menuamigos", 1, null, "", false));
 
         forms.show(player, builder, actions);
@@ -97,24 +97,24 @@ public final class MailForms {
         List<Runnable> actions = new ArrayList<>();
 
         if (clanInvite) {
-            builder.button(forms.color("&aAceptar invitación"));
+            builder.button(forms.color("&2&lSí, aceptar"));
             actions.add(() -> mail.handleClanInvite(player, id, true, page));
-            builder.button(forms.color("&cRechazar invitación"));
+            builder.button(forms.color("&4&lNo, rechazar"));
             actions.add(() -> mail.handleClanInvite(player, id, false, page));
         } else {
-            builder.button(forms.color("&eResponder"));
+            builder.button(forms.color("&6&lResponder"));
             actions.add(() -> openReply(player, id, page));
-            builder.button(forms.color("&cEliminar carta"));
+            builder.button(forms.color("&4&lEliminar carta"));
             actions.add(() -> confirmDelete(player, id, page));
             if (fromUuid != null && !fromUuid.isBlank()) {
-                builder.button(forms.color("&4Bloquear remitente"));
+                builder.button(forms.color("&4&lBloquear remitente"));
                 actions.add(() -> {
                     mail.blockSender(player, fromUuid);
                     openMailbox(player, page);
                 });
             }
         }
-        builder.button(forms.color("&6Volver al buzón"));
+        builder.button(forms.color("&6&lVolver al buzón"));
         actions.add(() -> openMailbox(player, page));
 
         forms.show(player, builder, actions);
@@ -124,8 +124,8 @@ public final class MailForms {
         SimpleForm.Builder builder = SimpleForm.builder()
                 .title(forms.color("&c&lEliminar carta"))
                 .content(forms.color("&7¿Seguro que quieres eliminar esta carta?"))
-                .button(forms.color("&cSí, eliminar"))
-                .button(forms.color("&aNo, volver"));
+                .button(forms.color("&4&lSí, eliminar"))
+                .button(forms.color("&2&lNo, volver"));
         forms.show(player, builder, List.of(
                 () -> {
                     mail.delete(player, id);

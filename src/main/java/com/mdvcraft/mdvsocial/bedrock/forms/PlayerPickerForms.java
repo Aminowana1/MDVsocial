@@ -83,7 +83,7 @@ public final class PlayerPickerForms {
         List<Runnable> actions = new ArrayList<>();
 
         forms.addButton(builder, ui, "type-name",
-                forms.uiText(ui, "type-name.text", "&e&lEscribir nombre\n&7Busca a un jugador por su nombre.",
+                forms.uiText(ui, "type-name.text", "&6&lEscribir nombre\n&r&8Busca a un jugador por su nombre.",
                         viewer, tokens));
         actions.add(() -> request.onTypeName().accept(viewer));
 
@@ -92,7 +92,7 @@ public final class PlayerPickerForms {
             String path = candidate.friend() ? "entry-friend" : "entry";
             Map<String, String> entryTokens = new HashMap<>(tokens);
             entryTokens.put("player", candidate.player().getName());
-            String def = candidate.friend() ? "&a{player}\n&2Amigo" : "&f{player}\n&7Conectado";
+            String def = candidate.friend() ? "&2&l{player}\n&r&2Amigo" : "&0&l{player}\n&r&8Conectado";
             forms.addButton(builder, ui, path, forms.uiText(ui, path + ".text", def, viewer, entryTokens));
             UUID chosen = candidate.player().getUniqueId();
             actions.add(() -> {
@@ -108,16 +108,16 @@ public final class PlayerPickerForms {
 
         if (safePage > 0) {
             forms.addButton(builder, ui, "buttons.previous",
-                    forms.uiText(ui, "buttons.previous.text", "&ePágina anterior", viewer, tokens));
+                    forms.uiText(ui, "buttons.previous.text", "&6&lPágina anterior", viewer, tokens));
             actions.add(() -> open(viewer, request, safePage - 1));
         }
         if (safePage < maxPage) {
             forms.addButton(builder, ui, "buttons.next",
-                    forms.uiText(ui, "buttons.next.text", "&ePágina siguiente", viewer, tokens));
+                    forms.uiText(ui, "buttons.next.text", "&6&lPágina siguiente", viewer, tokens));
             actions.add(() -> open(viewer, request, safePage + 1));
         }
         forms.addButton(builder, ui, "buttons.back",
-                forms.uiText(ui, "buttons.back.text", "&6Volver", viewer, tokens));
+                forms.uiText(ui, "buttons.back.text", "&6&lVolver", viewer, tokens));
         actions.add(() -> request.onBack().accept(viewer));
 
         forms.show(viewer, builder, actions);

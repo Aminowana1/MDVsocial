@@ -67,21 +67,21 @@ public final class MMOCoreForms {
             List<Runnable> actions = new ArrayList<>();
             if (ui.getBoolean("buttons.attributes.enabled", true)) {
                 addButton(form, ui, "buttons.attributes",
-                        text(ui, "buttons.attributes.text", "&d&lAtributos\n&r&8Gestiona tus puntos de atributo.", player, tokens));
+                        text(ui, "buttons.attributes.text", "&5&lAtributos\n&r&8Gestiona tus puntos de atributo.", player, tokens));
                 actions.add(() -> openAttributes(player));
             }
             if (ui.getBoolean("buttons.classes.enabled", true)) {
                 addButton(form, ui, "buttons.classes",
-                        text(ui, "buttons.classes.text", "&a&lRazas\n&r&8Consulta o cambia tu raza.", player, tokens));
+                        text(ui, "buttons.classes.text", "&2&lRazas\n&r&8Consulta o cambia tu raza.", player, tokens));
                 actions.add(() -> openClasses(player));
             }
             if (ui.getBoolean("buttons.party.enabled", true)) {
                 addButton(form, ui, "buttons.party",
-                        text(ui, "buttons.party.text", "&d&lGrupo de Aventura\n&r&8Consulta tu party de MMOCore.", player, tokens));
+                        text(ui, "buttons.party.text", "&5&lGrupo de Aventura\n&r&8Consulta tu party de MMOCore.", player, tokens));
                 actions.add(() -> party.open(player));
             }
             addButton(form, ui, "buttons.back",
-                    text(ui, "buttons.back.text", "&6Volver", player, tokens));
+                    text(ui, "buttons.back.text", "&6&lVolver", player, tokens));
             actions.add(() -> openProfileRoot(player));
 
             send(player, form, actions);
@@ -138,7 +138,7 @@ public final class MMOCoreForms {
                 addAttributeBuffTokens(attr, total, at);
 
                 String path = "attributes." + normalize(id);
-                String generic = "&e&l{name}\n&r&7Nivel: &f{current} &8• &7Puntos: &f{spent}/{max}";
+                String generic = "&6&l{name}\n&r&8Nivel: &0{current} &8• &8Puntos: &0{spent}/{max}";
                 String buttonText = text(ui, path + ".text",
                         textRaw(ui, "attribute.text", generic), player, at);
                 addButton(form, ui, ui.contains(path) ? path : "attribute", buttonText);
@@ -148,11 +148,11 @@ public final class MMOCoreForms {
             if (ui.getBoolean("buttons.reallocate.enabled", true)) {
                 addButton(form, ui, "buttons.reallocate",
                         text(ui, "buttons.reallocate.text",
-                                "&e&lRedistribuir atributos\n&r&8Consume 1 punto de redistribución.", player, root));
+                                "&6&lRedistribuir atributos\n&r&8Consume 1 punto de redistribución.", player, root));
                 actions.add(() -> confirmAttributeReset(player));
             }
             addButton(form, ui, "buttons.back",
-                    text(ui, "buttons.back.text", "&6Volver al Perfil", player, root));
+                    text(ui, "buttons.back.text", "&6&lVolver al Perfil", player, root));
             actions.add(() -> openProfileRoot(player));
 
             send(player, form, actions);
@@ -199,7 +199,7 @@ public final class MMOCoreForms {
             }
 
             addButton(form, ui, "buttons.back",
-                    text(ui, "buttons.back.text", "&6Volver al Perfil", player, root));
+                    text(ui, "buttons.back.text", "&6&lVolver al Perfil", player, root));
             actions.add(() -> openProfileRoot(player));
             send(player, form, actions);
             return true;
@@ -217,7 +217,7 @@ public final class MMOCoreForms {
         t.put("name", name);
         t.put("description", join(invoke(clazz, "getDescription"), " "));
         t.put("attribute_description", join(invoke(clazz, "getAttributeDescription"), " "));
-        String generic = "&e&l{name}\n&r&7{description}\n&r&eToca para elegir esta raza.";
+        String generic = "&6&l{name}\n&r&8{description}\n&r&6Toca para elegir esta raza.";
         addButton(form, ui, path, text(ui, path + ".text", textRaw(ui, "class.text", generic), player, t));
         actions.add(() -> chooseClass(player, clazz));
     }
@@ -272,20 +272,20 @@ public final class MMOCoreForms {
             boolean maxed = hasMax && base >= max;
             if (maxed) {
                 addButton(form, ui, path + ".maxed",
-                        text(ui, path + ".maxed.text", "&8&lMáximo alcanzado\n&r&7No puedes invertir más puntos.", player, t));
+                        text(ui, path + ".maxed.text", "&8&lMáximo alcanzado\n&r&8No puedes invertir más puntos.", player, t));
                 actions.add(() -> openAttributeDetails(player, attr));
             } else if (integer(invoke(data, "getAttributePoints")) < 1) {
                 addButton(form, ui, path + ".no-points",
-                        text(ui, path + ".no-points.text", "&c&lSin puntos disponibles\n&r&7Consigue puntos de atributo para mejorar.", player, t));
+                        text(ui, path + ".no-points.text", "&4&lSin puntos disponibles\n&r&8Consigue puntos de atributo para mejorar.", player, t));
                 actions.add(() -> openAttributeDetails(player, attr));
             } else {
                 addButton(form, ui, path + ".upgrade",
-                        text(ui, path + ".upgrade.text", "&a&lSubir {name} +1\n&r&7Consume 1 punto de atributo.", player, t));
+                        text(ui, path + ".upgrade.text", "&2&lSubir {name} +1\n&r&8Consume 1 punto de atributo.", player, t));
                 actions.add(() -> upgradeAttribute(player, attr));
             }
 
             addButton(form, ui, path + ".back",
-                    text(ui, path + ".back.text", "&6Volver", player, t));
+                    text(ui, path + ".back.text", "&6&lVolver", player, t));
             actions.add(() -> openAttributes(player));
             send(player, form, actions);
         } catch (Throwable ex) {
@@ -346,10 +346,10 @@ public final class MMOCoreForms {
                             "&7Costo: &e1 punto de redistribución"), player, t));
             List<Runnable> actions = new ArrayList<>();
             addButton(form, ui, "reset.confirm",
-                    text(ui, "reset.confirm.text", "&aSí, redistribuir", player, t));
+                    text(ui, "reset.confirm.text", "&2&lSí, redistribuir", player, t));
             actions.add(() -> resetAttributes(player));
             addButton(form, ui, "reset.back",
-                    text(ui, "reset.back.text", "&6Volver", player, t));
+                    text(ui, "reset.back.text", "&6&lVolver", player, t));
             actions.add(() -> openAttributes(player));
             send(player, form, actions);
         } catch (Throwable ex) {
@@ -436,10 +436,10 @@ public final class MMOCoreForms {
                         "&7Costo: &e1 punto de clase"), player, t));
         List<Runnable> actions = new ArrayList<>();
         addButton(form, ui, "confirm.confirm",
-                text(ui, "confirm.confirm.text", "&a&lConfirmar", player, t));
+                text(ui, "confirm.confirm.text", "&2&lConfirmar", player, t));
         actions.add(() -> applyClass(player, clazz));
         addButton(form, ui, "confirm.back",
-                text(ui, "confirm.back.text", "&6Volver", player, t));
+                text(ui, "confirm.back.text", "&6&lVolver", player, t));
         actions.add(() -> openClasses(player));
         send(player, form, actions);
     }

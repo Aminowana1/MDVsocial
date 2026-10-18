@@ -16,30 +16,30 @@ created-line: "&aCreaste un nuevo Grupo de Aventura."
 buttons:
   create:
     enabled: true
-    text: "&a&lCrear Grupo de Aventura\n&r&8Crea una nueva party."
+    text: "&2&lCrear Grupo de Aventura\n&r&8Crea una nueva party."
     image:
       type: "URL"
       data: ""
   invite:
     enabled: true
-    text: "&d&lInvitar jugador\n&r&8Elige o escribe un jugador."
+    text: "&5&lInvitar jugador\n&r&8Elige o escribe un jugador."
     image:
       type: "URL"
       data: ""
   requests:
     enabled: true
-    text: "&e&lInvitaciones ({request_count})\n&r&8Acepta o rechaza invitaciones."
+    text: "&6&lInvitaciones ({request_count})\n&r&8Acepta o rechaza invitaciones."
     image:
       type: "URL"
       data: ""
   leave:
     enabled: true
-    text: "&c&lSalir del grupo\n&r&8Abandona tu Grupo de Aventura."
+    text: "&4&lSalir del grupo\n&r&8Abandona tu Grupo de Aventura."
     image:
       type: "URL"
       data: ""
   back:
-    text: "&6Volver"
+    text: "&6&lVolver"
 
 # Selector "Escoger jugador" de Invitar jugador (tus amigos aparecen primero).
 invite-picker:
@@ -55,12 +55,12 @@ leave-confirm:
   title: "&c&lSalir del Grupo"
   content: "&7¿Seguro que quieres abandonar tu Grupo de Aventura?"
   confirm:
-    text: "&c&lSí, salir del grupo"
+    text: "&4&lSí, salir del grupo"
     image:
       type: "URL"
       data: ""
   back:
-    text: "&6Volver"
+    text: "&6&lVolver"
     image:
       type: "URL"
       data: ""
@@ -70,16 +70,16 @@ requests-menu:
   content: "&7Invitaciones pendientes: &f{request_count}"
   empty: "&7No tienes invitaciones de grupo pendientes."
   request:
-    text: "&d{creator}\n&r&8Toca para responder."
+    text: "&5&l{creator}\n&r&8Toca para responder."
     image:
       type: "URL"
       data: ""
-  back: "&6Volver al Grupo"
+  back: "&6&lVolver al Grupo"
   detail:
     title: "&d&lInvitación de {creator}"
     content: "&7¿Quieres unirte al Grupo de Aventura de &f{creator}&7?"
-    accept: "&aAceptar invitación"
-    deny: "&cRechazar invitación"
-    back: "&6Volver"
+    accept: "&2&lSí, aceptar"
+    deny: "&4&lNo, rechazar"
+    back: "&6&lVolver"
     # Botón del formulario abierto con quick accept (en vez de "Volver").
-    later: "&7Más tarde"
+    later: "&8&lMás tarde"

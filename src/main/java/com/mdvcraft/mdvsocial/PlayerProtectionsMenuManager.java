@@ -477,11 +477,11 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
                 builder.button(color(replace(config.getString("items." + entry.style() + ".text", entry.style()), buttonValues)));
                 actions.add(entry.action());
             }
-            if (page.previous()) { builder.button(color(config.getString("navigation.previous", "Anterior"))); actions.add(previous); }
-            if (page.next()) { builder.button(color(config.getString("navigation.next", "Siguiente"))); actions.add(next); }
-            builder.button(color(config.getString("navigation.back", "Volver"))); actions.add(back);
+            if (page.previous()) { builder.button(color(config.getString("navigation.previous", "&6&lPágina anterior"))); actions.add(previous); }
+            if (page.next()) { builder.button(color(config.getString("navigation.next", "&6&lPágina siguiente"))); actions.add(next); }
+            builder.button(color(config.getString("navigation.back", "&6&lVolver"))); actions.add(back);
             if (config.getBoolean("show-close", true)) {
-                builder.button(color(config.getString("navigation.close", "Cerrar")));
+                builder.button(color(config.getString("navigation.close", "&4&lCerrar")));
                 actions.add(() -> pending.remove(p.getUniqueId()));
             }
             builder.validResultHandler(response -> {

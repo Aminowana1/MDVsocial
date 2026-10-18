@@ -3,16 +3,16 @@
 # Jugadores por página: bedrock.player-picker.page-size en config.yml.
 # Tokens: {player} en las entradas; {page}, {max_page}, {count} en todo el menú.
 type-name:
-  text: "&e&lEscribir nombre\n&7Busca a un jugador por su nombre."
+  text: "&6&lEscribir nombre\n&r&8Busca a un jugador por su nombre."
 entry-friend:
-  text: "&a{player}\n&2Amigo"
+  text: "&2&l{player}\n&r&2Amigo"
 entry:
-  text: "&f{player}\n&7Conectado"
+  text: "&0&l{player}\n&r&8Conectado"
 empty: "&8No hay otros jugadores conectados."
 buttons:
   previous:
-    text: "&ePágina anterior"
+    text: "&6&lPágina anterior"
   next:
-    text: "&ePágina siguiente"
+    text: "&6&lPágina siguiente"
   back:
-    text: "&6Volver"
+    text: "&6&lVolver"

@@ -7,7 +7,7 @@ content:
 buttons:
   my-titles:
     enabled: true
-    text: "&a&lMis Títulos\n&r&8Equipa los títulos que posees."
+    text: "&2&lMis Títulos\n&r&8Equipa los títulos que posees."
     image:
       type: "URL"
       data: ""
@@ -19,24 +19,24 @@ buttons:
       data: ""
   locked:
     enabled: true
-    text: "&c&lTítulos Bloqueados\n&r&8Consulta títulos por desbloquear."
+    text: "&4&lTítulos Bloqueados\n&r&8Consulta títulos por desbloquear."
     image:
       type: "URL"
       data: ""
   ranks:
     enabled: true
-    text: "&b&lRangos\n&r&8Consulta tus rangos y requisitos."
+    text: "&3&lRangos\n&r&8Consulta tus rangos y requisitos."
     image:
       type: "URL"
       data: ""
   clear:
     enabled: true
-    text: "&eQuitar título\n&r&8Restablece el título actual."
+    text: "&6&lQuitar título\n&r&8Restablece el título actual."
     image:
       type: "URL"
       data: ""
   back:
-    text: "&6Volver"
+    text: "&6&lVolver"
     image:
       type: "URL"
       data: ""

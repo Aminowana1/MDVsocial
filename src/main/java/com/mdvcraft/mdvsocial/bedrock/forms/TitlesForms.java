@@ -39,7 +39,7 @@ public final class TitlesForms {
 
         if (ui.getBoolean("buttons.my-titles.enabled", true)) {
             forms.addButton(builder, ui, "buttons.my-titles",
-                    forms.uiText(ui, "buttons.my-titles.text", "&a&lMis títulos", player, tokens));
+                    forms.uiText(ui, "buttons.my-titles.text", "&2&lMis títulos", player, tokens));
             actions.add(() -> openList(player, "MY_TITLES", 0));
         }
         if (ui.getBoolean("buttons.shop.enabled", true)) {
@@ -49,24 +49,24 @@ public final class TitlesForms {
         }
         if (ui.getBoolean("buttons.locked.enabled", true)) {
             forms.addButton(builder, ui, "buttons.locked",
-                    forms.uiText(ui, "buttons.locked.text", "&c&lTítulos bloqueados", player, tokens));
+                    forms.uiText(ui, "buttons.locked.text", "&4&lTítulos bloqueados", player, tokens));
             actions.add(() -> openList(player, "LOCKED", 0));
         }
         if (ui.getBoolean("buttons.ranks.enabled", true)) {
             forms.addButton(builder, ui, "buttons.ranks",
-                    forms.uiText(ui, "buttons.ranks.text", "&b&lRangos", player, tokens));
+                    forms.uiText(ui, "buttons.ranks.text", "&3&lRangos", player, tokens));
             actions.add(() -> openRanks(player, 0));
         }
         if (ui.getBoolean("buttons.clear.enabled", true)) {
             forms.addButton(builder, ui, "buttons.clear",
-                    forms.uiText(ui, "buttons.clear.text", "&eQuitar título", player, tokens));
+                    forms.uiText(ui, "buttons.clear.text", "&6&lQuitar título", player, tokens));
             actions.add(() -> {
                 titles.clear(player);
                 openHome(player);
             });
         }
         forms.addButton(builder, ui, "buttons.back",
-                forms.uiText(ui, "buttons.back.text", "&6Volver", player, tokens));
+                forms.uiText(ui, "buttons.back.text", "&6&lVolver", player, tokens));
         actions.add(() -> forms.host().openStartMenu(player));
 
         forms.show(player, builder, actions);
@@ -115,10 +115,10 @@ public final class TitlesForms {
             boolean active = title.id().equals(activeId);
             String status;
             String requirement = title.unlockPermission() == null || title.unlockPermission().isBlank()
-                    ? "&cBloqueado"
-                    : "&cRequiere: &7" + title.unlockPermission();
+                    ? "&4Bloqueado"
+                    : "&4Requiere: &8" + title.unlockPermission();
             if (type.equals("MY_TITLES"))
-                status = active ? "&aEquipado" : "&eToca para equipar";
+                status = active ? "&2Equipado" : "&6Toca para equipar";
             else if (type.equals("SHOP"))
                 status = "&6" + titles.formatPrice(title.price()) + " monedas";
             else
@@ -158,16 +158,16 @@ public final class TitlesForms {
 
         if (safePage > 0) {
             forms.addButton(builder, ui, "buttons.previous",
-                    forms.uiText(ui, "buttons.previous.text", "&ePágina anterior", player, pageTokens));
+                    forms.uiText(ui, "buttons.previous.text", "&6&lPágina anterior", player, pageTokens));
             actions.add(() -> openList(player, type, safePage - 1));
         }
         if (safePage < maxPage) {
             forms.addButton(builder, ui, "buttons.next",
-                    forms.uiText(ui, "buttons.next.text", "&ePágina siguiente", player, pageTokens));
+                    forms.uiText(ui, "buttons.next.text", "&6&lPágina siguiente", player, pageTokens));
             actions.add(() -> openList(player, type, safePage + 1));
         }
         forms.addButton(builder, ui, "buttons.back",
-                forms.uiText(ui, "buttons.back.text", "&6Volver a Títulos", player, pageTokens));
+                forms.uiText(ui, "buttons.back.text", "&6&lVolver a Títulos", player, pageTokens));
         actions.add(() -> openHome(player));
 
         forms.show(player, builder, actions);
@@ -196,7 +196,7 @@ public final class TitlesForms {
             tokens.put("rank_id", rank.id());
             tokens.put("rank_display", rank.display());
             tokens.put("permission", rank.permission() == null ? "" : rank.permission());
-            tokens.put("status", owned ? "&aObtenido" : "&cNo obtenido");
+            tokens.put("status", owned ? "&2Obtenido" : "&4No obtenido");
             String path = owned ? "rank.owned" : "rank.locked";
             String specificPath = "ranks." + rank.id();
             String entryPath = ui.isConfigurationSection(specificPath) ? specificPath : path;
@@ -208,16 +208,16 @@ public final class TitlesForms {
 
         if (safePage > 0) {
             forms.addButton(builder, ui, "buttons.previous",
-                    forms.uiText(ui, "buttons.previous.text", "&ePágina anterior", player, pageTokens));
+                    forms.uiText(ui, "buttons.previous.text", "&6&lPágina anterior", player, pageTokens));
             actions.add(() -> openRanks(player, safePage - 1));
         }
         if (safePage < maxPage) {
             forms.addButton(builder, ui, "buttons.next",
-                    forms.uiText(ui, "buttons.next.text", "&ePágina siguiente", player, pageTokens));
+                    forms.uiText(ui, "buttons.next.text", "&6&lPágina siguiente", player, pageTokens));
             actions.add(() -> openRanks(player, safePage + 1));
         }
         forms.addButton(builder, ui, "buttons.back",
-                forms.uiText(ui, "buttons.back.text", "&6Volver a Títulos", player, pageTokens));
+                forms.uiText(ui, "buttons.back.text", "&6&lVolver a Títulos", player, pageTokens));
         actions.add(() -> openHome(player));
 
         forms.show(player, builder, actions);

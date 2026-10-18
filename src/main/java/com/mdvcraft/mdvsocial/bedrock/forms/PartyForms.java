@@ -81,12 +81,12 @@ public final class PartyForms {
         if (party.exists()) {
             if (ui.getBoolean("buttons.invite.enabled", true)) {
                 forms.addButton(builder, ui, "buttons.invite",
-                        forms.uiText(ui, "buttons.invite.text", "&d&lInvitar jugador", player, tokens));
+                        forms.uiText(ui, "buttons.invite.text", "&5&lInvitar jugador", player, tokens));
                 actions.add(() -> openInvitePicker(player, 0));
             }
         } else if (ui.getBoolean("buttons.create.enabled", true)) {
             forms.addButton(builder, ui, "buttons.create",
-                    forms.uiText(ui, "buttons.create.text", "&aCrear Grupo de Aventura", player, tokens));
+                    forms.uiText(ui, "buttons.create.text", "&2&lCrear Grupo de Aventura", player, tokens));
             actions.add(() -> {
                 boolean created = social.createParty(player);
                 forms.host().message(player, created ? "party-created" : "party-create-error");
@@ -95,16 +95,16 @@ public final class PartyForms {
         }
         if (ui.getBoolean("buttons.requests.enabled", true)) {
             forms.addButton(builder, ui, "buttons.requests",
-                    forms.uiText(ui, "buttons.requests.text", "&eInvitaciones ({request_count})", player, tokens));
+                    forms.uiText(ui, "buttons.requests.text", "&6&lInvitaciones ({request_count})", player, tokens));
             actions.add(() -> openRequests(player));
         }
         if (party.exists() && ui.getBoolean("buttons.leave.enabled", true)) {
             forms.addButton(builder, ui, "buttons.leave",
-                    forms.uiText(ui, "buttons.leave.text", "&c&lSalir del grupo", player, tokens));
+                    forms.uiText(ui, "buttons.leave.text", "&4&lSalir del grupo", player, tokens));
             actions.add(() -> leave(player));
         }
         forms.addButton(builder, ui, "buttons.back",
-                forms.uiText(ui, "buttons.back.text", "&6Volver", player, tokens));
+                forms.uiText(ui, "buttons.back.text", "&6&lVolver", player, tokens));
         actions.add(() -> forms.host().openMenu(player, "menuamigos", 1, "main", 1, null, "", false));
 
         forms.show(player, builder, actions);
@@ -146,9 +146,9 @@ public final class PartyForms {
                 .content(forms.uiText(ui, "leave-confirm.content",
                         "&7¿Seguro que quieres abandonar tu Grupo de Aventura?", player, Map.of()));
         forms.addButton(builder, ui, "leave-confirm.confirm",
-                forms.uiText(ui, "leave-confirm.confirm.text", "&cSí, salir del grupo", player, Map.of()));
+                forms.uiText(ui, "leave-confirm.confirm.text", "&4&lSí, salir del grupo", player, Map.of()));
         forms.addButton(builder, ui, "leave-confirm.back",
-                forms.uiText(ui, "leave-confirm.back.text", "&6Volver", player, Map.of()));
+                forms.uiText(ui, "leave-confirm.back.text", "&6&lVolver", player, Map.of()));
         forms.show(player, builder, List.of(
                 () -> {
                     social.leaveParty(player);
@@ -202,11 +202,11 @@ public final class PartyForms {
             Map<String, String> requestTokens = Map.of("creator", creator, "request_count",
                     String.valueOf(requests.size()));
             forms.addButton(builder, ui, "requests-menu.request",
-                    forms.uiText(ui, "requests-menu.request.text", "&d{creator}", player, requestTokens));
+                    forms.uiText(ui, "requests-menu.request.text", "&5&l{creator}", player, requestTokens));
             actions.add(() -> openRequestDetail(player, request));
         }
         forms.addButton(builder, ui, "requests-menu.back",
-                forms.uiText(ui, "requests-menu.back", "&6Volver al Grupo", player, tokens));
+                forms.uiText(ui, "requests-menu.back", "&6&lVolver al Grupo", player, tokens));
         actions.add(() -> open(player));
         forms.show(player, builder, actions);
     }
@@ -236,12 +236,12 @@ public final class PartyForms {
                 .content(forms.uiText(ui, "requests-menu.detail.content",
                         "&7¿Quieres unirte al Grupo de Aventura de &f{creator}&7?", player, tokens));
         forms.addButton(builder, ui, "requests-menu.detail.accept",
-                forms.uiText(ui, "requests-menu.detail.accept", "&aAceptar invitación", player, tokens));
+                forms.uiText(ui, "requests-menu.detail.accept", "&2&lSí, aceptar", player, tokens));
         forms.addButton(builder, ui, "requests-menu.detail.deny",
-                forms.uiText(ui, "requests-menu.detail.deny", "&cRechazar invitación", player, tokens));
+                forms.uiText(ui, "requests-menu.detail.deny", "&4&lNo, rechazar", player, tokens));
         forms.addButton(builder, ui, "requests-menu.detail.back",
                 forms.uiText(ui, fromList ? "requests-menu.detail.back" : "requests-menu.detail.later",
-                        fromList ? "&6Volver" : "&7Más tarde", player, tokens));
+                        fromList ? "&6&lVolver" : "&8&lMás tarde", player, tokens));
         Runnable afterwards = fromList ? () -> openRequests(player) : () -> { };
         forms.show(player, builder, List.of(
                 () -> {

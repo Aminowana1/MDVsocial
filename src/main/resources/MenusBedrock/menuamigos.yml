@@ -4,26 +4,26 @@ content:
   - "&7Selecciona una opción."
 buttons:
   listaamigos:
-    text: "&a&lAmigos y Solicitudes{friend_requests_badge}\n&7Tus amigos y solicitudes."
+    text: "&2&lAmigos y Solicitudes{friend_requests_badge}\n&r&8Tus amigos y solicitudes."
     action: "OPEN_BEDROCK_FRIENDS"
     commands:
       - "friends"
   party:
-    text: "&d&lGrupo de Aventura{party_invites_badge}\n&7Crea una party para explorar,"
+    text: "&5&lGrupo de Aventura{party_invites_badge}\n&r&8Crea una party para explorar,"
     action: "OPEN_BEDROCK_PARTY"
     commands:
       - "party"
   tpa:
-    text: "&a&lViajes (TPA){tpa_requests_badge}\n&7Viaja hasta otro jugador."
+    text: "&2&lViajes (TPA){tpa_requests_badge}\n&r&8Viaja hasta otro jugador."
     action: "OPEN_BEDROCK_TPA"
   correo:
-    text: "&6&lCartas y Buzón{unread_mail_badge}\n&7Lee o envía cartas."
+    text: "&6&lCartas y Buzón{unread_mail_badge}\n&r&8Lee o envía cartas."
     action: "OPEN_MENU"
     target-menu: "correo"
   bloqueados:
-    text: "&c&lJugadores Bloqueados\n&7Revisa o bloquea jugadores."
+    text: "&4&lJugadores Bloqueados\n&r&8Revisa o bloquea jugadores."
     action: "OPEN_BLOCKED_PLAYERS"
   volver:
-    text: "&6&lVolver\n&7Regresa al menú anterior."
+    text: "&6&lVolver\n&r&8Regresa al menú anterior."
     action: "OPEN_MENU"
     target-menu: "main"

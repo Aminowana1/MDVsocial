@@ -16,7 +16,7 @@ classes:
   elfo:
     enabled: true
     id: "ELFO"
-    text: "&a&l{name}\n&r&7{description}\n&r&eToca para elegir esta raza."
+    text: "&2&l{name}\n&r&8{description}\n&r&6Toca para elegir esta raza."
     image:
       type: "URL"
       data: ""
@@ -24,7 +24,7 @@ classes:
   humano:
     enabled: true
     id: "HUMANO"
-    text: "&e&l{name}\n&r&7{description}\n&r&eToca para elegir esta raza."
+    text: "&6&l{name}\n&r&8{description}\n&r&6Toca para elegir esta raza."
     image:
       type: "URL"
       data: ""
@@ -32,14 +32,14 @@ classes:
   orco:
     enabled: true
     id: "ORCO"
-    text: "&c&l{name}\n&r&7{description}\n&r&eToca para elegir esta raza."
+    text: "&4&l{name}\n&r&8{description}\n&r&6Toca para elegir esta raza."
     image:
       type: "URL"
       data: ""
 
 # Fallback si eliminas la sección classes y quieres listar todas las clases.
 class:
-  text: "&e&l{name}\n&r&7{description}\n&r&eToca para elegir esta raza."
+  text: "&6&l{name}\n&r&8{description}\n&r&6Toca para elegir esta raza."
   image:
     type: "URL"
     data: ""
@@ -64,12 +64,12 @@ confirm:
     - ""
     - "&7Costo: &e1 punto de clase"
   confirm:
-    text: "&a&lConfirmar"
+    text: "&2&lConfirmar"
     image:
       type: "URL"
       data: ""
   back:
-    text: "&6Volver"
+    text: "&6&lVolver"
     image:
       type: "URL"
       data: ""

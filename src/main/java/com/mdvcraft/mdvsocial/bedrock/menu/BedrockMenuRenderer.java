@@ -113,7 +113,7 @@ public final class BedrockMenuRenderer {
         }
 
         if (visible.isEmpty())
-            builder.button(forms.text("&7Volver", player, targetUuid, context.targetName(), targetOnline));
+            builder.button(forms.text("&6&lVolver", player, targetUuid, context.targetName(), targetOnline));
 
         builder.closedResultHandler(() -> {
             // Native X closes the form. We intentionally do not reopen anything.

@@ -7,7 +7,7 @@ buttons:
   perfil:
     text: |-
       &5&lTu Personaje
-      &r&8Nivel: &e{level} &8Raza: &c{class}
+      &r&8Nivel: &6{level} &8Raza: &4{class}
     image:
       type: URL
       data: https://raw.githubusercontent.com/k3vndev/MDVSocial-Images/refs/heads/main/output/personaje.png
@@ -25,7 +25,7 @@ buttons:
     - mdvsocial:casa
   warps:
     text: |-
-      &9&lLugares del Mundo
+      &1&lLugares del Mundo
       &r&8Abre el mapa de lugares
     image:
       type: URL
@@ -65,7 +65,7 @@ buttons:
     close-on-click: true
   protecciones:
     text: |-
-      &9&lTus protecciones
+      &1&lTus protecciones
       &r&8Coordenadas y miembros
     image:
       type: URL
@@ -109,7 +109,7 @@ buttons:
     action: OPEN_TITLES
   ayuda:
     text: |-
-      &d&lAyuda
+      &5&lAyuda
       &r&8Consulta comandos útiles
     image:
       type: URL
@@ -126,8 +126,8 @@ buttons:
     action: OPEN_STORE
   administracion:
     text: |-
-      &c&lAdministración
-      &8Herramientas de admin
+      &4&lAdministración
+      &r&8Herramientas de admin
     image:
       type: URL
       data: https://raw.githubusercontent.com/k3vndev/MDVSocial-Images/refs/heads/main/output/admin.png

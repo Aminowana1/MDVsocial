@@ -25,7 +25,7 @@ order:
 
 # Botón compacto para cualquier atributo no definido debajo.
 attribute:
-  text: "&e&l{name}\n&r&7Nivel: &f{current} &8• &7Puntos: &f{spent}/{max}"
+  text: "&6&l{name}\n&r&8Nivel: &0{current} &8• &8Puntos: &0{spent}/{max}"
   image:
     type: "URL"
     data: ""
@@ -33,25 +33,25 @@ attribute:
 # Botones compactos del menú principal.
 attributes:
   strength:
-    text: "&c&l{name}\n&r&7Nivel: &c{current} &8• &7Puntos: &6{spent}/{max}"
+    text: "&4&l{name}\n&r&8Nivel: &4{current} &8• &8Puntos: &6{spent}/{max}"
     image:
       type: "URL"
       data: ""
 
   dexterity:
-    text: "&a&l{name}\n&r&7Nivel: &a{current} &8• &7Puntos: &6{spent}/{max}"
+    text: "&2&l{name}\n&r&8Nivel: &2{current} &8• &8Puntos: &6{spent}/{max}"
     image:
       type: "URL"
       data: ""
 
   intelligence:
-    text: "&9&l{name}\n&r&7Nivel: &9{current} &8• &7Puntos: &6{spent}/{max}"
+    text: "&1&l{name}\n&r&8Nivel: &1{current} &8• &8Puntos: &6{spent}/{max}"
     image:
       type: "URL"
       data: ""
 
   constitution:
-    text: "&6&l{name}\n&r&7Nivel: &6{current} &8• &7Puntos: &6{spent}/{max}"
+    text: "&6&l{name}\n&r&8Nivel: &6{current} &8• &8Puntos: &6{spent}/{max}"
     image:
       type: "URL"
       data: ""
@@ -77,22 +77,22 @@ details:
       - ""
       - "&7Puntos disponibles: &6{attribute_points}"
     upgrade:
-      text: "&a&lSubir {name} +1\n&r&7Consume 1 punto de atributo."
+      text: "&2&lSubir {name} +1\n&r&8Consume 1 punto de atributo."
       image:
         type: "URL"
         data: ""
     no-points:
-      text: "&c&lSin puntos disponibles\n&r&7Consigue puntos de atributo para mejorar."
+      text: "&4&lSin puntos disponibles\n&r&8Consigue puntos de atributo para mejorar."
       image:
         type: "URL"
         data: ""
     maxed:
-      text: "&8&lMáximo alcanzado\n&r&7No puedes invertir más puntos."
+      text: "&8&lMáximo alcanzado\n&r&8No puedes invertir más puntos."
       image:
         type: "URL"
         data: ""
     back:
-      text: "&6Volver"
+      text: "&6&lVolver"
       image:
         type: "URL"
         data: ""
@@ -109,22 +109,22 @@ details:
       - ""
       - "&7Puntos disponibles: &6{attribute_points}"
     upgrade:
-      text: "&a&lSubir Fuerza +1\n&r&7Consume 1 punto de atributo."
+      text: "&2&lSubir Fuerza +1\n&r&8Consume 1 punto de atributo."
       image:
         type: "URL"
         data: ""
     no-points:
-      text: "&c&lSin puntos disponibles\n&r&7No tienes puntos para subir Fuerza."
+      text: "&4&lSin puntos disponibles\n&r&8No tienes puntos para subir Fuerza."
       image:
         type: "URL"
         data: ""
     maxed:
-      text: "&8&lFuerza al máximo\n&r&7No puedes invertir más puntos."
+      text: "&8&lFuerza al máximo\n&r&8No puedes invertir más puntos."
       image:
         type: "URL"
         data: ""
     back:
-      text: "&6Volver a Atributos"
+      text: "&6&lVolver a Atributos"
       image:
         type: "URL"
         data: ""
@@ -141,22 +141,22 @@ details:
       - ""
       - "&7Puntos disponibles: &6{attribute_points}"
     upgrade:
-      text: "&a&lSubir Destreza +1\n&r&7Consume 1 punto de atributo."
+      text: "&2&lSubir Destreza +1\n&r&8Consume 1 punto de atributo."
       image:
         type: "URL"
         data: ""
     no-points:
-      text: "&c&lSin puntos disponibles\n&r&7No tienes puntos para subir Destreza."
+      text: "&4&lSin puntos disponibles\n&r&8No tienes puntos para subir Destreza."
       image:
         type: "URL"
         data: ""
     maxed:
-      text: "&8&lDestreza al máximo\n&r&7No puedes invertir más puntos."
+      text: "&8&lDestreza al máximo\n&r&8No puedes invertir más puntos."
       image:
         type: "URL"
         data: ""
     back:
-      text: "&6Volver a Atributos"
+      text: "&6&lVolver a Atributos"
       image:
         type: "URL"
         data: ""
@@ -174,22 +174,22 @@ details:
       - ""
       - "&7Puntos disponibles: &6{attribute_points}"
     upgrade:
-      text: "&a&lSubir Inteligencia +1\n&r&7Consume 1 punto de atributo."
+      text: "&2&lSubir Inteligencia +1\n&r&8Consume 1 punto de atributo."
       image:
         type: "URL"
         data: ""
     no-points:
-      text: "&c&lSin puntos disponibles\n&r&7No tienes puntos para subir Inteligencia."
+      text: "&4&lSin puntos disponibles\n&r&8No tienes puntos para subir Inteligencia."
       image:
         type: "URL"
         data: ""
     maxed:
-      text: "&8&lInteligencia al máximo\n&r&7No puedes invertir más puntos."
+      text: "&8&lInteligencia al máximo\n&r&8No puedes invertir más puntos."
       image:
         type: "URL"
         data: ""
     back:
-      text: "&6Volver a Atributos"
+      text: "&6&lVolver a Atributos"
       image:
         type: "URL"
         data: ""
@@ -206,22 +206,22 @@ details:
       - ""
       - "&7Puntos disponibles: &6{attribute_points}"
     upgrade:
-      text: "&a&lSubir Constitución +1\n&r&7Consume 1 punto de atributo."
+      text: "&2&lSubir Constitución +1\n&r&8Consume 1 punto de atributo."
       image:
         type: "URL"
         data: ""
     no-points:
-      text: "&c&lSin puntos disponibles\n&r&7No tienes puntos para subir Constitución."
+      text: "&4&lSin puntos disponibles\n&r&8No tienes puntos para subir Constitución."
       image:
         type: "URL"
         data: ""
     maxed:
-      text: "&8&lConstitución al máximo\n&r&7No puedes invertir más puntos."
+      text: "&8&lConstitución al máximo\n&r&8No puedes invertir más puntos."
       image:
         type: "URL"
         data: ""
     back:
-      text: "&6Volver a Atributos"
+      text: "&6&lVolver a Atributos"
       image:
         type: "URL"
         data: ""
@@ -229,7 +229,7 @@ details:
 buttons:
   reallocate:
     enabled: true
-    text: "&e&lRedistribuir atributos\n&r&7Gastados: &6{spent_total} &8• &7Disponibles: &6{reallocation_points}"
+    text: "&6&lRedistribuir atributos\n&r&8Gastados: &6{spent_total} &8• &8Disponibles: &6{reallocation_points}"
     image:
       type: "URL"
       data: ""
@@ -249,12 +249,12 @@ reset:
     - "&7Redistribuciones disponibles: &6{reallocation_points}"
     - "&7Costo: &e1 punto de redistribución"
   confirm:
-    text: "&a&lSí, redistribuir"
+    text: "&2&lSí, redistribuir"
     image:
       type: "URL"
       data: ""
   back:
-    text: "&6Volver"
+    text: "&6&lVolver"
     image:
       type: "URL"
       data: ""

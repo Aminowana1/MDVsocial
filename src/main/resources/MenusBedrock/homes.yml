@@ -12,39 +12,39 @@ buttons:
       type: "URL"
       data: ""
   create:
-    text: "&a&lCrear {home_name}\n&r&8Guardar ubicación actual."
+    text: "&2&lCrear {home_name}\n&r&8Guardar ubicación actual."
     image:
       type: "URL"
       data: ""
   locked-home:
-    text: "&c&l{home_name}\n&r&8Hogar suspendido."
+    text: "&4&l{home_name}\n&r&8Hogar suspendido."
     image:
       type: "URL"
       data: ""
   locked-slot:
-    text: "&8Espacio {home_number} bloqueado\n&r&7Aumenta tu límite de hogares."
+    text: "&8&lEspacio {home_number} bloqueado\n&r&8Aumenta tu límite de hogares."
   back:
-    text: "&6Volver a MDVSocial"
+    text: "&6&lVolver a MDVSocial"
 home-actions:
   title: "&6&l{home_name}"
   content:
     - "&7Mundo: &f{home_world}"
     - "&7X: &f{home_x}  &7Y: &f{home_y}  &7Z: &f{home_z}"
-  teleport: "&aTeletransportarse"
-  update: "&eActualizar ubicación"
-  delete: "&cEliminar hogar"
-  back: "&6Volver"
+  teleport: "&2&lTeletransportarse"
+  update: "&6&lActualizar ubicación"
+  delete: "&4&lEliminar hogar"
+  back: "&6&lVolver"
 
 locked-menu:
   title: "&c&lHogar suspendido"
   content:
     - "&7{home_name} está guardado pero supera tu límite actual."
     - "&7No puedes teletransportarte hasta recuperar un espacio."
-  delete: "&cEliminar hogar suspendido"
-  back: "&6Volver"
+  delete: "&4&lEliminar hogar suspendido"
+  back: "&6&lVolver"
 
 delete-confirm:
   title: "&c&lEliminar {home_name}"
   content: "&7Esta acción elimina el hogar de EssentialsX. ¿Continuar?"
-  confirm: "&cSí, eliminar"
-  cancel: "&aNo, volver"
+  confirm: "&4&lSí, eliminar"
+  cancel: "&2&lNo, volver"

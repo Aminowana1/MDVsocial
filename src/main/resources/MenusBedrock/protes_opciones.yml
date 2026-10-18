@@ -3,10 +3,10 @@ managed-by: protections
 type: SIMPLE
 page-size: 6
 navigation:
-  back: '&eVolver'
-  previous: '&ePágina anterior'
-  next: '&ePágina siguiente'
-  close: '&cCerrar'
+  back: '&6&lVolver'
+  previous: '&6&lPágina anterior'
+  next: '&6&lPágina siguiente'
+  close: '&4&lCerrar'
 show-close: true
 title: '&8Gestionar protección'
 content: ['{details}']
@@ -14,17 +14,17 @@ items:
   location:
     material: MAP
     name: '&bUbicación'
-    text: '&bUbicación'
+    text: '&3&lUbicación'
     lore:
       - '&7Mundo: &f{world}'
       - '&7X: &f{x} &7Y: &f{y} &7Z: &f{z}'
   members:
     material: PLAYER_HEAD
     name: '&aMiembros ({members})'
-    text: '&aMiembros ({members})'
+    text: '&2&lMiembros ({members})'
     lore: ['&7Ver, agregar o quitar miembros.']
   remove:
     material: BARRIER
     name: '&cBorrar protección'
-    text: '&cBorrar protección'
+    text: '&4&lBorrar protección'
     lore: ['&7Requiere confirmación.']

@@ -60,7 +60,7 @@ public final class BedrockMenuParser {
             if (sec == null)
                 continue;
 
-            String text = sec.getString("text", sec.getString("name", "&f" + id));
+            String text = sec.getString("text", sec.getString("name", "&0&l" + id));
             List<String> lore = sec.getStringList("lore");
             if (!lore.isEmpty() && !sec.contains("text")) {
                 String shortLine = lore.stream()
