@@ -224,7 +224,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         mmoItemsBrowserManager.enable();
         startInteractiveChatProfileTask();
 
-        getLogger().info("MDVSocial 1.6.14 habilitado. Cachés limitadas y trabajo repartido.");
+        getLogger().info("MDVSocial " + getDescription().getVersion() + " habilitado. Cachés limitadas y trabajo repartido.");
     }
 
     @Override
@@ -398,9 +398,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
 
     private void loadTitles() {
         titles.clear();
-        ConfigurationSection sec = getConfig().getConfigurationSection("titles");
-        if (sec == null)
-            return;
+        ConfigurationSection sec = ConfigSectionFile.load(this, "titles.yml", "titles");
         for (String id : sec.getKeys(false)) {
             ConfigurationSection t = sec.getConfigurationSection(id);
             if (t == null)
@@ -426,9 +424,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
 
     private void loadRanks() {
         ranks.clear();
-        ConfigurationSection sec = getConfig().getConfigurationSection("ranks");
-        if (sec == null)
-            return;
+        ConfigurationSection sec = ConfigSectionFile.load(this, "ranks.yml", "ranks");
         for (String id : sec.getKeys(false)) {
             ConfigurationSection r = sec.getConfigurationSection(id);
             if (r == null)

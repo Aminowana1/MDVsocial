@@ -1,0 +1,207 @@
+# ==========================================================
+# Rangos (menu de rangos)
+# id:
+#   display: nombre visible
+#   material: item del menu
+#   permission: permiso que indica que el jugador tiene el rango
+#   page / slot: posicion en el menu
+#   lore: ... ({status} = obtenido o no)
+# ==========================================================
+
+aventurero:
+  display: '&aAventurero'
+  material: IRON_SWORD
+  permission: 'group.aventurero'
+  page: 1
+  slot: 10
+  lore:
+    - '&7Rango base obtenido después'
+    - '&7de elegir una raza.'
+    - ''
+    - '&aBeneficios actuales:'
+    - '&7■ &f1 hogar personal'
+    - '&7■ &f1 protección simultánea'
+    - '&7■ &fBuzón de 10 cartas'
+    - '&7■ &fTítulo: &aAventurero'
+    - '&7■ &fBolsa de muerte estándar'
+    - ''
+    - '&aMisiones y contratos:'
+    - '&7■ &fContratos normales'
+    - '&7■ &fDiarios: &a3'
+    - '&7■ &fContratos de 3 días: &92'
+    - '&7■ &fContratos de 5 días: &51'
+    - '&7■ &fContratos semanales: &61'
+    - ''
+    - '&7Estado: {status}'
+
+caballero:
+  display: '&9&lCaballero'
+  material: IRON_HELMET
+  permission: 'mdvsocial.rank.caballero'
+  page: 1
+  slot: 12
+  lore:
+    - '&7Primer rango de apoyo a MDVCRAFT.'
+    - '&7Para aventureros honorables.'
+    - ''
+    - '&9Beneficios actuales:'
+    - '&7■ &f2 hogares personales'
+    - '&7■ &f2 protecciones simultáneas'
+    - '&7■ &fBuzón de 15 cartas'
+    - '&7■ &fTítulo exclusivo: &9Caballero'
+    - '&7■ &fPrefijo azul y nombre verde'
+    - '&7■ &fMesa de trabajo portátil /craft'
+    - '&7■ &fKit de suministros cada 20 días'
+    - '&7■ &fBonificadores comunitarios de EXP'
+    - '&7■ &fBolsa de muerte azul exclusiva'
+    - ''
+    - '&9Misiones y contratos:'
+    - '&7■ &fDesbloquea contratos &9Caballero'
+    - '&7■ &fDiarios: &a3'
+    - '&7■ &fContratos de 3 días: &92'
+    - '&7■ &fContratos de 5 días: &51'
+    - '&7■ &fContratos semanales: &61'
+    - ''
+    - '&7Estado: {status}'
+
+campeon:
+  display: '&4&lCampeón'
+  material: DIAMOND_SWORD
+  permission: 'mdvsocial.rank.campeon'
+  page: 1
+  slot: 14
+  lore:
+    - '&7Rango reservado para quienes'
+    - '&7destacan entre otros aventureros.'
+    - ''
+    - '&4Beneficios actuales:'
+    - '&7■ &f3 hogares personales'
+    - '&7■ &f2 protecciones simultáneas'
+    - '&7■ &fCambio libre de aspecto /skin'
+    - '&7■ &fBuzón de 25 cartas'
+    - '&7■ &fTítulo exclusivo: &4Campeón'
+    - '&7■ &fPrefijo rojo y nombre cian'
+    - '&7■ &fMesa de trabajo portátil /craft'
+    - '&7■ &fCofre de Ender portátil /ec'
+    - '&7■ &fKit mejorado cada 20 días'
+    - '&7■ &fBonificadores comunitarios de EXP'
+    - '&7■ &fBolsa de muerte roja exclusiva'
+    - ''
+    - '&4Misiones y contratos:'
+    - '&7■ &fContratos &9Caballero'
+    - '&7■ &fDiarios: &a4'
+    - '&7■ &fContratos de 3 días: &93'
+    - '&7■ &fContratos de 5 días: &52'
+    - '&7■ &fContratos semanales: &62'
+    - ''
+    - '&7Estado: {status}'
+
+noble:
+  display: '&6&lNoble'
+  material: GOLDEN_HELMET
+  permission: 'mdvsocial.rank.noble'
+  page: 1
+  slot: 16
+  lore:
+    - '&7Un rango de prestigio, riqueza'
+    - '&7y reconocimiento dentro del reino.'
+    - ''
+    - '&6Beneficios actuales:'
+    - '&7■ &f4 hogares personales'
+    - '&7■ &f3 protecciones simultáneas'
+    - '&7■ &fCambio libre de aspecto /skin'
+    - '&7■ &fBuzón de 35 cartas'
+    - '&7■ &fTítulo exclusivo: &6Noble'
+    - '&7■ &fPrefijo dorado'
+    - '&7■ &fNombre dorado'
+    - '&7■ &fMesa de trabajo portátil /craft'
+    - '&7■ &fCofre de Ender portátil /ec'
+    - '&7■ &fKit avanzado cada 20 días'
+    - '&7■ &fBonificadores de EXP y profesiones'
+    - '&7■ &fBolsa de muerte dorada exclusiva'
+    - ''
+    - '&6Misiones y contratos:'
+    - '&7■ &fContratos &9Caballero &fy &6Noble'
+    - '&7■ &fDiarios: &a4'
+    - '&7■ &fContratos de 3 días: &93'
+    - '&7■ &fContratos de 5 días: &52'
+    - '&7■ &fContratos semanales: &62'
+    - ''
+    - '&7Estado: {status}'
+
+embajador:
+  display: '&2&lEmbajador'
+  material: EMERALD
+  permission: 'mdvsocial.rank.embajador'
+  page: 1
+  slot: 19
+  lore:
+    - '&7Reconocimiento para quienes'
+    - '&7ayudaron a crecer la comunidad'
+    - '&7invitando nuevos aventureros.'
+    - ''
+    - '&2Beneficios actuales:'
+    - '&7■ &f2 hogares personales'
+    - '&7■ &f2 protecciones simultáneas'
+    - '&7■ &fMesa de trabajo portátil /craft'
+    - '&7■ &fCofre de Ender portátil /ec'
+    - ''
+    - '&8Rango especial de reconocimiento.'
+    - ''
+    - '&7Estado: {status}'
+
+heroe:
+  display: '&6&lHéroe'
+  material: NETHER_STAR
+  permission: 'mdvsocial.rank.heroe'
+  page: 1
+  slot: 32
+  lore:
+    - '&7El máximo rango disponible.'
+    - '&7Su nombre inspira nuevas historias.'
+    - ''
+    - '&5Beneficios actuales:'
+    - '&7■ &f4 hogares personales'
+    - '&7■ &f4 protecciones simultáneas'
+    - '&7■ &fCambio libre de aspecto /skin'
+    - '&7■ &fBuzón de 50 cartas'
+    - '&7■ &fTítulo exclusivo: &5H&dé&5r&do&5e'
+    - '&7■ &fPrefijo dorado y morado'
+    - '&7■ &fNombre morado'
+    - '&7■ &fMesa de trabajo portátil /craft'
+    - '&7■ &fCofre de Ender portátil /ec'
+    - '&7■ &fKit superior cada 20 días'
+    - '&7■ &fBonificadores superiores de EXP'
+    - '&7■ &fBolsa de muerte heroica exclusiva'
+    - ''
+    - '&5Misiones y contratos:'
+    - '&7■ &fContratos &9Caballero &fy &6Noble'
+    - '&7■ &fDiarios: &a5'
+    - '&7■ &fContratos de 3 días: &94'
+    - '&7■ &fContratos de 5 días: &53'
+    - '&7■ &fContratos semanales: &63'
+    - ''
+    - '&7Estado: {status}'
+
+creador:
+  display: '&d&lCreador'
+  material: SPYGLASS
+  permission: 'mdvsocial.rank.creador'
+  page: 1
+  slot: 28
+  lore:
+    - '&7Rango destinado a quienes'
+    - '&7crean contenido y comparten'
+    - '&7sus aventuras en MDVCRAFT.'
+    - ''
+    - '&dBeneficios actuales:'
+    - '&7■ &f2 hogares personales'
+    - '&7■ &f2 protecciones simultáneas'
+    - '&7■ &fCambio libre de aspecto /skin'
+    - '&7■ &fMesa de trabajo portátil /craft'
+    - '&7■ &fCofre de Ender portátil /ec'
+    - ''
+    - '&8Disponible mientras forme parte'
+    - '&8del programa de creadores.'
+    - ''
+    - '&7Estado: {status}'
