@@ -73,6 +73,10 @@ public final class TitlesForms {
     }
 
     public void openList(Player player, String type, int page) {
+        if (type.equals("SHOP") && titles.shopClosed()) {
+            forms.host().message(player, "title-shop-closed");
+            return;
+        }
         YamlConfiguration ui = forms.ui("titulos_lista");
         String section = switch (type) {
             case "SHOP" -> "shop";

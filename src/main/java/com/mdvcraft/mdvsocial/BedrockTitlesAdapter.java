@@ -51,6 +51,11 @@ final class BedrockTitlesAdapter implements TitlesPort {
     }
 
     @Override
+    public boolean shopClosed() {
+        return plugin.isTitleShopClosed();
+    }
+
+    @Override
     public void clear(Player player) {
         plugin.clearActiveTitle(player);
     }

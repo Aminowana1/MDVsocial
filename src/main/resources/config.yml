@@ -27,6 +27,7 @@ messages:
   given-title: '&aTitulo entregado correctamente.'
   removed-title: '&eTitulo removido correctamente.'
   boss-radius-given: '&aTitulo entregado a &e{amount} &ajugadores cercanos.'
+  title-shop-closed: '&cLa tienda de títulos está cerrada por el momento.'
   title-not-player-equippable: '&cNo puedes equiparte ese titulo.'
   mail-disabled: '&cEl sistema de cartas esta desactivado.'
   mail-recipient-prompt: '&eEscribe el nombre del destinatario en el chat. Escribe &ccancelar &epara salir.'
@@ -128,6 +129,17 @@ settings:
 
   # Si esto esta true, la tienda de titulos usara Vault/Economy.
   use-vault-economy: true
+
+  # Cierra la tienda de titulos: no se abre (se avisa con messages.title-shop-closed)
+  # y no se puede comprar. Ponlo en false para volver a abrirla.
+  title-shop-closed: true
+
+  # Al entrar, equipa este titulo a quien tenga el permiso y siga con el titulo
+  # por defecto (forastero) o sin titulo. No cambia titulos elegidos ni castigos.
+  join-title:
+    enabled: true
+    title: aventurero
+    permission: 'group.aventurero'
 
   # Sistema de titulo obligatorio.
   # Si mandatory-title esta true, el jugador siempre tendra un titulo activo.

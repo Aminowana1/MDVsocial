@@ -219,6 +219,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         partyJoinMenuGuard.enable();
         new PartySneakInvite(this).enable();
         new MMOCoreRequestClicks(this).enable();
+        new JoinTitleListener(this).enable();
         quickAccept = new QuickAcceptService(this, this::isBedrockPlayer, this::playUiSound,
                 (player, message) -> player.sendMessage(color(message)));
         quickAccept.enable();
@@ -3876,6 +3877,10 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     }
 
     private void openTitleList(Player player, String type, int page) {
+        if (type.equals("SHOP") && isTitleShopClosed()) {
+            msg(player, "title-shop-closed");
+            return;
+        }
         if (isBedrockPlayer(player)) {
             bedrock.titles().openList(player, type, page);
             return;
@@ -6242,7 +6247,16 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         }
     }
 
+    /** {@code settings.title-shop-closed}: the shop can't be opened and nothing can be bought. */
+    boolean isTitleShopClosed() {
+        return getConfig().getBoolean("settings.title-shop-closed", false);
+    }
+
     void buyTitle(Player player, String titleId) {
+        if (isTitleShopClosed()) {
+            msg(player, "title-shop-closed");
+            return;
+        }
         titleId = normalize(titleId);
         TitleDef title = titles.get(titleId);
         if (title == null) {
@@ -6496,6 +6510,27 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         return list.stream().map(this::normalize).collect(Collectors.toCollection(HashSet::new));
     }
 
+    /**
+     * Equips {@code titleId} without messages, unlocking it first if needed, when the
+     * player's saved title is empty or the default one and they are not punished.
+     * @return true when the title was equipped
+     */
+    boolean equipTitleIfDefault(Player player, String titleId) {
+        titleId = normalize(titleId);
+        UUID uuid = player.getUniqueId();
+        if (!titles.containsKey(titleId) || isPunished(uuid))
+            return false;
+        String stored = getStoredActiveTitleId(uuid);
+        if (!stored.isBlank() && !stored.equals(getDefaultTitleId()))
+            return false;
+        if (!hasTitle(player, titleId))
+            giveTitle(uuid, player.getName(), titleId);
+        setActiveTitle(uuid, titleId);
+        saveData();
+        runEquipCommands(player, titleId);
+        return true;
+    }
+
     private String getStoredActiveTitleId(UUID uuid) {
         return normalize(data.getString(path(uuid, "active"), ""));
     }
@@ -6675,6 +6710,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             case "party-request-accepted" -> "&aAceptaste la invitación al grupo de &e{target}&a.";
             case "party-request-denied" -> "&eRechazaste la invitación al grupo de &c{target}&e.";
             case "social-request-expired" -> "&cEsa solicitud ya expiró.";
+            case "title-shop-closed" -> "&cLa tienda de títulos está cerrada por el momento.";
             case "request-no-longer-available" -> "&7Esta acción ya no está disponible.";
             case "social-request-error" -> "&cNo se pudo procesar esa solicitud de MMOCore.";
             case "friend-removed" -> "&eEliminaste a &c{target} &ede tu lista de amigos.";

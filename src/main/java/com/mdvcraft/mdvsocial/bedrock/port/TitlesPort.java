@@ -26,6 +26,9 @@ public interface TitlesPort {
 
     void buy(Player player, String titleId);
 
+    /** The title shop is closed (settings.title-shop-closed). */
+    boolean shopClosed();
+
     void clear(Player player);
 
     /** Rank pages (0-based) with their ranks ordered by slot. */
