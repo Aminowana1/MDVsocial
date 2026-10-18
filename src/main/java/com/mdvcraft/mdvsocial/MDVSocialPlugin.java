@@ -162,6 +162,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         keyRightCommands = new org.bukkit.NamespacedKey(this, "right_commands");
 
         saveDefaultConfig();
+        ConfigDuplicateKeys.warn(this);
         TpaModule.importLegacyConfig(this);
         workQueue = new TickWorkQueue(this);
         loadAll();
