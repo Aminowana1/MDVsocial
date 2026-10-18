@@ -93,6 +93,12 @@ public final class BedrockModule {
         sessions.clearAll();
     }
 
+    /** Closes the player's Bedrock form if possible and ignores any late answer to it. */
+    public void closeForms(Player player) {
+        sessions.clear(player);
+        gateway.closeForm(player);
+    }
+
     /** Forgets the form session of a player who left. */
     public void forget(Player player) {
         sessions.clear(player);

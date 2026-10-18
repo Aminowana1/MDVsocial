@@ -10,6 +10,7 @@ import org.bukkit.configuration.ConfigurationSection;
  * @param teleportDelaySeconds        total wait after accepting (0 = instant)
  * @param movementGraceSeconds        first part of the wait in which moving is allowed
  * @param invulnerabilitySeconds      damage protection after arriving (0 = none)
+ * @param ignorePartyAutoAccept       true: requests between party members are not accepted automatically
  */
 public record TpaSettings(
         boolean enabled,
@@ -22,9 +23,11 @@ public record TpaSettings(
         boolean cancelDelayOnAttack,
         int invulnerabilitySeconds,
         boolean invulnerabilityCancelOnAttack,
-        boolean allowCrossWorld) {
+        boolean allowCrossWorld,
+        boolean ignorePartyAutoAccept) {
 
-    public static final TpaSettings DEFAULTS = new TpaSettings(true, 60, 15, 4, 1, true, true, true, 5, true, true);
+    public static final TpaSettings DEFAULTS = new TpaSettings(true, 60, 15, 4, 1, true, true, true, 5, true, true,
+            false);
 
     public static TpaSettings from(ConfigurationSection section) {
         if (section == null)
@@ -42,7 +45,8 @@ public record TpaSettings(
                 Math.max(0, section.getInt("invulnerability-after-teleport-seconds",
                         DEFAULTS.invulnerabilitySeconds())),
                 section.getBoolean("invulnerability-cancel-on-attack", DEFAULTS.invulnerabilityCancelOnAttack()),
-                section.getBoolean("allow-cross-world", DEFAULTS.allowCrossWorld()));
+                section.getBoolean("allow-cross-world", DEFAULTS.allowCrossWorld()),
+                section.getBoolean("party-auto-accept.ignore", DEFAULTS.ignorePartyAutoAccept()));
     }
 
     /** Seconds of the wait in which the requester must stand still. */

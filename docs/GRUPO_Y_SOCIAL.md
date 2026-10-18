@@ -16,6 +16,13 @@
   con nombres no abre nada para que se vean los avisos en el chat.
 - Permiso: `mdvsocial.party.use` (por defecto todos).
 
+## Al unirte a un grupo
+
+No se abre ningún menú: ni el formulario de Bedrock ni el menú de grupo que MMOCore
+abre por su cuenta al aceptar (se cancela durante 2 s tras aceptar, desde MDVSocial,
+`/party accept` o los botones del chat). Para volver al comportamiento anterior:
+`party-invites.open-menu-on-join: true`.
+
 ## Avisos de invitación
 
 Los avisos al invitado (Java con botones, Bedrock con quick accept) se

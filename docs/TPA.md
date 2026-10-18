@@ -28,6 +28,13 @@ El autocompletado muestra a tus amigos primero.
 - **Bloqueos:** si el destinatario te bloqueó, la solicitud no llega y ves
   `request-not-delivered` ("No se pudo enviar..."), igual que con cartas y grupos.
 - Al desconectarse alguien se cancela todo lo que le afecta y se avisa al otro.
+- **Grupo de Aventura:** si quien pide es de tu grupo, la solicitud se acepta sola y
+  se avisa a los dos (`party-auto-accepted`, `party-auto-accepted-target`).
+  Para tratarlas como cualquier otra: `tpa.party-auto-accept.ignore: true`.
+- **Menús:** al enviar una solicitud se cierran los menús de quien la envía (Java y
+  Bedrock). Si se rechaza (cooldown, jugador no encontrado...) el menú sigue abierto.
+  En Bedrock, Floodgate no puede cerrar un formulario desde el servidor; solo Geyser
+  puede si corre en este mismo servidor. Por eso basta con no volver a abrir ninguno.
 
 ## Avisos al recibir una solicitud (`tpa.notice`)
 

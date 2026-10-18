@@ -50,40 +50,55 @@ public final class TpaService {
         return true;
     }
 
-    /** Sends a request from {@code sender} to {@code target}. */
-    public void request(Player sender, Player target) {
+    /**
+     * Sends a request from {@code sender} to {@code target}. Once it goes out the
+     * sender's menus are closed, so a request made from a menu does not leave it open.
+     * Between members of the same party it is accepted right away (unless
+     * {@code tpa.party-auto-accept.ignore}).
+     *
+     * @return true when it went out; false when it was refused (the sender was told why)
+     */
+    public boolean request(Player sender, Player target) {
         TpaSettings config = settings.get();
         if (target == null || !target.isOnline() || !sender.canSee(target)) {
             messages.send(sender, "player-not-found");
-            return;
+            return false;
         }
         if (target.equals(sender)) {
             messages.send(sender, "cannot-self");
-            return;
+            return false;
         }
         if (!config.allowCrossWorld() && !target.getWorld().equals(sender.getWorld())) {
             messages.send(sender, "cross-world-disabled");
-            return;
+            return false;
         }
         long now = System.currentTimeMillis();
         long wait = cooldowns.remainingSeconds(sender.getUniqueId(), now);
         if (wait > 0) {
             messages.send(sender, "cooldown", Map.of("seconds", String.valueOf(wait)));
-            return;
+            return false;
         }
         cooldowns.start(sender.getUniqueId(), now, config.cooldownSeconds() * 1000L);
+        host.closeMenus(sender);
 
         // Like letters and party invites, a block is never revealed to the sender.
         if (!host.canContact(sender.getUniqueId(), target.getUniqueId())) {
             messages.send(sender, "request-not-delivered", Map.of("target", target.getName()));
-            return;
+            return true;
         }
 
         TpaRequest request = book.add(sender.getUniqueId(), target.getUniqueId(), now,
                 config.requestTimeoutSeconds() * 1000L);
+        if (!config.ignorePartyAutoAccept() && host.sameParty(sender, target)) {
+            messages.send(sender, "party-auto-accepted", Map.of("target", target.getName()));
+            messages.send(target, "party-auto-accepted-target", Map.of("player", sender.getName()));
+            accept(target, request, false);
+            return true;
+        }
         String seconds = String.valueOf(config.requestTimeoutSeconds());
         messages.send(sender, "request-sent", Map.of("target", target.getName(), "seconds", seconds));
         notifier.notify(target, sender, request, this);
+        return true;
     }
 
     /** Valid requests received by {@code target}, newest first. */
@@ -106,7 +121,7 @@ public final class TpaService {
         if (request == null)
             messages.send(target, "no-pending-request");
         else
-            accept(target, request);
+            accept(target, request, true);
     }
 
     public void denyLatest(Player target) {
@@ -120,7 +135,7 @@ public final class TpaService {
     /** Accepts the request of {@code senderId}; tells the target when it is no longer valid. */
     public boolean accept(Player target, UUID senderId) {
         TpaRequest request = find(target, senderId);
-        return request != null && accept(target, request);
+        return request != null && accept(target, request, true);
     }
 
     public boolean deny(Player target, UUID senderId) {
@@ -151,7 +166,8 @@ public final class TpaService {
         return request;
     }
 
-    private boolean accept(Player target, TpaRequest request) {
+    /** @param announce whether the target hears "you accepted X" (not for automatic accepts) */
+    private boolean accept(Player target, TpaRequest request, boolean announce) {
         book.remove(request);
         Player requester = Bukkit.getPlayer(request.sender());
         if (requester == null) {
@@ -162,7 +178,8 @@ public final class TpaService {
             messages.send(target, "cross-world-disabled");
             return false;
         }
-        messages.send(target, "request-accepted-target", Map.of("player", requester.getName()));
+        if (announce)
+            messages.send(target, "request-accepted-target", Map.of("player", requester.getName()));
         teleporter.start(requester, target);
         return true;
     }

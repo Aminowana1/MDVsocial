@@ -65,4 +65,22 @@ public final class FloodgateGateway {
             return false;
         }
     }
+
+    /**
+     * Closes the form a Bedrock player has open. Floodgate cannot do it; Geyser
+     * can, but only when Geyser runs on this server (not on a proxy), so this
+     * is best effort and does nothing otherwise.
+     */
+    public void closeForm(Player player) {
+        try {
+            Class<?> api = Class.forName("org.geysermc.geyser.api.GeyserApi");
+            Object geyser = api.getMethod("api").invoke(null);
+            Object connection = api.getMethod("connectionByUuid", java.util.UUID.class)
+                    .invoke(geyser, player.getUniqueId());
+            if (connection != null)
+                connection.getClass().getMethod("closeForm").invoke(connection);
+        } catch (Throwable ignored) {
+            // Geyser not on this server or an API without closeForm.
+        }
+    }
 }

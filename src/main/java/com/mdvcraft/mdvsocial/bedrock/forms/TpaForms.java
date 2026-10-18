@@ -92,8 +92,8 @@ public final class TpaForms {
                 FriendsMode.FIRST,
                 Set.of(),
                 (viewer, target) -> {
-                    teleport.request(viewer, target);
-                    open(viewer);
+                    if (!teleport.request(viewer, target))
+                        open(viewer);
                 },
                 this::openNameForm,
                 this::open), page);
@@ -113,8 +113,8 @@ public final class TpaForms {
                     openPicker(player, 0);
                     return;
                 }
-                teleport.request(player, forms.findOnlinePlayer(rawName.trim()));
-                open(player);
+                if (!teleport.request(player, forms.findOnlinePlayer(rawName.trim())))
+                    openNameForm(player);
             });
         });
         forms.send(player, builder.build());

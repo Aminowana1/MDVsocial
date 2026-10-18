@@ -44,6 +44,17 @@ final class TpaHostAdapter implements TpaHost {
     }
 
     @Override
+    public boolean sameParty(Player a, Player b) {
+        Object party = plugin.getMMOCoreParty(a);
+        return party != null && party.equals(plugin.getMMOCoreParty(b));
+    }
+
+    @Override
+    public void closeMenus(Player player) {
+        plugin.closeAllMenus(player);
+    }
+
+    @Override
     public void openBedrockRequest(Player target, TpaRequest request) {
         plugin.bedrock().tpa().openRequest(target, request.sender());
     }

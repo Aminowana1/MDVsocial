@@ -45,8 +45,8 @@ final class BedrockTeleportAdapter implements TeleportPort {
     }
 
     @Override
-    public void request(Player player, Player target) {
-        service().request(player, target);
+    public boolean request(Player player, Player target) {
+        return service().request(player, target);
     }
 
     @Override

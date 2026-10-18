@@ -29,6 +29,32 @@ class QuickAcceptTest {
     }
 
     @Test
+    void holdingTheFirstSneakLongerStillCounts() {
+        SneakSequence sequence = new SneakSequence(2, 700, 30_000);
+        assertEquals(Result.PROGRESS, sequence.register(true, 1_000));
+        assertEquals(Result.PROGRESS, sequence.register(false, 1_900), "held for 900 ms");
+        assertEquals(Result.COMPLETE, sequence.register(true, 2_200), "300 ms after standing up");
+    }
+
+    @Test
+    void standUpWithoutASeenCrouchCountsAsASneak() {
+        SneakSequence sequence = new SneakSequence(2, 700, 30_000);
+        assertEquals(Result.PROGRESS, sequence.register(true, 1_000));
+        assertEquals(Result.PROGRESS, sequence.register(false, 1_100));
+        // The second crouch never reached the server; only the stand-up did.
+        assertEquals(Result.COMPLETE, sequence.register(false, 1_300));
+    }
+
+    @Test
+    void standingUpAloneNeverCompletes() {
+        SneakSequence sequence = new SneakSequence(1, 700, 30_000);
+        assertEquals(Result.COMPLETE, sequence.register(true, 1_000));
+        SneakSequence other = new SneakSequence(2, 700, 30_000);
+        other.register(true, 1_000);
+        assertEquals(Result.PROGRESS, other.register(false, 1_100));
+    }
+
+    @Test
     void nothingCountsAfterTheWindow() {
         SneakSequence sequence = new SneakSequence(1, 500, 10_000);
         assertEquals(Result.EXPIRED, sequence.register(10_001));

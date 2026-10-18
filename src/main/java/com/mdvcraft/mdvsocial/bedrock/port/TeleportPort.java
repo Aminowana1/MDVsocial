@@ -21,7 +21,8 @@ public interface TeleportPort {
     /** Name of the player the viewer sent a pending request to, or null. */
     String outgoingTarget(Player player);
 
-    void request(Player player, Player target);
+    /** @return true when it went out (the player's menus are closed then). */
+    boolean request(Player player, Player target);
 
     /** @return true when the request was still valid and is now accepted. */
     boolean accept(Player player, UUID sender);

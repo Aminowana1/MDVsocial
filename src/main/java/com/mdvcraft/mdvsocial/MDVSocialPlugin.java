@@ -112,6 +112,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     private BlockedPlayersMenuManager blockedPlayersMenu;
     private QuickAcceptService quickAccept;
     private MMOCoreRequestWatcher requestWatcher;
+    private PartyJoinMenuGuard partyJoinMenuGuard;
     private TpaModule tpa;
     private final Map<UUID, Long> lastMailSentAt = new ConcurrentHashMap<>();
     private final Map<UUID, Long> lastFriendRequestAt = new ConcurrentHashMap<>();
@@ -213,6 +214,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         blockedPlayersMenu.enable();
         new PartyCommand(this).enable();
         new PartyInviteGuard(this).enable();
+        partyJoinMenuGuard = new PartyJoinMenuGuard(this);
+        partyJoinMenuGuard.enable();
         quickAccept = new QuickAcceptService(this, this::isBedrockPlayer, this::playUiSound,
                 (player, message) -> player.sendMessage(color(message)));
         quickAccept.enable();
@@ -3563,6 +3566,19 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         return blocks;
     }
 
+    /**
+     * Closes every menu the player has open: inventory menus (next tick, so it is
+     * safe from inside a click) and, for Bedrock, the open form.
+     */
+    void closeAllMenus(Player player) {
+        if (isBedrockPlayer(player))
+            bedrock.closeForms(player);
+        Bukkit.getScheduler().runTask(this, () -> {
+            if (player.isOnline())
+                player.closeInventory();
+        });
+    }
+
     /** Teleport requests (/tpa). */
     public TpaModule tpa() {
         return tpa;
@@ -4277,6 +4293,10 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             } catch (NoSuchMethodException ignored) {
             }
             Method method = request.getClass().getMethod(accept ? "accept" : "deny");
+            // MMOCore opens its party menu inside accept(); it is cancelled unless configured.
+            if (accept && partyJoinMenuGuard != null
+                    && MMOCoreRequestWatcher.PARTY_INVITE.equals(request.getClass().getSimpleName()))
+                partyJoinMenuGuard.markJoining(player);
             method.invoke(request);
             return true;
         } catch (Throwable ex) {

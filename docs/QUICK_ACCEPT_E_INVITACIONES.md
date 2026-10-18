@@ -70,6 +70,10 @@ llega la invitación:
 - Si no: se abre el formulario "Invitación de X" con Aceptar, Rechazar y
   Más tarde (`requests-menu.detail.later` en `party.yml`).
 - Si la invitación ya se respondió o caducó, el gesto no hace nada.
+- Tolerante a agacharse muy rápido: el tiempo entre agachadas se mide desde que te
+  levantas, cuentan también las agachadas que otro plugin cancela, y si el servidor
+  solo ve que te levantas (sin haber visto la agachada), eso cuenta como una.
+  Una agachada y levantada dentro del mismo tick (50 ms) nunca llega al servidor.
 - Cada jugador tiene una sola oferta activa: una invitación nueva reemplaza la
   anterior (que sigue en el menú de Invitaciones).
 

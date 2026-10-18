@@ -24,6 +24,12 @@ public interface TpaHost {
 
     Collection<UUID> friends(Player player);
 
+    /** Whether both players are in the same adventure party. */
+    boolean sameParty(Player a, Player b);
+
+    /** Closes every menu the player has open (inventory menus and Bedrock forms). */
+    void closeMenus(Player player);
+
     /** Bedrock confirmation form for one received request (Aceptar / Rechazar / Más tarde). */
     void openBedrockRequest(Player target, TpaRequest request);
 }

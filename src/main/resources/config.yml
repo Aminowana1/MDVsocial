@@ -562,6 +562,8 @@ mmocore-requests:
 # ==========================================================
 party-invites:
   enabled: true
+  # Abrir el menú del grupo al unirte a uno (el de MMOCore en Java, el formulario en Bedrock).
+  open-menu-on-join: false
 
   # Jugadores Java. Cada línea es JSON de chat (o texto normal); se aceptan códigos &.
   # Tokens: {player} = quien invita, {uuid} = id de la invitación (lo usa /mmocore:party accept|deny).
@@ -647,7 +649,8 @@ quick-accept:
   sneaks-required: 2
   # Segundos que dura la oportunidad desde que llega la solicitud.
   window-seconds: 30
-  # Tiempo máximo entre una agachada y la siguiente (ms). Si se supera, se empieza de cero.
+  # Tiempo máximo (ms) entre levantarse y volver a agacharse. Si se supera, se empieza de cero.
+  # También cuentan las agachadas que otro plugin cancela y las que el servidor no llegó a ver.
   max-sneak-gap-millis: 700
   # Sonido de ui-core.sounds al completar el gesto (vacío = ninguno).
   trigger-sound: 'confirm'
@@ -694,6 +697,12 @@ tpa:
   invulnerability-after-teleport-seconds: 5
   invulnerability-cancel-on-attack: true
   allow-cross-world: true
+
+  # Si quien pide es de tu Grupo de Aventura, la solicitud se acepta sola y se avisa a los dos
+  # (mensajes party-auto-accepted y party-auto-accepted-target).
+  party-auto-accept:
+    # true = tratarlas como cualquier otra solicitud.
+    ignore: false
 
   # Aviso a quien recibe la solicitud.
   # Tokens: {player} = quien la envía, {uuid} = su UUID, {seconds} = segundos para responder.
@@ -746,6 +755,9 @@ tpa:
     request-accepted: "&aTeletransporte completado."
     request-accepted-target: "&aAceptaste la solicitud de &f{player}&a."
     request-cancelled: "&eCancelaste tu solicitud de teletransporte."
+    # Aceptadas solas por ser del mismo grupo (tpa.party-auto-accept).
+    party-auto-accepted: "&a{target} es de tu grupo: tu solicitud se aceptó automáticamente."
+    party-auto-accepted-target: "&a{player} es de tu grupo: su solicitud de teletransporte se aceptó automáticamente."
     request-cancelled-target: "&7{player} canceló su solicitud de teletransporte."
     request-cancelled-disconnect: "&7La solicitud fue cancelada porque el jugador se desconectó."
     target-disconnected: "&cEl jugador objetivo se desconectó."

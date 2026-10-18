@@ -89,15 +89,18 @@ public final class QuickAcceptService implements Listener {
             offer.expiryTask().cancel();
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    /**
+     * Both crouching and standing up are read, and cancelled events too: another
+     * plugin (anti-spam, skill combos) cancelling a fast sneak does not change
+     * what the player did.
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onSneak(PlayerToggleSneakEvent event) {
-        if (!event.isSneaking())
-            return;
         Player player = event.getPlayer();
         Offer offer = offers.get(player.getUniqueId());
         if (offer == null)
             return;
-        switch (offer.sequence().register(System.currentTimeMillis())) {
+        switch (offer.sequence().register(event.isSneaking(), System.currentTimeMillis())) {
             case EXPIRED -> expire(player.getUniqueId());
             case PROGRESS -> {
             }

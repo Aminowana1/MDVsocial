@@ -192,7 +192,7 @@ public final class PartyForms {
         openRequestDetail(player, request, false);
     }
 
-    /** Accepts an invitation and shows the party (used by quick accept for friends). */
+    /** Accepts an invitation (used by quick accept for friends). */
     public void acceptInvite(Player player, Object request) {
         if (social.resolveRequest(player, request, true))
             acceptedFollowUp(player);
@@ -235,13 +235,11 @@ public final class PartyForms {
                 afterwards));
     }
 
+    /** After joining: no menu is opened (MMOCore's own party view is cancelled too). */
     private void acceptedFollowUp(Player player) {
         Bukkit.getScheduler().runTaskLater(forms.host().plugin(), () -> {
-            if (!player.isOnline())
-                return;
-            player.closeInventory();
-            social.syncPartyPermission(player);
-            open(player);
+            if (player.isOnline())
+                social.syncPartyPermission(player);
         }, 2L);
     }
 }
