@@ -34,6 +34,7 @@ public final class BedrockMenuRepository {
             "main.yml",
             "menuperfil.yml",
             "menuamigos.yml",
+            "tpa.yml",
             "jugador_opciones.yml",
             "amigo_opciones.yml",
             "correo.yml",

@@ -60,6 +60,8 @@ quick-accept:
   types:
     party-invite:            # cualquier clave de arriba se puede sobrescribir por tipo
       enabled: true
+    tpa:                     # solicitudes de TPA (ver TPA.md)
+      enabled: true
 ```
 
 ### Usarlo para otras solicitudes

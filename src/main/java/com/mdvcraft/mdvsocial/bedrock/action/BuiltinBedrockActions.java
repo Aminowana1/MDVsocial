@@ -7,6 +7,7 @@ import com.mdvcraft.mdvsocial.bedrock.forms.MMOCoreForms;
 import com.mdvcraft.mdvsocial.bedrock.forms.MailForms;
 import com.mdvcraft.mdvsocial.bedrock.forms.PartyForms;
 import com.mdvcraft.mdvsocial.bedrock.forms.TitlesForms;
+import com.mdvcraft.mdvsocial.bedrock.forms.TpaForms;
 import com.mdvcraft.mdvsocial.bedrock.menu.model.BedrockMenuContext;
 import com.mdvcraft.mdvsocial.bedrock.port.BedrockHost;
 import com.mdvcraft.mdvsocial.bedrock.port.SocialPort;
@@ -24,7 +25,7 @@ public final class BuiltinBedrockActions {
 
     public record Dependencies(BedrockHost host, BedrockNavigation navigation, TitlesPort titlesPort,
             SocialPort social, TitlesForms titles, MailForms mail, FriendsForms friends, PartyForms party,
-            MMOCoreForms mmocore, BlockedPlayersForms blocked, LinkMessages links) {
+            MMOCoreForms mmocore, BlockedPlayersForms blocked, TpaForms tpa, LinkMessages links) {
     }
 
     public static void registerAll(BedrockActionRegistry registry, Dependencies d) {
@@ -85,6 +86,7 @@ public final class BuiltinBedrockActions {
 
         // General block list (old START_MAIL_BLOCK/UNBLOCK buttons are aliases of these).
         registry.register((p, b, c) -> d.blocked().openList(p, 0), "OPEN_BLOCKED_PLAYERS");
+        registry.register((p, b, c) -> d.tpa().open(p), "OPEN_BEDROCK_TPA");
         registry.register((p, b, c) -> d.blocked().openBlockForm(p), "START_BLOCK_PLAYER");
         registry.register((p, b, c) -> d.blocked().openUnblockForm(p), "START_UNBLOCK_PLAYER");
 

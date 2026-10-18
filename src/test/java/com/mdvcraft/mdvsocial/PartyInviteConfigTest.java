@@ -46,6 +46,20 @@ class PartyInviteConfigTest {
     }
 
     @Test
+    void tpaJavaNoticeHasAcceptAndDenyButtons() {
+        YamlConfiguration config = bundledConfig();
+        List<String> commands = JsonChatFormat.render(config.getStringList("tpa.notice.java.format"),
+                        Map.of("player", "Steve", "uuid", "u-1", "seconds", "60")).stream()
+                .flatMap(line -> flatten(line).stream())
+                .map(Component::clickEvent)
+                .filter(e -> e != null && e.action() == ClickEvent.Action.RUN_COMMAND)
+                .map(ClickEvent::value).distinct().toList();
+        assertEquals(List.of("/tpa aceptarsolicitud u-1", "/tpa rechazarsolicitud u-1"), commands);
+        assertFalse(config.getStringList("tpa.notice.bedrock.message").isEmpty());
+        assertTrue(QuickAcceptSettings.from(config.getConfigurationSection("quick-accept"), "tpa").enabled());
+    }
+
+    @Test
     void bedrockMessagesAndQuickAcceptDefaults() {
         YamlConfiguration config = bundledConfig();
         assertFalse(config.getStringList("party-invites.bedrock.message").isEmpty());

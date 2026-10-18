@@ -7,6 +7,7 @@ import com.mdvcraft.mdvsocial.bedrock.forms.MMOCoreForms;
 import com.mdvcraft.mdvsocial.bedrock.forms.MailForms;
 import com.mdvcraft.mdvsocial.bedrock.forms.PartyForms;
 import com.mdvcraft.mdvsocial.bedrock.forms.TitlesForms;
+import com.mdvcraft.mdvsocial.bedrock.forms.TpaForms;
 import com.mdvcraft.mdvsocial.bedrock.menu.BedrockMenuParser;
 import com.mdvcraft.mdvsocial.bedrock.menu.model.BedrockMenuButton;
 import com.mdvcraft.mdvsocial.bedrock.menu.model.BedrockMenuContext;
@@ -51,7 +52,7 @@ class BedrockActionRegistryTest {
         BuiltinBedrockActions.registerAll(registry, new BuiltinBedrockActions.Dependencies(
                 host, new BedrockNavigation(host), mock(TitlesPort.class), mock(SocialPort.class), titles, mail,
                 mock(FriendsForms.class), mock(PartyForms.class), mock(MMOCoreForms.class),
-                mock(BlockedPlayersForms.class), mock(LinkMessages.class)));
+                mock(BlockedPlayersForms.class), mock(TpaForms.class), mock(LinkMessages.class)));
     }
 
     private static BedrockMenuButton button(String action, String permission) {

@@ -13,6 +13,7 @@ import com.mdvcraft.mdvsocial.bedrock.forms.PartyForms;
 import com.mdvcraft.mdvsocial.bedrock.forms.PlayerPickerForms;
 import com.mdvcraft.mdvsocial.bedrock.forms.SocialCounters;
 import com.mdvcraft.mdvsocial.bedrock.forms.TitlesForms;
+import com.mdvcraft.mdvsocial.bedrock.forms.TpaForms;
 import com.mdvcraft.mdvsocial.bedrock.menu.BedrockMenuParser;
 import com.mdvcraft.mdvsocial.bedrock.menu.BedrockMenuRenderer;
 import com.mdvcraft.mdvsocial.bedrock.menu.BedrockMenuRepository;
@@ -21,6 +22,7 @@ import com.mdvcraft.mdvsocial.bedrock.port.BedrockHost;
 import com.mdvcraft.mdvsocial.bedrock.port.BlocksPort;
 import com.mdvcraft.mdvsocial.bedrock.port.MailPort;
 import com.mdvcraft.mdvsocial.bedrock.port.SocialPort;
+import com.mdvcraft.mdvsocial.bedrock.port.TeleportPort;
 import com.mdvcraft.mdvsocial.bedrock.port.TitlesPort;
 import com.mdvcraft.mdvsocial.bedrock.session.BedrockUiSessionManager;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -48,17 +50,18 @@ public final class BedrockModule {
     private final PlayerPickerForms picker;
     private final MMOCoreForms mmocore;
     private final BlockedPlayersForms blocked;
+    private final TpaForms tpa;
     private final LinkMessages links;
 
     public BedrockModule(BedrockHost host, TitlesPort titlesPort, MailPort mailPort, SocialPort socialPort,
-            BlocksPort blocksPort) {
+            BlocksPort blocksPort, TeleportPort teleportPort) {
         this.host = host;
         this.gateway = new FloodgateGateway(host.plugin());
         this.sessions = new BedrockUiSessionManager(host.plugin(), gateway);
         this.actions = new BedrockActionRegistry(host);
         this.repository = new BedrockMenuRepository(host.plugin(), new BedrockMenuParser(actions::normalize));
         this.forms = new BedrockFormSupport(host, gateway, sessions, repository,
-                new SocialCounters(host.plugin(), socialPort, mailPort));
+                new SocialCounters(host.plugin(), socialPort, mailPort, teleportPort));
         this.titles = new TitlesForms(forms, titlesPort);
         this.mail = new MailForms(forms, mailPort);
         this.picker = new PlayerPickerForms(forms, socialPort);
@@ -66,12 +69,13 @@ public final class BedrockModule {
         this.party = new PartyForms(forms, socialPort, picker);
         this.mmocore = new MMOCoreForms(forms, party);
         this.blocked = new BlockedPlayersForms(forms, blocksPort);
+        this.tpa = new TpaForms(forms, teleportPort, picker);
         this.links = new LinkMessages(forms);
 
         BedrockNavigation navigation = new BedrockNavigation(host);
         this.renderer = new BedrockMenuRenderer(repository, forms, sessions, actions, navigation, socialPort);
         BuiltinBedrockActions.registerAll(actions, new BuiltinBedrockActions.Dependencies(
-                host, navigation, titlesPort, socialPort, titles, mail, friends, party, mmocore, blocked, links));
+                host, navigation, titlesPort, socialPort, titles, mail, friends, party, mmocore, blocked, tpa, links));
     }
 
     public void enable() {
@@ -154,6 +158,11 @@ public final class BedrockModule {
 
     public BlockedPlayersForms blocked() {
         return blocked;
+    }
+
+    /** "Viajes (TPA)" forms. */
+    public TpaForms tpa() {
+        return tpa;
     }
 
     public LinkMessages links() {

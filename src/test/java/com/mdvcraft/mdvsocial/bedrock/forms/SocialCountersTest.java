@@ -2,6 +2,7 @@ package com.mdvcraft.mdvsocial.bedrock.forms;
 
 import com.mdvcraft.mdvsocial.bedrock.port.MailPort;
 import com.mdvcraft.mdvsocial.bedrock.port.SocialPort;
+import com.mdvcraft.mdvsocial.bedrock.port.TeleportPort;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -24,6 +25,7 @@ class SocialCountersTest {
     private Player player;
     private SocialPort social;
     private MailPort mail;
+    private TeleportPort teleport;
     private YamlConfiguration config;
     private SocialCounters counters;
 
@@ -36,7 +38,8 @@ class SocialCountersTest {
         when(player.getUniqueId()).thenReturn(uuid);
         social = mock(SocialPort.class);
         mail = mock(MailPort.class);
-        counters = new SocialCounters(plugin, social, mail);
+        teleport = mock(TeleportPort.class);
+        counters = new SocialCounters(plugin, social, mail, teleport);
     }
 
     @Test
@@ -61,5 +64,13 @@ class SocialCountersTest {
         assertEquals("Sin marcas {otra}", counters.apply("Sin marcas {otra}", player));
         verify(social, never()).pendingRequests(any(), any());
         verify(mail, never()).unreadCount(any());
+        verify(teleport, never()).pending(any());
+    }
+
+    @Test
+    void tpaRequestsAreCounted() {
+        when(teleport.pending(player)).thenReturn(List.of(new TeleportPort.RequestView(uuid, "Steve", 30)));
+        assertEquals("Viajes (1)", counters.apply("Viajes{tpa_requests_badge}", player));
+        assertEquals("Solicitudes (1)", counters.apply("Solicitudes ({tpa_requests})", player));
     }
 }

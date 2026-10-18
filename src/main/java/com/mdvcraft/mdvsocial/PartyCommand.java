@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * /grupo [jugador...]: creates an adventure party (if the player has none) and
@@ -73,7 +72,7 @@ public final class PartyCommand implements CommandExecutor, TabCompleter {
         }
 
         for (String name : names) {
-            Player target = findOnline(name);
+            Player target = OnlinePlayers.find(name);
             if (target == null || !player.canSee(target))
                 plugin.msg(player, "party-target-offline", Map.of("target", name));
             else
@@ -101,25 +100,10 @@ public final class PartyCommand implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (!(sender instanceof Player player) || args.length == 0 || args.length > MAX_INVITES)
             return List.of();
-        String prefix = args[args.length - 1].toLowerCase(Locale.ROOT);
         Set<String> typed = new HashSet<>();
         for (int i = 0; i < args.length - 1; i++)
             typed.add(args[i].toLowerCase(Locale.ROOT));
-        Set<UUID> friends = new HashSet<>(plugin.getMMOCoreFriendUuids(player));
-
-        List<String> friendNames = new ArrayList<>();
-        List<String> others = new ArrayList<>();
-        for (Player online : Bukkit.getOnlinePlayers()) {
-            String name = online.getName();
-            String lower = name.toLowerCase(Locale.ROOT);
-            if (online.equals(player) || !player.canSee(online) || typed.contains(lower) || !lower.startsWith(prefix))
-                continue;
-            (friends.contains(online.getUniqueId()) ? friendNames : others).add(name);
-        }
-        friendNames.sort(String.CASE_INSENSITIVE_ORDER);
-        others.sort(String.CASE_INSENSITIVE_ORDER);
-        friendNames.addAll(others);
-        return friendNames;
+        return OnlinePlayers.complete(player, args[args.length - 1], typed, plugin.getMMOCoreFriendUuids(player));
     }
 
     /** Non-blank names without duplicates (case-insensitive), in the order typed. */
@@ -134,15 +118,5 @@ public final class PartyCommand implements CommandExecutor, TabCompleter {
                 out.add(name);
         }
         return new ArrayList<>(out);
-    }
-
-    private static Player findOnline(String name) {
-        Player exact = Bukkit.getPlayerExact(name);
-        if (exact != null)
-            return exact;
-        for (Player online : Bukkit.getOnlinePlayers())
-            if (online.getName().equalsIgnoreCase(name))
-                return online;
-        return null;
     }
 }

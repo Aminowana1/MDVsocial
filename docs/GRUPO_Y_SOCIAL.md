@@ -38,10 +38,11 @@ Los botones muestran pendientes solo cuando hay alguno:
 |---|---|---|
 | Amigos y Solicitudes | `{friend_requests_badge}` | solicitudes de amistad |
 | Grupo de Aventura | `{party_invites_badge}` | invitaciones a grupos |
+| Viajes (TPA) | `{tpa_requests_badge}` | solicitudes de TPA recibidas |
 | Cartas y Buzón | `{unread_mail_badge}` | cartas sin leer |
 
 - Con 0 la marca desaparece. Formato: `bedrock.badges.format` (por defecto `' ({count})'`).
-- En menús internos se usan `{friend_requests}`, `{party_invites}` y `{unread_mail}`,
+- En menús internos se usan `{friend_requests}`, `{party_invites}`, `{tpa_requests}` y `{unread_mail}`,
   que sí muestran 0 (por ejemplo "Ver Cartas (0)").
 - Las marcas funcionan en cualquier texto de MenusBedrock.
 

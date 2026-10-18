@@ -15,14 +15,14 @@ import java.util.Map;
  * text ({"text":...} or [...], with clickEvent/hoverEvent) or plain text; in
  * both cases &amp; color codes are allowed inside the texts and hover texts.
  */
-final class JsonChatFormat {
+public final class JsonChatFormat {
 
     private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.legacyAmpersand();
 
     private JsonChatFormat() {
     }
 
-    static List<Component> render(List<String> lines, Map<String, String> tokens) {
+    public static List<Component> render(List<String> lines, Map<String, String> tokens) {
         List<Component> out = new ArrayList<>();
         for (String line : lines)
             out.add(renderLine(replace(line, tokens)));

@@ -603,6 +603,107 @@ quick-accept:
       # Ejemplo de ajuste solo para invitaciones:
       # sneaks-required: 3
       # window-seconds: 20
+    tpa:
+      enabled: true
+      # sneaks-required: 3
+
+# ==========================================================
+# TPA: solicitudes para viajar hasta otro jugador.
+# Comandos: /tpa <jugador|aceptar|rechazar|cancelar|ayuda>, /tpaccept, /tpdeny,
+# /aceptartp, /rechazartp, /tpacancel. Permiso: mdvsocial.tpa.
+# Si el destinatario te bloqueó, la solicitud no llega (aviso genérico).
+# Antes estaba en MDVTools; al arrancar se importa sola si aquí no existe la sección.
+# ==========================================================
+tpa:
+  enabled: true
+  # Prefijo de los mensajes de TPA.
+  prefix: "&6&l[&5&lMDVCRAFT&6&l]  &4»  &r"
+  request-timeout-seconds: 60
+  cooldown-seconds: 15
+
+  # Espera total después de aceptar antes de teletransportar al solicitante (0 = al instante).
+  teleport-delay-seconds: 4
+
+  # Durante este margen inicial el jugador todavía puede moverse.
+  # Con 4 segundos totales y 1 de gracia, quedan 3 segundos inmóvil.
+  movement-grace-seconds: 1
+
+  cancel-delay-on-move: true
+  cancel-delay-on-damage: true
+  cancel-delay-on-attack: true
+
+  invulnerability-after-teleport-seconds: 5
+  invulnerability-cancel-on-attack: true
+  allow-cross-world: true
+
+  # Aviso a quien recibe la solicitud.
+  # Tokens: {player} = quien la envía, {uuid} = su UUID, {seconds} = segundos para responder.
+  notice:
+    # Java: cada línea es JSON de chat (o texto normal); se aceptan códigos &.
+    java:
+      enabled: true
+      format:
+        - '{"text":"&6&l[&5&lMDVCRAFT&6&l]  &4»  &r&6{player} &equiere teletransportarse hacia ti. &7Expira en &f{seconds} segundos&7."}'
+        - '[{"text":"        "},{"text":"&a&l[ACEPTAR]","clickEvent":{"action":"run_command","value":"/tpa aceptarsolicitud {uuid}"},"hoverEvent":{"action":"show_text","value":"&aAceptar esta solicitud de {player}"}},{"text":"       "},{"text":"&c&l[RECHAZAR]","clickEvent":{"action":"run_command","value":"/tpa rechazarsolicitud {uuid}"},"hoverEvent":{"action":"show_text","value":"&cRechazar esta solicitud de {player}"}}]'
+    # Bedrock (sin clicks en el chat). Tokens extra: {sneaks} y {quick_seconds} (del quick accept).
+    bedrock:
+      enabled: true
+      # Se usa cuando quick accept está activo para TPA (quick-accept.types.tpa).
+      message:
+        - '&6&l[&5&lMDVCRAFT&6&l]  &4»  &r&6{player} &equiere teletransportarse hacia ti.'
+        - '&7Respóndela en &fSocial y Amigos &8» &fViajes (TPA)'
+        - '&7o &eagáchate {sneaks} veces rápido &7en los próximos &e{quick_seconds}s &7para responder.'
+      # Se usa cuando quick accept está desactivado.
+      message-without-quick-accept:
+        - '&6&l[&5&lMDVCRAFT&6&l]  &4»  &r&6{player} &equiere teletransportarse hacia ti.'
+        - '&7Respóndela en &fSocial y Amigos &8» &fViajes (TPA) &7o con &f/tpa aceptar&7.'
+      # Si quien la envía es tu amigo, el quick accept acepta directamente sin pedir confirmación.
+      skip-confirmation-for-friends: true
+
+  # /tpa ayuda
+  help:
+    - "&6&lTPA &7comandos:"
+    - "&e/tpa <jugador> &7- Solicita teletransportarte."
+    - "&e/tpa aceptar &7- Acepta la solicitud más reciente."
+    - "&e/tpa rechazar &7- Rechaza la solicitud más reciente."
+    - "&e/tpa cancelar &7- Cancela tu solicitud enviada."
+
+  # Mensajes. Tokens entre llaves ({player}); también se acepta el formato antiguo %player%.
+  # Un mensaje vacío ('') no se envía.
+  messages:
+    disabled: "&cEl sistema de TPA está desactivado."
+    only-players: "&cEste comando solo puede usarlo un jugador."
+    no-permission: "&cNo tienes permiso para usar el TPA."
+    player-not-found: "&cJugador no encontrado o desconectado."
+    cannot-self: "&cNo puedes enviarte una solicitud a ti mismo."
+    cross-world-disabled: "&cNo puedes usar TPA entre mundos distintos."
+    request-sent: "&eSolicitud de teletransporte enviada a &6{target}&e. &7Expira en &f{seconds} segundos&7."
+    # Si el destinatario te bloqueó. No revela el bloqueo.
+    request-not-delivered: "&cNo se pudo enviar la solicitud de teletransporte a &f{target}&c."
+    request-expired: "&cLa solicitud de teletransporte ha expirado."
+    request-expired-target: "&7La solicitud de &f{player} &7ha expirado."
+    request-denied: "&cSolicitud de teletransporte rechazada."
+    request-denied-target: "&eRechazaste la solicitud de &f{player}&e."
+    request-accepted: "&aTeletransporte completado."
+    request-accepted-target: "&aAceptaste la solicitud de &f{player}&a."
+    request-cancelled: "&eCancelaste tu solicitud de teletransporte."
+    request-cancelled-target: "&7{player} canceló su solicitud de teletransporte."
+    request-cancelled-disconnect: "&7La solicitud fue cancelada porque el jugador se desconectó."
+    target-disconnected: "&cEl jugador objetivo se desconectó."
+    requester-offline: "&cEl jugador que envió la solicitud ya no está conectado."
+    no-pending-request: "&cNo tienes solicitudes de teletransporte pendientes."
+    request-not-valid: "&cEsa solicitud ya no es válida o ha expirado."
+    no-outgoing-request: "&cNo tienes una solicitud enviada pendiente."
+    cooldown: "&cDebes esperar &f{seconds}s &cantes de enviar otra solicitud."
+    teleport-failed: "&cNo se pudo completar el teletransporte."
+    warmup-started: "&eTeletransporte aceptado. Tienes &f{grace_seconds}s &epara detenerte; después no te muevas durante &f{movement_lock_seconds}s&e. Entrar en combate cancela la espera."
+    warmup-started-target: "&7{player} se teletransportará hacia ti en &f{seconds} segundos&7."
+    warmup-cancelled-move: "&cEl teletransporte fue cancelado porque te moviste."
+    warmup-cancelled-damage: "&cEl teletransporte fue cancelado porque recibiste daño."
+    warmup-cancelled-attack: "&cEl teletransporte fue cancelado porque atacaste."
+    warmup-cancelled-target: "&7El teletransporte de &f{player} &7fue cancelado."
+    invulnerable: "&aTienes protección temporal durante &f{seconds}s&a."
+    invulnerability-ended-on-attack: "&cTu protección temporal terminó al atacar."
 
 # /grupo [jugador...]: crea un Grupo de Aventura e invita hasta 5 jugadores.
 party-command:

@@ -13,6 +13,9 @@ buttons:
     action: "OPEN_BEDROCK_PARTY"
     commands:
       - "party"
+  tpa:
+    text: "&a&lViajes (TPA){tpa_requests_badge}\n&7Viaja hasta otro jugador."
+    action: "OPEN_BEDROCK_TPA"
   correo:
     text: "&6&lCartas y Buzón{unread_mail_badge}\n&7Lee o envía cartas."
     action: "OPEN_MENU"

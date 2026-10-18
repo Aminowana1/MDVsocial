@@ -2,6 +2,7 @@ package com.mdvcraft.mdvsocial;
 
 import com.mdvcraft.mdvsocial.bedrock.BedrockModule;
 import com.mdvcraft.mdvsocial.quickaccept.QuickAcceptService;
+import com.mdvcraft.mdvsocial.tpa.TpaModule;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -111,6 +112,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     private BlockedPlayersMenuManager blockedPlayersMenu;
     private QuickAcceptService quickAccept;
     private PartyInviteWatcher partyInviteWatcher;
+    private TpaModule tpa;
     private final Map<UUID, Long> lastMailSentAt = new ConcurrentHashMap<>();
 
     private org.bukkit.NamespacedKey keyAction;
@@ -158,10 +160,12 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         keyRightCommands = new org.bukkit.NamespacedKey(this, "right_commands");
 
         saveDefaultConfig();
+        TpaModule.importLegacyConfig(this);
         workQueue = new TickWorkQueue(this);
         loadAll();
         bedrock = new BedrockModule(new BedrockHostAdapter(this), new BedrockTitlesAdapter(this),
-                new BedrockMailAdapter(this), new BedrockSocialAdapter(this), new BedrockBlocksAdapter(this));
+                new BedrockMailAdapter(this), new BedrockSocialAdapter(this), new BedrockBlocksAdapter(this),
+                new BedrockTeleportAdapter(this));
         bedrock.enable();
         setupEconomy();
 
@@ -213,6 +217,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         quickAccept.enable();
         partyInviteWatcher = new PartyInviteWatcher(this, new PartyInviteNotifier(this, quickAccept));
         partyInviteWatcher.enable();
+        tpa = new TpaModule(new TpaHostAdapter(this), quickAccept);
+        tpa.enable();
         mmoItemsBrowserManager = new MMOItemsBrowserManager(this);
         mmoItemsBrowserManager.enable();
         startInteractiveChatProfileTask();
@@ -244,6 +250,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             bedrock.shutdown();
         if (partyInviteWatcher != null)
             partyInviteWatcher.disable();
+        if (tpa != null)
+            tpa.shutdown();
         if (quickAccept != null)
             quickAccept.shutdown();
         for (PermissionAttachment attachment : scoreboardPartyAttachments.values()) {
@@ -293,6 +301,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             partyInviteWatcher.disable();
             partyInviteWatcher.enable();
         }
+        if (tpa != null)
+            tpa.reload();
     }
 
     private void loadData() {
@@ -3541,6 +3551,11 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
 
     public PlayerBlockService getBlockService() {
         return blocks;
+    }
+
+    /** Teleport requests (/tpa). */
+    public TpaModule tpa() {
+        return tpa;
     }
 
     /** Generic "sneak to accept" service; usable for any future request type. */

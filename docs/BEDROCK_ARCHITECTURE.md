@@ -13,6 +13,7 @@ com.mdvcraft.mdvsocial
 ├── BedrockMailAdapter         implementa MailPort
 ├── BedrockSocialAdapter       implementa SocialPort
 ├── BedrockBlocksAdapter       implementa BlocksPort
+├── BedrockTeleportAdapter     implementa TeleportPort (TPA)
 └── bedrock/
     ├── BedrockModule          fachada única del módulo
     ├── port/                  contratos con el plugin
@@ -20,7 +21,8 @@ com.mdvcraft.mdvsocial
     │   ├── TitlesPort         títulos y rangos
     │   ├── MailPort           buzón
     │   ├── SocialPort         amigos y party (MMOCore)
-    │   └── BlocksPort         jugadores bloqueados (sistema general)
+    │   ├── BlocksPort         jugadores bloqueados (sistema general)
+    │   └── TeleportPort       solicitudes de TPA
     ├── platform/
     │   └── FloodgateGateway   detección de Floodgate y envío de Forms
     ├── session/
@@ -42,7 +44,8 @@ com.mdvcraft.mdvsocial
         ├── MMOCoreForms       perfil, atributos y razas de MMOCore
         ├── BlockedPlayersForms lista, bloquear y desbloquear jugadores
         ├── PlayerPickerForms  selector reutilizable "Escoger jugador"
-        ├── SocialCounters     marcas {friend_requests_badge}, {party_invites_badge}, {unread_mail_badge}
+        ├── TpaForms           "Viajes (TPA)": pedir, responder y cancelar
+        ├── SocialCounters     marcas {friend_requests_badge}, {party_invites_badge}, {unread_mail_badge}, {tpa_requests_badge}
         └── LinkMessages       mensajes de tienda/Discord por chat
 ```
 
