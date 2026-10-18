@@ -1389,7 +1389,7 @@ titles:
       - '&7Titulo base tras elegir raza.'
       - '&7Se equipa automaticamente al comenzar.'
   caballero_rango:
-    display: '&9Caballero'
+    display: '&7🛡 &9Caballero &7🛡'
     prefix: '&1&l[&r&9Caballero&1&l]&r&9'
     material: IRON_HELMET
     purchasable: false
@@ -1401,8 +1401,8 @@ titles:
       - '&7apoyan su aventura con honor.'
 
   campeon_rango:
-    display: '&4Campeón'
-    prefix: '&c&l[&r&4Campeón&c&l]&r&4'
+    display: '&4⚔ &cCampeón &4⚔'
+    prefix: '&4&l[&cCampeón&4&l]&r&4'
     material: DIAMOND_SWORD
     purchasable: false
     unlock-permission: 'mdvsocial.title.campeon'
@@ -1413,7 +1413,7 @@ titles:
       - '&7destacan entre los aventureros.'
 
   noble_rango:
-    display: '&6Noble'
+    display: '&e👑 &6Noble &e👑'
     prefix: '&6&l[&r&eNoble&6&l]&r&e'
     material: GOLDEN_HELMET
     purchasable: false
@@ -1425,7 +1425,7 @@ titles:
       - '&7y reconocimiento dentro del reino.'
 
   heroe_rango:
-    display: '&5H&dé&5r&do&5e'
+    display: '&5&kI&6&l&5&kI &r&dHéroe &5&kI&6&l&5&kI&6&l'
     prefix: '&6&l[&5&kI&r&dHéroe&5&kI&6&l]&r&d'
     material: NETHER_STAR
     purchasable: false
@@ -1788,17 +1788,6 @@ titles:
     lore:
       - '&cTitulo obligatorio aplicado por el staff.'
 
-  admin_staff:
-    display: '&c&lAdministrador'
-    prefix: '&4&l[&cAdministrador&4&l]&r&c'
-    material: NETHER_STAR
-    purchasable: false
-    unlock-permission: 'mdvsocial.title.staff.admin'
-    player-equippable: true
-    lore:
-      - '&7Título exclusivo de la administración.'
-      - '&7Representa la máxima autoridad'
-      - '&7dentro de MDVCRAFT.'
 
   moderador_staff:
     display: '&5&lModerador'
@@ -1807,6 +1796,7 @@ titles:
     purchasable: false
     unlock-permission: 'mdvsocial.title.staff.moderador'
     player-equippable: true
+    hidden: true
     lore:
       - '&7Título exclusivo del equipo'
       - '&7encargado de moderar y mantener'
@@ -1816,9 +1806,9 @@ titles:
     prefix: '&8&l[&2Pomberito&8&l]&r&a'
     material: AMETHYST_SHARD
     purchasable: false
-    hidden: true
     unlock-permission: 'mdvsocial.title.staff.pombero'
     player-equippable: true
+    hidden: true
     lore:
       - '&7Título exclusivo del equipo'
       - '&7encargado de moderar y mantener'
@@ -1829,9 +1819,9 @@ titles:
     prefix: '&3&l[&bHelper&3&l]&r&b'
     material: HEART_OF_THE_SEA
     purchasable: false
-    hidden: true
     unlock-permission: 'mdvsocial.title.staff.helper'
     player-equippable: true
+    hidden: false
     lore:
       - '&7Título exclusivo de quienes'
       - '&7orientan y ayudan a los jugadores'
@@ -1841,9 +1831,9 @@ titles:
     prefix: '&5&l[&d&kI&r &b&lD&f&li&d&lo&b&ls &d&kI&r&5&l]&r&f'
     material: NETHER_STAR
     purchasable: false
-    hidden: true
     unlock-permission: 'mdvsocial.title.personal.dios'
     player-equippable: true
+    hidden: false
     lore:
       - ''
       - '&d&l✦ &f&lTítulo Celestial &d&l✦'
@@ -1855,6 +1845,30 @@ titles:
       - '&fante quien porta este título.'
       - ''
       - '&5&lExclusivo del creador de MDVCRAFT.'
+      
+  #'&b&l✦ &5&lD&d&lE&b&lV &b&l✦'
+  #'&b&l✦ &5&lA&d&lD&b&lM&5&lI&d&lN &b&l✦'  
+  dev_personal:
+    display: '&4&l✦ &6&lAdmin &4&l✦'
+    prefix: '&8&l[&c&lAdmin&8&l]&r&b'
+    material: COMMAND_BLOCK
+    purchasable: false
+    unlock-permission: 'mdvsocial.title.personal.dev'
+    player-equippable: true
+    hidden: false
+    lore:
+      - ''
+      - '&b&l✦ &f&lDesarrollador de MDVCRAFT &b&l✦'
+      - ''
+      - '&7Código, sistemas y mundos nacen'
+      - '&7detrás de este título.'
+      - ''
+      - '&dNo se obtiene.'
+      - '&5No se compra.'
+      - '&bSolo existe uno.'
+      - ''
+      - '&5&lOwner &8• &b&lDeveloper'
+      - '&8Título personal de Aminowana.'
 ranks:
   aventurero:
     display: '&aAventurero'
@@ -1899,7 +1913,7 @@ ranks:
       - '&7■ &fTítulo exclusivo: &9Caballero'
       - '&7■ &fPrefijo azul y nombre verde'
       - '&7■ &fMesa de trabajo portátil /craft'
-      - '&7■ &fKit de suministros cada 15 días'
+      - '&7■ &fKit de suministros cada 20 días'
       - '&7■ &fBonificadores comunitarios de EXP'
       - '&7■ &fBolsa de muerte azul exclusiva'
       - ''
@@ -1931,7 +1945,7 @@ ranks:
       - '&7■ &fPrefijo rojo y nombre cian'
       - '&7■ &fMesa de trabajo portátil /craft'
       - '&7■ &fCofre de Ender portátil /ec'
-      - '&7■ &fKit mejorado cada 15 días'
+      - '&7■ &fKit mejorado cada 20 días'
       - '&7■ &fBonificadores comunitarios de EXP'
       - '&7■ &fBolsa de muerte roja exclusiva'
       - ''
@@ -1964,7 +1978,7 @@ ranks:
       - '&7■ &fNombre dorado'
       - '&7■ &fMesa de trabajo portátil /craft'
       - '&7■ &fCofre de Ender portátil /ec'
-      - '&7■ &fKit avanzado cada 15 días'
+      - '&7■ &fKit avanzado cada 20 días'
       - '&7■ &fBonificadores de EXP y profesiones'
       - '&7■ &fBolsa de muerte dorada exclusiva'
       - ''
@@ -2018,7 +2032,7 @@ ranks:
       - '&7■ &fNombre morado'
       - '&7■ &fMesa de trabajo portátil /craft'
       - '&7■ &fCofre de Ender portátil /ec'
-      - '&7■ &fKit superior cada 15 días'
+      - '&7■ &fKit superior cada 20 días'
       - '&7■ &fBonificadores superiores de EXP'
       - '&7■ &fBolsa de muerte heroica exclusiva'
       - ''
@@ -2061,7 +2075,7 @@ ranks:
 shop:
   java:
     message: |
-      &6&lTienda online
+      &2&lTienda online
       &fVisita nuestra tienda:
       {shop}
     link-text: "&b&n[Abrir tienda]"
@@ -2069,7 +2083,7 @@ shop:
     # Formulario Bedrock que se abre con /tienda.
     menu: tienda
     # Fallback si Floodgate o el formulario no pueden abrirse.
-    fallback-message: "&6&lTienda online\\n&fVisita nuestra tienda: &b{shop}"
+    fallback-message: "&2&lTienda online &fVisita nuestra tienda: &b{shop}"
     
   missing-url: "&cLa tienda online no esta configurada."
   player-only: "&cEste comando solo puede ejecutarlo un jugador."
@@ -2081,7 +2095,7 @@ shop:
 discord:
   java:
     message: |
-      &6&lDiscord
+      &9&lDiscord
       &fUnete a nuestra comunidad:
       {discord}
     link-text: "&b&n[Unirse a Discord]"
@@ -2089,20 +2103,21 @@ discord:
     # Formulario Bedrock que se abre con /discord.
     menu: discord
     # Fallback si Floodgate o el formulario no pueden abrirse.
-    fallback-message: "&6&lDiscord\\n&fUnete a nuestra comunidad: &b{discord}"
+    fallback-message: "&9&lDiscord &fUnete a nuestra comunidad: &b{discord}"
   missing-url: "&cEl Discord no esta configurado."
   player-only: "&cEste comando solo puede ejecutarlo un jugador."
-  url: ""
+  url: "https://discord.gg/W92HhQXUUq"
+  
+  
 protections-menu:
   enabled: true
-  # Devuelve el item original tras eliminar correctamente. Respeta no_drop de ProtectionStones.
-  # Se exige un espacio vacio; si no hay espacio, se conserva la proteccion.
   return-block: true
 
-# Limites de memoria y reparto del trabajo. No cambia permisos ni limites de protes/homes.
-performance:
-  mail-cache-size: 128
-  profile-cache-size: 8192
-  item-cache-size: 256
-  work-budget-ms: 2
-  work-items-per-tick: 32
+
+scoreboard:
+  # Encabezado del grupo en el marcador de puntuación.
+  # Admite placeholders: {count} y {max}
+  group-header: 'ɢʀᴜᴘᴏ &7(&f{count}&7/&f{max}&7)'
+  # Formato de los miembros del grupo en el marcador de puntuación.
+  # Admite placeholders: {health}, {max_health} y {name}
+  group-member: '&c{health}❤ a &r&f{name}'
