@@ -1,5 +1,5 @@
 type: "DYNAMIC_FRIENDS"
-title: "&a&lLista de Amigos"
+title: "&a&lAmigos y Solicitudes"
 content:
   - "&7Amigos: &f{friend_count}"
   - "&7Solicitudes pendientes: &e{request_count}"
@@ -20,7 +20,7 @@ friend:
 buttons:
   add:
     enabled: true
-    text: "&a&lAñadir amigo\n&r&8Escribe el nombre del jugador."
+    text: "&a&lAñadir amigo\n&r&8Elige o escribe un jugador."
     image:
       type: "URL"
       data: ""
@@ -36,6 +36,10 @@ buttons:
     text: "&ePágina siguiente"
   back:
     text: "&6Volver"
+# Selector de jugadores para "Añadir amigo" (no muestra a tus amigos).
+add-picker:
+  title: "&a&lAñadir amigo &8({page}/{max_page})"
+  content: "&7Elige un jugador conectado o escribe su nombre."
 add-form:
   title: "&a&lAñadir amigo"
   input-label: "&eNombre del jugador"

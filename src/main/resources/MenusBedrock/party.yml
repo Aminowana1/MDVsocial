@@ -1,5 +1,7 @@
 type: "DYNAMIC_PARTY"
+# Título sin grupo / con grupo.
 title: "&d&lGrupo de Aventura"
+title-party: "&d&lNuevo Grupo de Aventura"
 content-no-party:
   - "&7No perteneces a un Grupo de Aventura."
   - "&7Puedes crear uno o aceptar una invitación."
@@ -18,13 +20,7 @@ buttons:
       data: ""
   invite:
     enabled: true
-    text: "&d&lInvitar jugador\n&r&8Escribe el nombre del jugador."
-    image:
-      type: "URL"
-      data: ""
-  invite-friends:
-    enabled: true
-    text: "&aInvitar desde Amigos\n&r&8Abre tu lista de amigos."
+    text: "&d&lInvitar jugador\n&r&8Elige o escribe un jugador."
     image:
       type: "URL"
       data: ""
@@ -42,6 +38,11 @@ buttons:
       data: ""
   back:
     text: "&6Volver"
+
+# Selector "Escoger jugador" de Invitar jugador (tus amigos aparecen primero).
+invite-picker:
+  title: "&d&lInvitar al Grupo &8({page}/{max_page})"
+  content: "&7Elige a quién invitar. Tus amigos aparecen primero."
 
 invite-form:
   title: "&d&lInvitar al Grupo"

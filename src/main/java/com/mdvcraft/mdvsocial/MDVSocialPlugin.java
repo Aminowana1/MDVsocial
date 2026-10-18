@@ -203,6 +203,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         playerProtectionsMenuManager.enable();
         blockedPlayersMenu = new BlockedPlayersMenuManager(this);
         blockedPlayersMenu.enable();
+        new PartyCommand(this).enable();
         mmoItemsBrowserManager = new MMOItemsBrowserManager(this);
         mmoItemsBrowserManager.enable();
         startInteractiveChatProfileTask();
@@ -5420,7 +5421,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         }
     }
 
-    void invitePlayerToPartyFromBedrockForm(Player player, Player target) {
+    void invitePlayerToParty(Player player, Player target) {
         if (player == null || target == null)
             return;
         if (target.getUniqueId().equals(player.getUniqueId())) {
@@ -5693,6 +5694,20 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             return null;
         Method create = partyModule.getClass().getMethod("newRegisteredParty", playerData.getClass());
         return create.invoke(partyModule, playerData);
+    }
+
+    /** Creates a new MMOCore party led by {@code player}. @return true when it was created. */
+    boolean createPartyFor(Player player) {
+        try {
+            Object created = createMMOCoreParty(getMMOCorePlayerData(player));
+            if (created == null)
+                return false;
+            syncScoreboardPartyPermission(player);
+            return true;
+        } catch (Throwable ex) {
+            getLogger().warning("No se pudo crear el Grupo de Aventura: " + ex.getMessage());
+            return false;
+        }
     }
 
     Object getMMOCorePlayerData(Player player) throws Exception {
@@ -6411,6 +6426,10 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             case "party-left" -> "&eSaliste de tu Grupo de Aventura.";
             case "party-not-in-party" -> "&cNo perteneces a ningún Grupo de Aventura.";
             case "party-leave-error" -> "&cNo se pudo abandonar el Grupo de Aventura.";
+            case "party-created" -> "&aCreaste un nuevo Grupo de Aventura.";
+            case "party-create-error" -> "&cNo se pudo crear el Grupo de Aventura.";
+            case "party-already-in-party" -> "&eYa perteneces a un Grupo de Aventura.";
+            case "party-command-too-many" -> "&cPuedes invitar como máximo a &e{max} &cjugadores a la vez.";
             case "mail-not-delivered" -> "&cNo se pudo enviar la carta a &e{target}&c.";
             case "mail-cooldown" -> "&cEspera &e{seconds}s &cantes de enviar otra carta.";
             case "player-block-prompt" ->

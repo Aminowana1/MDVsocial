@@ -54,7 +54,8 @@ public final class BedrockMenuRepository {
             "titulos.yml",
             "titulos_lista.yml",
             "rangos.yml",
-            "bloqueados.yml");
+            "bloqueados.yml",
+            "escoger_jugador.yml");
 
     private final JavaPlugin plugin;
     private final BedrockMenuParser parser;

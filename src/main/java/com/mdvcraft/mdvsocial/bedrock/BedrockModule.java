@@ -10,6 +10,8 @@ import com.mdvcraft.mdvsocial.bedrock.forms.LinkMessages;
 import com.mdvcraft.mdvsocial.bedrock.forms.MMOCoreForms;
 import com.mdvcraft.mdvsocial.bedrock.forms.MailForms;
 import com.mdvcraft.mdvsocial.bedrock.forms.PartyForms;
+import com.mdvcraft.mdvsocial.bedrock.forms.PlayerPickerForms;
+import com.mdvcraft.mdvsocial.bedrock.forms.SocialCounters;
 import com.mdvcraft.mdvsocial.bedrock.forms.TitlesForms;
 import com.mdvcraft.mdvsocial.bedrock.menu.BedrockMenuParser;
 import com.mdvcraft.mdvsocial.bedrock.menu.BedrockMenuRenderer;
@@ -43,6 +45,7 @@ public final class BedrockModule {
     private final MailForms mail;
     private final FriendsForms friends;
     private final PartyForms party;
+    private final PlayerPickerForms picker;
     private final MMOCoreForms mmocore;
     private final BlockedPlayersForms blocked;
     private final LinkMessages links;
@@ -54,11 +57,13 @@ public final class BedrockModule {
         this.sessions = new BedrockUiSessionManager(host.plugin(), gateway);
         this.actions = new BedrockActionRegistry(host);
         this.repository = new BedrockMenuRepository(host.plugin(), new BedrockMenuParser(actions::normalize));
-        this.forms = new BedrockFormSupport(host, gateway, sessions, repository);
+        this.forms = new BedrockFormSupport(host, gateway, sessions, repository,
+                new SocialCounters(host.plugin(), socialPort, mailPort));
         this.titles = new TitlesForms(forms, titlesPort);
         this.mail = new MailForms(forms, mailPort);
-        this.friends = new FriendsForms(forms, socialPort);
-        this.party = new PartyForms(forms, socialPort, friends);
+        this.picker = new PlayerPickerForms(forms, socialPort);
+        this.friends = new FriendsForms(forms, socialPort, picker);
+        this.party = new PartyForms(forms, socialPort, picker);
         this.mmocore = new MMOCoreForms(forms, party);
         this.blocked = new BlockedPlayersForms(forms, blocksPort);
         this.links = new LinkMessages(forms);
@@ -136,6 +141,11 @@ public final class BedrockModule {
 
     public PartyForms party() {
         return party;
+    }
+
+    /** Reusable "Escoger jugador" form. */
+    public PlayerPickerForms picker() {
+        return picker;
     }
 
     public MMOCoreForms mmocore() {

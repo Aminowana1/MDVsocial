@@ -1,5 +1,6 @@
 package com.mdvcraft.mdvsocial.bedrock.forms;
 
+import com.mdvcraft.mdvsocial.bedrock.forms.PlayerPickerForms.FriendsMode;
 import com.mdvcraft.mdvsocial.bedrock.port.SocialPort;
 import com.mdvcraft.mdvsocial.bedrock.port.SocialPort.PartyView;
 import org.bukkit.Bukkit;
@@ -10,20 +11,27 @@ import org.geysermc.cumulus.form.SimpleForm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
-/** Native Bedrock forms for the MMOCore adventure party. */
+/**
+ * Native Bedrock forms for the MMOCore adventure party. Without a party only
+ * "create" and received invitations are offered; inside a party the menu shows
+ * "invite", invitations and "leave".
+ */
 public final class PartyForms {
 
     private final BedrockFormSupport forms;
     private final SocialPort social;
-    private final FriendsForms friends;
+    private final PlayerPickerForms picker;
 
-    public PartyForms(BedrockFormSupport forms, SocialPort social, FriendsForms friends) {
+    public PartyForms(BedrockFormSupport forms, SocialPort social, PlayerPickerForms picker) {
         this.forms = forms;
         this.social = social;
-        this.friends = friends;
+        this.picker = picker;
     }
 
     public void open(Player player) {
@@ -49,28 +57,27 @@ public final class PartyForms {
             }
         }
 
+        String title = party.exists()
+                ? forms.uiText(ui, "title-party", "&d&lNuevo Grupo de Aventura", player, tokens)
+                : forms.uiText(ui, "title", "&d&lGrupo de Aventura", player, tokens);
         SimpleForm.Builder builder = SimpleForm.builder()
-                .title(forms.uiText(ui, "title", "&d&lGrupo de Aventura", player, tokens))
+                .title(title)
                 .content(content.toString());
         List<Runnable> actions = new ArrayList<>();
 
-        if (!party.exists() && ui.getBoolean("buttons.create.enabled", true)) {
+        if (party.exists()) {
+            if (ui.getBoolean("buttons.invite.enabled", true)) {
+                forms.addButton(builder, ui, "buttons.invite",
+                        forms.uiText(ui, "buttons.invite.text", "&d&lInvitar jugador", player, tokens));
+                actions.add(() -> openInvitePicker(player, 0));
+            }
+        } else if (ui.getBoolean("buttons.create.enabled", true)) {
             forms.addButton(builder, ui, "buttons.create",
                     forms.uiText(ui, "buttons.create.text", "&aCrear Grupo de Aventura", player, tokens));
             actions.add(() -> {
-                forms.host().message(player, social.createParty(player) ? "party-auto-created" : "party-error");
+                forms.host().message(player, social.createParty(player) ? "party-created" : "party-create-error");
                 open(player);
             });
-        }
-        if (ui.getBoolean("buttons.invite.enabled", true)) {
-            forms.addButton(builder, ui, "buttons.invite",
-                    forms.uiText(ui, "buttons.invite.text", "&d&lInvitar jugador", player, tokens));
-            actions.add(() -> openInviteForm(player));
-        }
-        if (ui.getBoolean("buttons.invite-friends.enabled", true)) {
-            forms.addButton(builder, ui, "buttons.invite-friends",
-                    forms.uiText(ui, "buttons.invite-friends.text", "&aInvitar desde Amigos", player, tokens));
-            actions.add(() -> friends.openList(player, 0));
         }
         if (ui.getBoolean("buttons.requests.enabled", true)) {
             forms.addButton(builder, ui, "buttons.requests",
@@ -87,6 +94,25 @@ public final class PartyForms {
         actions.add(() -> forms.host().openMenu(player, "menuamigos", 1, "main", 1, null, "", false));
 
         forms.show(player, builder, actions);
+    }
+
+    /** "Escoger jugador" for party invitations; current members are not offered. */
+    private void openInvitePicker(Player player, int page) {
+        YamlConfiguration ui = forms.ui("party");
+        Set<String> members = new HashSet<>();
+        for (String member : social.party(player).members())
+            members.add(member.toLowerCase(Locale.ROOT));
+        picker.open(player, new PlayerPickerForms.Request(
+                ui.getString("invite-picker.title", "&d&lInvitar al Grupo &8({page}/{max_page})"),
+                ui.getString("invite-picker.content", "&7Elige a quién invitar. Tus amigos aparecen primero."),
+                FriendsMode.FIRST,
+                members,
+                (viewer, target) -> {
+                    social.invitePlayerToParty(viewer, target);
+                    open(viewer);
+                },
+                this::openInviteForm,
+                this::open), page);
     }
 
     private void openLeaveConfirm(Player player) {
@@ -118,6 +144,10 @@ public final class PartyForms {
         builder.validResultHandler(response -> {
             String rawName = response.asInput(0);
             forms.run(player, session, () -> {
+                if (rawName == null || rawName.isBlank()) {
+                    openInvitePicker(player, 0);
+                    return;
+                }
                 Player target = forms.findOnlinePlayer(rawName);
                 if (target == null) {
                     forms.host().message(player, "party-target-not-found");

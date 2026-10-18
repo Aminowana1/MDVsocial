@@ -1,0 +1,18 @@
+# Selector reutilizable "Escoger jugador" (Invitar al grupo, Añadir amigo...).
+# El título y el texto superior los pone cada menú que lo abre.
+# Jugadores por página: bedrock.player-picker.page-size en config.yml.
+# Tokens: {player} en las entradas; {page}, {max_page}, {count} en todo el menú.
+type-name:
+  text: "&e&lEscribir nombre\n&7Busca a un jugador por su nombre."
+entry-friend:
+  text: "&a{player}\n&2Amigo"
+entry:
+  text: "&f{player}\n&7Conectado"
+empty: "&8No hay otros jugadores conectados."
+buttons:
+  previous:
+    text: "&ePágina anterior"
+  next:
+    text: "&ePágina siguiente"
+  back:
+    text: "&6Volver"

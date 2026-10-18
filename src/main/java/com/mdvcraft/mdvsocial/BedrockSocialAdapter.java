@@ -66,15 +66,7 @@ final class BedrockSocialAdapter implements SocialPort {
 
     @Override
     public boolean createParty(Player player) {
-        try {
-            Object created = plugin.createMMOCoreParty(plugin.getMMOCorePlayerData(player));
-            if (created == null)
-                return false;
-            plugin.syncScoreboardPartyPermission(player);
-            return true;
-        } catch (Throwable ex) {
-            return false;
-        }
+        return plugin.createPartyFor(player);
     }
 
     @Override
@@ -84,7 +76,7 @@ final class BedrockSocialAdapter implements SocialPort {
 
     @Override
     public void invitePlayerToParty(Player player, Player target) {
-        plugin.invitePlayerToPartyFromBedrockForm(player, target);
+        plugin.invitePlayerToParty(player, target);
     }
 
     @Override

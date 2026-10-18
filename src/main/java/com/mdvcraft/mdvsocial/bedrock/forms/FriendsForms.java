@@ -1,5 +1,6 @@
 package com.mdvcraft.mdvsocial.bedrock.forms;
 
+import com.mdvcraft.mdvsocial.bedrock.forms.PlayerPickerForms.FriendsMode;
 import com.mdvcraft.mdvsocial.bedrock.menu.model.BedrockMenuContext;
 import com.mdvcraft.mdvsocial.bedrock.port.SocialPort;
 import org.bukkit.Bukkit;
@@ -15,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /** Native Bedrock forms for friends: list, add, requests, removal and private messages. */
@@ -22,10 +24,12 @@ public final class FriendsForms {
 
     private final BedrockFormSupport forms;
     private final SocialPort social;
+    private final PlayerPickerForms picker;
 
-    public FriendsForms(BedrockFormSupport forms, SocialPort social) {
+    public FriendsForms(BedrockFormSupport forms, SocialPort social, PlayerPickerForms picker) {
         this.forms = forms;
         this.social = social;
+        this.picker = picker;
     }
 
     public void openList(Player player, int page) {
@@ -48,7 +52,7 @@ public final class FriendsForms {
                 "max_page", String.valueOf(maxPage + 1));
 
         SimpleForm.Builder builder = SimpleForm.builder()
-                .title(forms.uiText(ui, "title", "&a&lLista de Amigos", player, tokens)
+                .title(forms.uiText(ui, "title", "&a&lAmigos y Solicitudes", player, tokens)
                         + forms.color(" &8(" + (safePage + 1) + "/" + (maxPage + 1) + ")"))
                 .content(forms.uiLines(ui, "content",
                         List.of("&7Amigos: &f{friend_count}", "&7Solicitudes pendientes: &e{request_count}"),
@@ -74,7 +78,7 @@ public final class FriendsForms {
         if (ui.getBoolean("buttons.add.enabled", true)) {
             forms.addButton(builder, ui, "buttons.add",
                     forms.uiText(ui, "buttons.add.text", "&a&lAñadir amigo", player, tokens));
-            actions.add(() -> openAddForm(player, safePage));
+            actions.add(() -> openAddPicker(player, safePage));
         }
         if (ui.getBoolean("buttons.requests.enabled", true)) {
             forms.addButton(builder, ui, "buttons.requests",
@@ -98,6 +102,22 @@ public final class FriendsForms {
         forms.show(player, builder, actions);
     }
 
+    /** "Escoger jugador" for friend requests; current friends are not offered. */
+    private void openAddPicker(Player player, int returnPage) {
+        YamlConfiguration ui = forms.ui("amigos_lista");
+        picker.open(player, new PlayerPickerForms.Request(
+                ui.getString("add-picker.title", "&a&lAñadir amigo &8({page}/{max_page})"),
+                ui.getString("add-picker.content", "&7Elige un jugador conectado o escribe su nombre."),
+                FriendsMode.EXCLUDE,
+                Set.of(),
+                (viewer, target) -> {
+                    social.inviteFriend(viewer, target.getUniqueId(), target.getName());
+                    openList(viewer, returnPage);
+                },
+                viewer -> openAddForm(viewer, returnPage),
+                viewer -> openList(viewer, returnPage)), 0);
+    }
+
     private void openAddForm(Player player, int returnPage) {
         YamlConfiguration ui = forms.ui("amigos_lista");
         long session = forms.begin(player);
@@ -108,6 +128,10 @@ public final class FriendsForms {
         builder.validResultHandler(response -> {
             String rawName = response.asInput(0);
             forms.run(player, session, () -> {
+                if (rawName == null || rawName.isBlank()) {
+                    openAddPicker(player, returnPage);
+                    return;
+                }
                 Player target = forms.findOnlinePlayer(rawName);
                 if (target == null) {
                     forms.host().message(player, "friend-target-not-found");

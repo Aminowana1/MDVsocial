@@ -18,7 +18,7 @@ buttons:
   next:
     text: "&ePágina siguiente"
   back:
-    text: "&6&lVolver\n&7Regresa al menú de amigos."
+    text: "&6&lVolver\n&7Regresa a Social y Amigos."
 unblock-confirm:
   title: "&a&lDesbloquear a {target}"
   content: "&7¿Quieres desbloquear a &f{target}&7? Podrá volver a enviarte cartas."

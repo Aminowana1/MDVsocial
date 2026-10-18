@@ -41,6 +41,8 @@ com.mdvcraft.mdvsocial
         ├── TitlesForms  MailForms  FriendsForms  PartyForms
         ├── MMOCoreForms       perfil, atributos y razas de MMOCore
         ├── BlockedPlayersForms lista, bloquear y desbloquear jugadores
+        ├── PlayerPickerForms  selector reutilizable "Escoger jugador"
+        ├── SocialCounters     marcas {friend_requests_badge}, {party_invites_badge}, {unread_mail_badge}
         └── LinkMessages       mensajes de tienda/Discord por chat
 ```
 

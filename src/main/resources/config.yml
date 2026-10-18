@@ -102,6 +102,10 @@ messages:
   party-left: '&eSaliste de tu Grupo de Aventura.'
   party-not-in-party: '&cNo perteneces a ningún Grupo de Aventura.'
   party-leave-error: '&cNo se pudo abandonar el Grupo de Aventura.'
+  party-created: '&aCreaste un nuevo Grupo de Aventura.'
+  party-create-error: '&cNo se pudo crear el Grupo de Aventura.'
+  party-already-in-party: '&eYa perteneces a un Grupo de Aventura.'
+  party-command-too-many: '&cPuedes invitar como máximo a &e{max} &cjugadores a la vez.'
   private-message-suggest: '&bHaz clic aquí para escribirle a &e{target}&b.'
 settings:
   # Menu inicial que abre /social.
@@ -517,12 +521,28 @@ bedrock:
     enabled: true
     dynamic-page-size: 5
 
+  # Marca de pendientes en el menú "Social y Amigos" ({friend_requests_badge},
+  # {party_invites_badge}, {unread_mail_badge}). Con 0 pendientes no se muestra nada.
+  badges:
+    format: ' ({count})'
+
+  # Selector "Escoger jugador" (Invitar al grupo, Añadir amigo).
+  player-picker:
+    # Jugadores conectados por página. Textos en MenusBedrock/escoger_jugador.yml.
+    page-size: 6
+
   party:
     # El formulario de "Invitar jugador" usa el comando oficial de MMOCore.
     # Así el jugador Java recibe una PartyInvite normal y /party accept|deny funciona.
     direct-invite-command: 'party invite {target}'
     # Si el receptor es Java, añade botones clickables explícitos como respaldo.
     java-fallback-buttons: true
+
+# /grupo [jugador...]: crea un Grupo de Aventura e invita hasta 5 jugadores.
+party-command:
+  # Menú que se abre en Java tras /grupo sin nombres. Vacío = no abrir nada.
+  # En Bedrock siempre se abre el formulario nativo del grupo.
+  java-menu-command: 'party'
 
 interactive-chat:
   enabled: true

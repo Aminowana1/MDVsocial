@@ -1,20 +1,20 @@
 type: "SIMPLE"
-title: "&8&lAmigos"
+title: "&8&lSocial y Amigos"
 content:
   - "&7Selecciona una opción."
 buttons:
   listaamigos:
-    text: "&a&lLista de Amigos\n&7Consulta tu lista de amigos."
+    text: "&a&lAmigos y Solicitudes{friend_requests_badge}\n&7Tus amigos y solicitudes."
     action: "OPEN_BEDROCK_FRIENDS"
     commands:
       - "friends"
   party:
-    text: "&d&lGrupo de Aventura\n&7Crea una party para explorar,"
+    text: "&d&lGrupo de Aventura{party_invites_badge}\n&7Crea una party para explorar,"
     action: "OPEN_BEDROCK_PARTY"
     commands:
       - "party"
   correo:
-    text: "&6&lCartas y Buzón\n&7Lee o envía cartas."
+    text: "&6&lCartas y Buzón{unread_mail_badge}\n&7Lee o envía cartas."
     action: "OPEN_MENU"
     target-menu: "correo"
   bloqueados:

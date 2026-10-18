@@ -23,6 +23,9 @@ public interface MailPort {
 
     void markRead(UUID owner, String id);
 
+    /** Letters the owner has not opened yet. */
+    int unreadCount(UUID owner);
+
     void delete(Player player, String id);
 
     void handleClanInvite(Player player, String id, boolean accept, int page);

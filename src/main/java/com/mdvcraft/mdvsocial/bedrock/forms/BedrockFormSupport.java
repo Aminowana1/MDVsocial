@@ -27,13 +27,15 @@ public final class BedrockFormSupport {
     private final FloodgateGateway gateway;
     private final BedrockUiSessionManager sessions;
     private final BedrockMenuRepository repository;
+    private final SocialCounters counters;
 
     public BedrockFormSupport(BedrockHost host, FloodgateGateway gateway, BedrockUiSessionManager sessions,
-            BedrockMenuRepository repository) {
+            BedrockMenuRepository repository, SocialCounters counters) {
         this.host = host;
         this.gateway = gateway;
         this.sessions = sessions;
         this.repository = repository;
+        this.counters = counters;
     }
 
     public BedrockHost host() {
@@ -64,7 +66,8 @@ public final class BedrockFormSupport {
     public String text(String raw, Player player, UUID targetUuid, String targetName, boolean targetOnline) {
         if (raw == null)
             return "";
-        String rendered = host.applyTargetPlaceholders(raw, player, targetUuid, targetName, targetOnline);
+        String rendered = host.applyTargetPlaceholders(counters.apply(raw, player), player, targetUuid, targetName,
+                targetOnline);
         String shopUrl = host.plugin().getConfig().getString("shop.url", "");
         String discordUrl = host.plugin().getConfig().getString("discord.url", "");
         return host.color(rendered.replace("{shop}", shopUrl).replace("{store_url}", shopUrl)
@@ -77,7 +80,7 @@ public final class BedrockFormSupport {
 
     public String uiText(YamlConfiguration ui, String path, String def, Player player, Map<String, String> tokens) {
         String raw = ui == null ? def : ui.getString(path, def);
-        return host.color(host.applyPlayerPlaceholders(replaceTokens(raw, tokens), player));
+        return host.color(host.applyPlayerPlaceholders(counters.apply(replaceTokens(raw, tokens), player), player));
     }
 
     public String uiLines(YamlConfiguration ui, String path, List<String> defaults, Player player,
@@ -89,7 +92,8 @@ public final class BedrockFormSupport {
         for (String line : lines) {
             if (out.length() > 0)
                 out.append('\n');
-            out.append(host.color(host.applyPlayerPlaceholders(replaceTokens(line, tokens), player)));
+            out.append(host.color(host.applyPlayerPlaceholders(counters.apply(replaceTokens(line, tokens), player),
+                    player)));
         }
         return out.toString();
     }

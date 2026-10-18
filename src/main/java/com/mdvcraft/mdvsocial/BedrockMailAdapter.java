@@ -48,6 +48,18 @@ final class BedrockMailAdapter implements MailPort {
     }
 
     @Override
+    public int unreadCount(UUID owner) {
+        MailSqliteStore.TrackedMail mail = plugin.mailData();
+        if (mail == null || !plugin.mailEnabled())
+            return 0;
+        int unread = 0;
+        for (String id : plugin.getMailIds(owner))
+            if (!mail.getBoolean(plugin.mailPath(owner, "letters." + id) + ".read", false))
+                unread++;
+        return unread;
+    }
+
+    @Override
     public void markRead(UUID owner, String id) {
         plugin.mailData().set(plugin.mailPath(owner, "letters." + id) + ".read", true);
         plugin.saveMailData();
