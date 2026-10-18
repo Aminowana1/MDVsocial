@@ -53,7 +53,9 @@ messages:
   # Jugadores bloqueados (sistema general: hoy impide recibir cartas e invitaciones de clan por carta).
   player-block-prompt: '&eEscribe el nombre del jugador que quieres bloquear. Escribe &ccancelar &epara salir.'
   player-unblock-prompt: '&eEscribe el nombre del jugador que quieres desbloquear. Escribe &ccancelar &epara salir.'
-  player-blocked: '&eBloqueaste a &c{target}&e. Ya no podrá enviarte cartas.'
+  player-blocked: '&eBloqueaste a &c{target}&e. Ya no podrá enviarte cartas, invitaciones ni solicitudes.'
+  # Al bloquear a un amigo: la amistad termina (el otro jugador no recibe aviso).
+  player-blocked-unfriended: '&eBloqueaste a &c{target}&e y ya no son amigos. Ya no podrá enviarte cartas, invitaciones ni solicitudes.'
   player-already-blocked: '&e{target} &7ya estaba bloqueado.'
   player-unblocked: '&aDesbloqueaste a &e{target}&a.'
   player-not-blocked: '&e{target} &7no estaba bloqueado.'
@@ -94,6 +96,8 @@ messages:
   friend-request-denied: '&eRechazaste la solicitud de amistad de &c{target}&e.'
   # Si el destinatario te bloqueó. No revela el bloqueo.
   friend-request-not-delivered: '&cNo se pudo enviar la solicitud de amistad a &e{target}&c.'
+  # Si quien envía tiene bloqueado al destinatario.
+  friend-request-target-blocked: '&cTienes bloqueado a &e{target}&c. Desbloquéalo para poder agregarlo como amigo.'
   friend-request-already-sent: '&eYa le enviaste una solicitud de amistad a &6{target}&e.'
   friend-request-cooldown: '&cEspera &f{seconds}s &cantes de enviar otra solicitud de amistad.'
   party-target-not-found: '&cEse jugador no está conectado o el nombre no es válido.'
@@ -592,6 +596,8 @@ party-invites:
 # Solicitudes de amistad
 # Reemplazan el mensaje "friend-request" de MMOCore, que debe estar silenciado en su messages.yml.
 # - Si el destinatario te bloqueó, no le llega (aviso genérico friend-request-not-delivered).
+# - Si tú lo bloqueaste, no se envía: friend-request-target-blocked te pide desbloquearlo.
+# - Bloquear a un amigo termina la amistad y retira las solicitudes pendientes entre ambos.
 # - Una solicitud repetida no se duplica; si el otro ya te había enviado una, se aceptan y quedan como amigos.
 # ==========================================================
 friend-requests:

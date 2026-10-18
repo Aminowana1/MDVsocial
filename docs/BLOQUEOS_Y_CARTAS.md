@@ -27,6 +27,12 @@ El menú "correo" ya no bloquea ni desbloquea: eso vive en "Jugadores Bloqueados
 - Es unidireccional: si A bloquea a B, B no puede enviarle cartas a A.
 - Hoy lo respetan las cartas, las invitaciones de clan por carta, las
   invitaciones a Grupos de Aventura, las solicitudes de amistad y el TPA.
+- Bloquear a un amigo termina la amistad en MMOCore (en los dos lados, sin avisar
+  al bloqueado) y retira las solicitudes de amistad pendientes entre ambos.
+  Quien bloquea ve `player-blocked-unfriended`.
+- No puedes enviar solicitudes de amistad a alguien que tienes bloqueado: ves
+  `friend-request-target-blocked` ("Desbloquéalo para poder agregarlo"). Vale
+  también para la GUI de MMOCore, donde la solicitud se retira al detectarla.
 - Comandos: `/bloquear <jugador>`, `/desbloquear <jugador>`, `/bloqueados`.
   `/carta bloquear|desbloquear|bloqueados` siguen funcionando.
 - Acciones de menú: `OPEN_BLOCKED_PLAYERS`, `START_BLOCK_PLAYER`,

@@ -77,7 +77,9 @@ class MMOCoreRequestHandlingTest {
         when(plugin.findPendingMMOCoreRequest(target, MMOCoreRequestWatcher.FRIEND_REQUEST, steve, handle))
                 .thenReturn(new Object());
 
-        new FriendRequestRules(plugin, notices).onNewRequest(request(handle), target);
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            new FriendRequestRules(plugin, notices).onNewRequest(request(handle), target);
+        }
 
         verify(plugin).dropMMOCoreRequest(requestId);
         verify(notices, never()).notify(any(), any());
@@ -101,6 +103,28 @@ class MMOCoreRequestHandlingTest {
 
         verify(plugin).dropMMOCoreRequest(requestId);
         verify(plugin).resolveMMOCoreRequest(creator, reverse, true);
+        verify(notices, never()).notify(any(), any());
+    }
+
+    @Test
+    void requestToSomeoneYouBlockedIsWithdrawn() {
+        MDVSocialPlugin plugin = mock(MDVSocialPlugin.class);
+        MMOCoreRequestNotifier notices = mock(MMOCoreRequestNotifier.class);
+        PlayerBlockService blocks = mock(PlayerBlockService.class);
+        when(plugin.getBlockService()).thenReturn(blocks);
+        when(blocks.isBlocked(steve, alex)).thenReturn(true);
+        Player target = mock(Player.class);
+        when(target.getUniqueId()).thenReturn(alex);
+        when(target.getName()).thenReturn("Alex");
+        Player creator = mock(Player.class);
+
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            bukkit.when(() -> Bukkit.getPlayer(steve)).thenReturn(creator);
+            new FriendRequestRules(plugin, notices).onNewRequest(request(new Object()), target);
+        }
+
+        verify(plugin).dropMMOCoreRequest(requestId);
+        verify(plugin).msg(creator, "friend-request-target-blocked", java.util.Map.of("target", "Alex"));
         verify(notices, never()).notify(any(), any());
     }
 

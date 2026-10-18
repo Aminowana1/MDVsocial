@@ -39,6 +39,7 @@ Mismo sistema que los grupos, configurado en `friend-requests`:
   `amigos_lista.yml`). Con `friend-requests.bedrock.skip-confirmation: true`
   acepta directamente (por defecto `false`).
 - Si el destinatario te bloqueó: `friend-request-not-delivered` (genérico).
+- Si tú lo tienes bloqueado: `friend-request-target-blocked` (te pide desbloquearlo).
 - Solicitud repetida: desde MDVSocial avisa `friend-request-already-sent`; desde la
   GUI de MMOCore se retira la repetida en silencio. Los menús muestran una por jugador.
 - Solicitud mutua: si el otro ya te había enviado una, se acepta la suya y quedan

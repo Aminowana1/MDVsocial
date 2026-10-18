@@ -3627,7 +3627,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         String name = displayName == null || displayName.isBlank() ? "jugador" : displayName;
         switch (blocks.block(player.getUniqueId(), target)) {
             case BLOCKED -> {
-                msg(player, "player-blocked", Map.of("target", name));
+                msg(player, cutSocialLinks(player, target) ? "player-blocked-unfriended" : "player-blocked",
+                        Map.of("target", name));
                 return true;
             }
             case ALREADY_BLOCKED -> msg(player, "player-already-blocked", Map.of("target", name));
@@ -4200,6 +4201,16 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         if (value instanceof Collection<?> collection)
             return new ArrayList<>(collection);
         return Collections.emptyList();
+    }
+
+    UUID getMMOCoreRequestId(Object request) {
+        if (request == null)
+            return null;
+        try {
+            return extractUuid(request.getClass().getMethod("getUniqueId").invoke(request));
+        } catch (Throwable ignored) {
+            return null;
+        }
     }
 
     UUID getMMOCoreRequestCreatorUuid(Object request) {
@@ -4878,6 +4889,10 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         }
         if (isMMOCoreFriend(player, targetUuid)) {
             msg(player, "friend-already", Map.of("target", targetName));
+            return;
+        }
+        if (blocks != null && blocks.isBlocked(player.getUniqueId(), targetUuid)) {
+            msg(player, "friend-request-target-blocked", Map.of("target", targetName));
             return;
         }
         // They already asked you: accepting their request makes you friends (MMOCore tells both).
@@ -5651,31 +5666,64 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         if (targetName == null || targetName.isBlank())
             targetName = "jugador";
         try {
-            Class<?> playerDataClass = Class.forName("net.Indyuce.mmocore.api.player.PlayerData");
-            Method getData = playerDataClass.getMethod("get", OfflinePlayer.class);
-            Method removeFriend = playerDataClass.getMethod("removeFriend", UUID.class);
-            Object playerData = getData.invoke(null, player);
-            if (playerData == null)
-                throw new IllegalStateException("PlayerData no disponible");
-            removeFriend.invoke(playerData, targetUuid);
-
-            // MMOCore almacena amistad de forma recíproca. Actualizamos también al otro
-            // jugador, incluso si está desconectado, mediante
-            // PlayerData#get(OfflinePlayer).
-            try {
-                OfflinePlayer other = Bukkit.getOfflinePlayer(targetUuid);
-                Object targetData = getData.invoke(null, other);
-                if (targetData != null)
-                    removeFriend.invoke(targetData, player.getUniqueId());
-            } catch (Throwable ex) {
-                getLogger().fine("No se pudo limpiar la amistad recíproca offline: " + ex.getMessage());
-            }
+            unfriendMMOCore(player, targetUuid);
             msg(player, "friend-removed", Map.of("target", targetName));
             return true;
         } catch (Throwable ex) {
             getLogger().warning("No se pudo eliminar amistad MMOCore: "
                     + ex.getClass().getSimpleName() + " - " + ex.getMessage());
             msg(player, "friend-remove-error", Map.of("target", targetName));
+            return false;
+        }
+    }
+
+    /**
+     * Ends a MMOCore friendship on both sides without telling anyone
+     * (MMOCore's removeFriend sends no message).
+     */
+    private void unfriendMMOCore(Player player, UUID targetUuid) throws Exception {
+        Class<?> playerDataClass = Class.forName("net.Indyuce.mmocore.api.player.PlayerData");
+        Method getData = playerDataClass.getMethod("get", OfflinePlayer.class);
+        Method removeFriend = playerDataClass.getMethod("removeFriend", UUID.class);
+        Object playerData = getData.invoke(null, player);
+        if (playerData == null)
+            throw new IllegalStateException("PlayerData no disponible");
+        removeFriend.invoke(playerData, targetUuid);
+
+        // MMOCore almacena amistad de forma recíproca. Actualizamos también al otro
+        // jugador, incluso si está desconectado, mediante PlayerData#get(OfflinePlayer).
+        try {
+            Object targetData = getData.invoke(null, Bukkit.getOfflinePlayer(targetUuid));
+            if (targetData != null)
+                removeFriend.invoke(targetData, player.getUniqueId());
+        } catch (Throwable ex) {
+            getLogger().fine("No se pudo limpiar la amistad recíproca offline: " + ex.getMessage());
+        }
+    }
+
+    /**
+     * What blocking does to the social link between two players: the friendship
+     * ends (silently for the blocked player) and pending friend requests in
+     * both directions are withdrawn, so an old one cannot be accepted later.
+     *
+     * @return true when they were friends
+     */
+    private boolean cutSocialLinks(Player player, UUID target) {
+        if (!Bukkit.getPluginManager().isPluginEnabled("MMOCore"))
+            return false;
+        Object toTarget = findPendingMMOCoreRequest(Bukkit.getPlayer(target), MMOCoreRequestWatcher.FRIEND_REQUEST,
+                player.getUniqueId(), null);
+        Object fromTarget = findPendingMMOCoreRequest(player, MMOCoreRequestWatcher.FRIEND_REQUEST, target, null);
+        for (Object request : new Object[] {toTarget, fromTarget})
+            if (request != null)
+                dropMMOCoreRequest(getMMOCoreRequestId(request));
+        if (!isMMOCoreFriend(player, target))
+            return false;
+        try {
+            unfriendMMOCore(player, target);
+            return true;
+        } catch (Throwable ex) {
+            getLogger().warning("No se pudo eliminar la amistad al bloquear: " + ex.getMessage());
             return false;
         }
     }
