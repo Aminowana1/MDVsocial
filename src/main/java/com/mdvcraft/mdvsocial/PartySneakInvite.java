@@ -1,5 +1,6 @@
 package com.mdvcraft.mdvsocial;
 
+import com.mdvcraft.mdvsocial.quickaccept.QuickAcceptSettings;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,6 +18,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * Crouch + right-click (Bedrock: interact / long press) another player with an
  * empty hand to invite them to your adventure party. A party is created first
  * when you have none; inside a party only the leader can invite.
+ *
+ * Plays the quick accept sound of party invites
+ * ({@code quick-accept.types.party-invite.trigger-sound}).
  *
  * Config: {@code party-invites.sneak-interact.enabled} (true by default) and
  * {@code party-invites.sneak-interact.cooldown-millis}.
@@ -78,10 +82,19 @@ final class PartySneakInvite implements Listener {
                     return;
                 }
                 plugin.msg(player, "party-created");
-                plugin.invitePlayerToParty(player, target);
+                sendInvite(player, target);
             }
-            case INVITE -> plugin.invitePlayerToParty(player, target);
+            case INVITE -> sendInvite(player, target);
         }
+    }
+
+    /** Invites with the same sound as the quick accept gesture for party invites. */
+    private void sendInvite(Player player, Player target) {
+        plugin.invitePlayerToParty(player, target);
+        String sound = QuickAcceptSettings.from(plugin.getConfig().getConfigurationSection("quick-accept"),
+                "party-invite").triggerSound();
+        if (sound != null && !sound.isBlank())
+            plugin.playUiSound(player, sound);
     }
 
     static Outcome decide(boolean hasParty, boolean leader, boolean targetIsMember, boolean full) {

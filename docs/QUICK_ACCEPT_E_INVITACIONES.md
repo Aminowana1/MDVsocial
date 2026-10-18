@@ -59,6 +59,20 @@ Tokens: `{player}` (quien invita), `{uuid}` (id de la invitación en MMOCore, el
 `accept`/`deny`; antes se ponía por error el UUID de quien invita), `{sneaks}` y `{seconds}`
 (del quick accept).
 
+## Botones del chat (Java)
+
+Los botones ACEPTAR / RECHAZAR ejecutan `/mmocore:party|friends accept|deny <uuid>`.
+MDVSocial completa lo que MMOCore no avisa:
+
+- **Rechazar una invitación de grupo:** MMOCore no envía nada, así que MDVSocial
+  la rechaza y envía `party-request-denied`.
+- **Botón de una solicitud que ya no existe** (aceptada, rechazada, caducada o
+  retirada; o una invitación a un grupo ya disuelto): el comando no llega a MMOCore y
+  se envía `request-no-longer-available` ("Esta acción ya no está disponible").
+  Un mensaje de chat no se puede modificar una vez enviado, por eso no puede
+  cambiar el tooltip del botón.
+- Aceptar y rechazar amistades siguen en manos de MMOCore, que ya envía sus mensajes.
+
 ## Quick Accept (Bedrock)
 
 Agacharse `sneaks-required` veces seguidas, con no más de

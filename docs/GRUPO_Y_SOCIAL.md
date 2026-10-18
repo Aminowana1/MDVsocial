@@ -24,6 +24,8 @@ o mantener pulsado sobre él) lo invita a tu grupo.
 - Sin grupo: se crea uno (`party-created`) y se envía la invitación.
 - En un grupo: solo el líder puede invitar (`party-sneak-invite-not-leader`). Si ya
   es miembro o el grupo está lleno se avisa (`party-target-already-member`, `party-full`).
+- Al invitar suena el sonido de la acción rápida de invitaciones
+  (`quick-accept.types.party-invite.trigger-sound`, o `quick-accept.trigger-sound`).
 - Se respetan los bloqueos como en `/grupo`. Los NPC (Citizens) se ignoran.
 - Una invitación cada `cooldown-millis` (1500 por defecto) para no repetirla al
   mantener el click.

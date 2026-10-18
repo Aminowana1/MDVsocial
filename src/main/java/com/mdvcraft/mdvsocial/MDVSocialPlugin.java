@@ -218,6 +218,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         partyJoinMenuGuard = new PartyJoinMenuGuard(this);
         partyJoinMenuGuard.enable();
         new PartySneakInvite(this).enable();
+        new MMOCoreRequestClicks(this).enable();
         quickAccept = new QuickAcceptService(this, this::isBedrockPlayer, this::playUiSound,
                 (player, message) -> player.sendMessage(color(message)));
         quickAccept.enable();
@@ -4250,6 +4251,45 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         return null;
     }
 
+    /** MMOCore's request with this id (the one the chat buttons carry); null if it's gone. */
+    Object getMMOCoreRequest(UUID requestId) {
+        if (requestId == null)
+            return null;
+        try {
+            Object requestManager = getMMOCoreRequestManager();
+            return requestManager == null ? null
+                    : requestManager.getClass().getMethod("getRequest", UUID.class).invoke(requestManager, requestId);
+        } catch (Throwable ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Whether {@code player} can still answer {@code request}: it exists, is addressed
+     * to them and hasn't timed out, and a party invite's party still has members.
+     * Dead requests found here are removed from MMOCore.
+     */
+    boolean isMMOCoreRequestAvailable(Player player, Object request) {
+        if (player == null || request == null)
+            return false;
+        try {
+            Object target = request.getClass().getMethod("getTarget").invoke(request);
+            if (!player.getUniqueId().equals(extractUuid(target)))
+                return false;
+            boolean dead = Boolean.TRUE.equals(request.getClass().getMethod("isTimedOut").invoke(request));
+            if (!dead && MMOCoreRequestWatcher.PARTY_INVITE.equals(request.getClass().getSimpleName())) {
+                Object party = request.getClass().getMethod("getParty").invoke(request);
+                dead = party == null || countMMOCorePartyMembers(party) == 0;
+            }
+            if (dead)
+                dropMMOCoreRequest(getMMOCoreRequestId(request));
+            return !dead;
+        } catch (Throwable ex) {
+            // Unknown MMOCore version: let MMOCore decide.
+            return true;
+        }
+    }
+
     /** Removes a request from MMOCore without answering it, so nobody is told. */
     void dropMMOCoreRequest(UUID requestId) {
         if (requestId == null)
@@ -6635,6 +6675,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             case "party-request-accepted" -> "&aAceptaste la invitación al grupo de &e{target}&a.";
             case "party-request-denied" -> "&eRechazaste la invitación al grupo de &c{target}&e.";
             case "social-request-expired" -> "&cEsa solicitud ya expiró.";
+            case "request-no-longer-available" -> "&7Esta acción ya no está disponible.";
             case "social-request-error" -> "&cNo se pudo procesar esa solicitud de MMOCore.";
             case "friend-removed" -> "&eEliminaste a &c{target} &ede tu lista de amigos.";
             case "friend-remove-error" -> "&cNo se pudo eliminar a &e{target} &cde tus amigos.";

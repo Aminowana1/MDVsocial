@@ -103,6 +103,8 @@ messages:
   party-target-not-found: '&cEse jugador no está conectado o el nombre no es válido.'
   party-request-accepted: '&aAceptaste la invitación al grupo de &e{target}&a.'
   party-request-denied: '&eRechazaste la invitación al grupo de &c{target}&e.'
+  # Al pulsar un botón de grupo o amistad del chat cuya solicitud ya se respondió, caducó o se retiró.
+  request-no-longer-available: '&7Esta acción ya no está disponible.'
   social-request-expired: '&cEsa solicitud ya expiró.'
   social-request-error: '&cNo se pudo procesar esa solicitud de MMOCore.'
   friend-removed: '&eEliminaste a &c{target} &ede tu lista de amigos.'
@@ -574,6 +576,8 @@ party-invites:
     enabled: true
     # Tiempo mínimo entre dos invitaciones así (evita repetirlas al mantener el click).
     cooldown-millis: 1500
+    # Suena el mismo sonido que la acción rápida de invitaciones
+    # (quick-accept.types.party-invite.trigger-sound, o quick-accept.trigger-sound).
 
   # Jugadores Java. Cada línea es JSON de chat (o texto normal); se aceptan códigos &.
   # Tokens: {player} = quien invita, {uuid} = id de la invitación (lo usa /mmocore:party accept|deny).
