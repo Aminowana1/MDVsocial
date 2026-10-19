@@ -6779,7 +6779,6 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             case "party-leave-error" -> "&cNo se pudo abandonar el Grupo de Aventura.";
             case "party-created" -> "&aCreaste un nuevo Grupo de Aventura.";
             case "party-create-error" -> "&cNo se pudo crear el Grupo de Aventura.";
-            case "party-already-in-party" -> "&eYa perteneces a un Grupo de Aventura.";
             case "party-invite-not-delivered" -> "&cNo se pudo invitar a &e{target} &cal grupo.";
             case "party-command-too-many" -> "&cPuedes invitar como máximo a &e{max} &cjugadores a la vez.";
             case "mail-not-delivered" -> "&cNo se pudo enviar la carta a &e{target}&c.";

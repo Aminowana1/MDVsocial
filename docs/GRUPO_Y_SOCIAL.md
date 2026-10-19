@@ -9,7 +9,8 @@
 
 - Hasta 5 nombres. Tab autocompleta jugadores conectados, tus amigos primero, sin
   repetir los ya escritos.
-- Si ya tienes grupo no se crea otro: solo se envían las invitaciones.
+- Si ya tienes grupo no se crea otro: solo se envían las invitaciones. Sin nombres
+  abre el menú del grupo, sin ningún mensaje.
 - Los jugadores desconectados o mal escritos se avisan uno por uno; el resto se invita.
 - Bedrock: siempre abre el formulario del grupo al terminar.
 - Java: sin nombres ejecuta `party-command.java-menu-command` (por defecto `party`);

@@ -56,8 +56,9 @@ Mismo sistema que los grupos, configurado en `friend-requests`:
 | Bedrock sin quick accept | `party-invites.bedrock.message-without-quick-accept` | Chat: quién invita y dónde verlo |
 
 Tokens: `{player}` (quien invita), `{uuid}` (id de la invitación en MMOCore, el que esperan
-`accept`/`deny`; antes se ponía por error el UUID de quien invita), `{sneaks}` y `{seconds}`
-(del quick accept).
+`accept`/`deny`; antes se ponía por error el UUID de quien invita), `{sneaks}` y
+`{quick_seconds}` (del quick accept, igual que en el TPA). `{seconds}` sigue funcionando
+como `{quick_seconds}` para configs antiguas.
 
 ## Botones del chat (Java)
 

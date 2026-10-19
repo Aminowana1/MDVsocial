@@ -127,7 +127,6 @@ messages:
   party-leave-error: '&cNo se pudo abandonar el Grupo de Aventura.'
   party-created: '&aCreaste un nuevo Grupo de Aventura.'
   party-create-error: '&cNo se pudo crear el Grupo de Aventura.'
-  party-already-in-party: '&eYa perteneces a un Grupo de Aventura.'
   party-command-too-many: '&cPuedes invitar como máximo a &e{max} &cjugadores a la vez.'
   # Se usa cuando el invitado te bloqueó. Es genérico a propósito: no revela el bloqueo.
   party-invite-not-delivered: '&cNo se pudo invitar a &e{target} &cal grupo.'
@@ -613,7 +612,8 @@ party-invites:
       - '[{"text":"        "},{"text":"&8[&a&lACEPTAR&8]","clickEvent":{"action":"run_command","value":"/mmocore:party accept {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick para aceptar."}},{"text":"&r             "},{"text":"&8[&c&lRECHAZAR&8]","clickEvent":{"action":"run_command","value":"/mmocore:party deny {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick para rechazar."}}]'
       - '{"text":""}'
 
-  # Jugadores Bedrock (sin clicks en el chat). Tokens: {player}, {sneaks}, {seconds}.
+  # Jugadores Bedrock (sin clicks en el chat). Tokens: {player}, {sneaks}, {quick_seconds}
+  # (segundos para agacharse; {seconds} también funciona, por compatibilidad).
   bedrock:
     enabled: true
     # Se usa cuando quick accept está activo para invitaciones (quick-accept.types.party-invite).
@@ -621,7 +621,7 @@ party-invites:
       - ''
       - '&6&l[&5&lMDVCRAFT&6&l]  &4»&r &6{player} &ete ha invitado a su grupo.'
       - '&7Revísala en &fSocial y Amigos &8» &fGrupo de Aventura &8» &fInvitaciones'
-      - '&7o &eagáchate {sneaks} veces rápido &7en los próximos &e{seconds}s &7para responder.'
+      - '&7o &eagáchate {sneaks} veces rápido &7en los próximos &e{quick_seconds}s &7para responder.'
       - ''
     # Se usa cuando quick accept está desactivado.
     message-without-quick-accept:
@@ -656,7 +656,8 @@ friend-requests:
       - '[{"text":"        "},{"text":"&8[&a&lACEPTAR&8]","clickEvent":{"action":"run_command","value":"/mmocore:friends accept {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick para aceptar."}},{"text":"&r             "},{"text":"&8[&c&lRECHAZAR&8]","clickEvent":{"action":"run_command","value":"/mmocore:friends deny {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick para rechazar."}}]'
       - '{"text":""}'
 
-  # Jugadores Bedrock (sin clicks en el chat). Tokens: {player}, {sneaks}, {seconds}.
+  # Jugadores Bedrock (sin clicks en el chat). Tokens: {player}, {sneaks}, {quick_seconds}
+  # (segundos para agacharse; {seconds} también funciona, por compatibilidad).
   bedrock:
     enabled: true
     # Se usa cuando quick accept está activo para amistad (quick-accept.types.friend-request).
@@ -664,7 +665,7 @@ friend-requests:
       - ''
       - '&6&l[&5&lMDVCRAFT&6&l]  &4»&r &6{player} &ete ha enviado una solicitud de amistad.'
       - '&7Revísala en &fSocial y Amigos &8» &fAmigos y Solicitudes'
-      - '&7o &eagáchate {sneaks} veces rápido &7en los próximos &e{seconds}s &7para responder.'
+      - '&7o &eagáchate {sneaks} veces rápido &7en los próximos &e{quick_seconds}s &7para responder.'
       - ''
     # Se usa cuando quick accept está desactivado.
     message-without-quick-accept:

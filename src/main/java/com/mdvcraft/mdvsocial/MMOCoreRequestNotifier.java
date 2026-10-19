@@ -71,6 +71,8 @@ final class MMOCoreRequestNotifier {
 
         QuickAcceptSettings settings = quickAccept.settings(spec.quickAcceptType());
         tokens.put("sneaks", String.valueOf(settings.sneaksRequired()));
+        // {quick_seconds} like the TPA notice; {seconds} kept for older configs.
+        tokens.put("quick_seconds", String.valueOf(settings.windowSeconds()));
         tokens.put("seconds", String.valueOf(settings.windowSeconds()));
         List<String> lines = section.getStringList(offered ? "bedrock.message" : "bedrock.message-without-quick-accept");
         for (String line : lines)

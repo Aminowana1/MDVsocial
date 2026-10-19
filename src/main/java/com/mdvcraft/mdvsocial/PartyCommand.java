@@ -69,9 +69,8 @@ public final class PartyCommand implements CommandExecutor, TabCompleter {
             }
             created = true;
             plugin.msg(player, "party-created");
-        } else if (names.isEmpty()) {
-            plugin.msg(player, "party-already-in-party");
         }
+        // Already in a party with no names: just the menu, no message.
 
         for (String name : names) {
             Player target = OnlinePlayers.find(name);
