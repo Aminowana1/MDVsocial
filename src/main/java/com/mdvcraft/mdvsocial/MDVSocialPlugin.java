@@ -1170,18 +1170,20 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
                 title: '&8&lClan'
                 size: 27
                 items:
-                  gestion:
+                  invitar:
                     slot: 10
-                    material: SHIELD
-                    name: '&a&lGestion del clan'
+                    material: WRITABLE_BOOK
+                    name: '&a&lInvitar jugador'
                     lore:
                       - ''
-                      - '&7Abre la interfaz dinamica'
-                      - '&7principal de tu clan.'
+                      - '&7Escribe en el chat el nombre'
+                      - '&7del jugador que quieres invitar.'
                       - ''
-                      - '&eClick para abrir.'
-                    action: MDVCLANS_OPEN
-                    clans-menu: gestion
+                      - '&eClick para invitar.'
+                    action: COMMAND_PLAYER
+                    commands:
+                      - 'clan invitar'
+                    close-on-click: true
 
                   miembros:
                     slot: 11
