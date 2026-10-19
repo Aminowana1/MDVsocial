@@ -8,12 +8,24 @@ storage:
     # Desde 1.6.2 los títulos/castigos persistentes usan SQLite.
     # Si existe player-data.yml se migra automáticamente al iniciar.
     database-file: 'player-data.db'
+  # player-data.db y mail-data.db usan WAL: los cambios recientes viven en los archivos
+  # -wal hasta que se vuelcan a la .db. Cada cuántos minutos volcarlos (0 = solo al apagar),
+  # para que copiar solo la .db nunca pierda más que esto.
+  checkpoint-interval-minutes: 5
+  # /mdvsocial backup guarda copias completas en plugins/MDVSocial/backups/<fecha>/,
+  # seguras aunque el servidor esté encendido. Se conservan las más recientes (0 = todas).
+  backups:
+    keep: 10
 
 messages:
   prefix: '&6&l[&5&lMDVSocial&6&l]&4> &r'
   no-permission: '&cNo tienes permiso.'
   only-players: '&cEste comando solo puede usarlo un jugador.'
   reloaded: '&aMDVSocial recargado.'
+  backup-started: '&eCreando copia de seguridad de las bases de datos...'
+  backup-done: '&aCopia de seguridad creada en &e{path}&a.'
+  backup-failed: '&cNo se pudo crear la copia de seguridad: &e{error}'
+  backup-running: '&eYa hay una copia de seguridad en curso.'
   title-equipped: '&eAhora usas el titulo {title}&e.'
   title-cleared: '&eYa no usas ningun titulo.'
   title-clear-disabled: '&cNo puedes quitar tu titulo actual. Debes tener siempre un titulo equipado.'

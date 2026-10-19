@@ -97,10 +97,11 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
     private volatile List<String> interactiveHoverTemplate = List.of();
 
     private File dataFile;
-    private PlayerDataStore data;
+    private volatile PlayerDataStore data;
+    private DatabaseMaintenance databaseMaintenance;
     private File mailFile;
     private MailSqliteStore.TrackedMail mailData;
-    private MailSqliteStore mailStore;
+    private volatile MailSqliteStore mailStore;
     private TickWorkQueue workQueue;
     private Economy economy;
     private SocialMenuItemManager socialMenuItemManager;
@@ -166,6 +167,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         TpaModule.importLegacyConfig(this);
         workQueue = new TickWorkQueue(this);
         loadAll();
+        databaseMaintenance = new DatabaseMaintenance(this, () -> data, () -> mailStore);
+        databaseMaintenance.start();
         bedrock = new BedrockModule(new BedrockHostAdapter(this), new BedrockTitlesAdapter(this),
                 new BedrockMailAdapter(this), new BedrockSocialAdapter(this), new BedrockBlocksAdapter(this),
                 new BedrockTeleportAdapter(this));
@@ -236,6 +239,9 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
 
     @Override
     public void onDisable() {
+        // The stores checkpoint their WAL themselves when closed below.
+        if (databaseMaintenance != null)
+            databaseMaintenance.stop();
         if (workQueue != null)
             workQueue.close();
         mailSessions.clear();
@@ -661,7 +667,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
 
     private boolean handleAdminCommand(CommandSender sender, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage(color("&6MDVSocial &7comandos: reload, open, title, mail"));
+            sender.sendMessage(color("&6MDVSocial &7comandos: reload, open, title, mail, homes, backup"));
             return true;
         }
         if (!sender.hasPermission("mdvsocial.admin")) {
@@ -683,6 +689,8 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
                 playerProtectionsMenuManager.reload();
             }
             startInteractiveChatProfileTask();
+            if (databaseMaintenance != null)
+                databaseMaintenance.start();
             msg(sender, "reloaded");
             return true;
         }
@@ -701,6 +709,11 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             return true;
         }
 
+        if (sub.equals("backup") || sub.equals("respaldo")) {
+            databaseMaintenance.backup(sender);
+            return true;
+        }
+
         if (sub.equals("mail") || sub.equals("correo") || sub.equals("cartas")) {
             return handleAdminMailCommand(sender, args);
         }
@@ -711,7 +724,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
 
         if (!sub.equals("title")) {
             sender.sendMessage(color(
-                    "&cUso: /mdvsocial reload | /mdvsocial open <jugador> <menu> [pagina] | /mdvsocial title ... | /mdvsocial mail ... | /mdvsocial homes ..."));
+                    "&cUso: /mdvsocial reload | /mdvsocial open <jugador> <menu> [pagina] | /mdvsocial title ... | /mdvsocial mail ... | /mdvsocial homes ... | /mdvsocial backup"));
             return true;
         }
 
@@ -6710,6 +6723,10 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
             case "party-request-accepted" -> "&aAceptaste la invitación al grupo de &e{target}&a.";
             case "party-request-denied" -> "&eRechazaste la invitación al grupo de &c{target}&e.";
             case "social-request-expired" -> "&cEsa solicitud ya expiró.";
+            case "backup-started" -> "&eCreando copia de seguridad de las bases de datos...";
+            case "backup-done" -> "&aCopia de seguridad creada en &e{path}&a.";
+            case "backup-failed" -> "&cNo se pudo crear la copia de seguridad: &e{error}";
+            case "backup-running" -> "&eYa hay una copia de seguridad en curso.";
             case "title-shop-closed" -> "&cLa tienda de títulos está cerrada por el momento.";
             case "request-no-longer-available" -> "&7Esta acción ya no está disponible.";
             case "social-request-error" -> "&cNo se pudo procesar esa solicitud de MMOCore.";
@@ -6787,7 +6804,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         if (!commandName.equals("mdvsocial"))
             return Collections.emptyList();
         if (args.length == 1)
-            return partial(args[0], Arrays.asList("reload", "open", "title", "mail", "homes"));
+            return partial(args[0], Arrays.asList("reload", "open", "title", "mail", "homes", "backup"));
         if (args.length == 3 && args[0].equalsIgnoreCase("open")) {
             List<String> menus = new ArrayList<>(customMenus.keySet());
             menus.addAll(Arrays.asList("main", "titulos", "mis_titulos", "tienda", "rangos"));

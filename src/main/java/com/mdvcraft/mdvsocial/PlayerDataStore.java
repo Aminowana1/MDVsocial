@@ -324,9 +324,27 @@ final class PlayerDataStore implements AutoCloseable {
         // No-op intencional. Cada mutación usa una sentencia SQLite duradera.
     }
 
+    /** Copies the -wal into player-data.db (see {@link SqliteMaintenance}). */
+    synchronized void checkpoint() throws SQLException {
+        if (connection != null)
+            SqliteMaintenance.checkpoint(connection);
+    }
+
+    /** Self-contained copy of the database in {@code target}. */
+    synchronized void backupTo(File target) throws SQLException, IOException {
+        if (connection == null)
+            throw new SQLException("player-data.db no está abierta");
+        SqliteMaintenance.backup(connection, target);
+    }
+
     @Override
     public synchronized void close() throws SQLException { profiles.clear();
         if (connection != null) {
+            try {
+                SqliteMaintenance.checkpoint(connection);
+            } catch (SQLException ex) {
+                plugin.getLogger().warning("No se pudo volcar el WAL de player-data.db al cerrar: " + ex.getMessage());
+            }
             connection.close();
             connection = null;
         }
