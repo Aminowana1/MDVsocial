@@ -4,6 +4,7 @@ import com.mdvcraft.mdvsocial.bedrock.port.MailPort;
 import com.mdvcraft.mdvsocial.bedrock.port.MailPort.MailView;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.geysermc.cumulus.form.CustomForm;
 import org.geysermc.cumulus.form.SimpleForm;
@@ -20,10 +21,12 @@ public final class MailForms {
 
     private final BedrockFormSupport forms;
     private final MailPort mail;
+    private final PlayerPickerForms picker;
 
-    public MailForms(BedrockFormSupport forms, MailPort mail) {
+    public MailForms(BedrockFormSupport forms, MailPort mail, PlayerPickerForms picker) {
         this.forms = forms;
         this.mail = mail;
+        this.picker = picker;
     }
 
     public void openMailbox(Player player, int page) {
@@ -134,6 +137,7 @@ public final class MailForms {
                 () -> openRead(player, id, page)));
     }
 
+    /** "Enviar carta": choose the recipient with "Escoger jugador", then write the letter. */
     public void openCompose(Player player, String returnMenu, int returnPage) {
         if (!mail.enabled()) {
             forms.host().message(player, "mail-disabled");
@@ -143,6 +147,19 @@ public final class MailForms {
             forms.host().message(player, "no-permission");
             return;
         }
+        YamlConfiguration ui = forms.ui("correo");
+        picker.open(player, new PlayerPickerForms.Request(
+                ui.getString("recipient-picker.title", "&6&lEnviar carta &8({page}/{max_page})"),
+                ui.getString("recipient-picker.content", "&7Elige a quién escribir o escribe su nombre."),
+                null,
+                (viewer, target) -> openMessageToTarget(viewer, target.getUniqueId(), target.getName(),
+                        returnMenu, returnPage),
+                viewer -> openComposeByName(viewer, returnMenu, returnPage),
+                viewer -> returnFrom(viewer, returnMenu, returnPage)), 0);
+    }
+
+    /** Recipient (any known player, also offline) and letter typed in one form. */
+    public void openComposeByName(Player player, String returnMenu, int returnPage) {
         if (!mail.checkCooldown(player))
             return;
         long session = forms.begin(player);
@@ -156,7 +173,7 @@ public final class MailForms {
             forms.run(player, session, () -> {
                 if (target == null || target.isBlank()) {
                     forms.host().message(player, "mail-player-not-found");
-                    openCompose(player, returnMenu, returnPage);
+                    openComposeByName(player, returnMenu, returnPage);
                     return;
                 }
                 mail.sendByName(player, target.trim(), message == null ? "" : message.trim());

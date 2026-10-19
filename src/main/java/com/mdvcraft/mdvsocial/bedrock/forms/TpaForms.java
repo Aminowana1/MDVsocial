@@ -1,6 +1,5 @@
 package com.mdvcraft.mdvsocial.bedrock.forms;
 
-import com.mdvcraft.mdvsocial.bedrock.forms.PlayerPickerForms.FriendsMode;
 import com.mdvcraft.mdvsocial.bedrock.port.TeleportPort;
 import com.mdvcraft.mdvsocial.bedrock.port.TeleportPort.RequestView;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -12,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -89,8 +87,7 @@ public final class TpaForms {
         picker.open(player, new PlayerPickerForms.Request(
                 ui.getString("picker.title", "&a&lSolicitar viaje &8({page}/{max_page})"),
                 ui.getString("picker.content", "&7¿Hasta quién quieres viajar? Tus amigos aparecen primero."),
-                FriendsMode.FIRST,
-                Set.of(),
+                null,
                 (viewer, target) -> {
                     if (!teleport.request(viewer, target))
                         open(viewer);

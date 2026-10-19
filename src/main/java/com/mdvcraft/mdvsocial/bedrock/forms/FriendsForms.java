@@ -1,6 +1,5 @@
 package com.mdvcraft.mdvsocial.bedrock.forms;
 
-import com.mdvcraft.mdvsocial.bedrock.forms.PlayerPickerForms.FriendsMode;
 import com.mdvcraft.mdvsocial.bedrock.menu.model.BedrockMenuContext;
 import com.mdvcraft.mdvsocial.bedrock.port.SocialPort;
 import org.bukkit.Bukkit;
@@ -13,6 +12,7 @@ import org.geysermc.cumulus.form.SimpleForm;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -105,11 +105,11 @@ public final class FriendsForms {
     /** "Escoger jugador" for friend requests; current friends are not offered. */
     private void openAddPicker(Player player, int returnPage) {
         YamlConfiguration ui = forms.ui("amigos_lista");
+        Set<UUID> friends = new HashSet<>(social.friends(player));
         picker.open(player, new PlayerPickerForms.Request(
                 ui.getString("add-picker.title", "&a&lAñadir amigo &8({page}/{max_page})"),
                 ui.getString("add-picker.content", "&7Elige un jugador conectado o escribe su nombre."),
-                FriendsMode.EXCLUDE,
-                Set.of(),
+                friends::contains,
                 (viewer, target) -> {
                     social.inviteFriend(viewer, target.getUniqueId(), target.getName());
                     openList(viewer, returnPage);

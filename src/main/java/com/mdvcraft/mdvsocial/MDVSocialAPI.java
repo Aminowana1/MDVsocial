@@ -95,6 +95,25 @@ public final class MDVSocialAPI {
     }
 
     /**
+     * "Invitar al clan" nativo de Bedrock: escribir el nombre o elegir de la lista de
+     * conectados (amigos, grupo y clan primero; sin bloqueados ni jugadores con clan).
+     * La invitación se envía con {@code /clan invitar <nombre>} como el jugador.
+     *
+     * @param onBack qué hacer al pulsar "Volver" (p. ej. reabrir los miembros del clan)
+     * @return false si el jugador no es de Bedrock o MDVSocial no está listo
+     */
+    public static boolean openClanInvitePicker(Player player, Runnable onBack) {
+        MDVSocialPlugin plugin = plugin();
+        if (plugin == null || player == null || plugin.bedrock() == null || !plugin.isBedrockPlayer(player))
+            return false;
+        plugin.bedrock().clanInvite().open(player, viewer -> {
+            if (onBack != null)
+                onBack.run();
+        });
+        return true;
+    }
+
+    /**
      * Consulta de bloqueos general de MDVSocial.
      *
      * @return true si {@code owner} bloqueó a {@code target}. Ejemplo para un

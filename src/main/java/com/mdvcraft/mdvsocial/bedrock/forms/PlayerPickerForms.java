@@ -1,54 +1,54 @@
 package com.mdvcraft.mdvsocial.bedrock.forms;
 
 import com.mdvcraft.mdvsocial.bedrock.port.SocialPort;
+import com.mdvcraft.mdvsocial.players.PlayerRanking;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.geysermc.cumulus.form.SimpleForm;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
- * Reusable "Escoger jugador" form: a "type a name" button followed by a paged
- * list of online players, friends first and labelled as such. Texts live in
- * MenusBedrock/escoger_jugador.yml; each caller sets title, content and what
- * happens on pick.
+ * The one "Escoger jugador" form used wherever a Bedrock player chooses another
+ * player: a "type a name" button followed by a paged list of online players,
+ * ordered by {@link PlayerRanking} (friends, party, clan, others) and labelled by
+ * tier. Players the viewer blocked are never listed. Texts live in
+ * MenusBedrock/escoger_jugador.yml; each caller sets title, content, which
+ * players would be redundant and what happens on pick.
  */
 public final class PlayerPickerForms {
 
     /**
-     * @param title          form title; may use {page}, {max_page} and {count}
-     * @param content        text above the buttons
-     * @param friendsMode    whether friends are listed first, hidden or treated like anyone else
-     * @param excludedNames  lower-case names never offered (e.g. current party members)
-     * @param onPick         called with (viewer, chosen online player)
-     * @param onTypeName     called when the viewer prefers to type the name
-     * @param onBack         called by the back button
+     * @param title      form title; may use {page}, {max_page} and {count}
+     * @param content    text above the buttons
+     * @param exclude    players redundant for this list (already friends, already in
+     *                   the party...); null offers everyone
+     * @param onPick     called with (viewer, chosen online player)
+     * @param onTypeName called when the viewer prefers to type the name
+     * @param onBack     called by the back button
      */
-    public record Request(String title, String content, FriendsMode friendsMode, Set<String> excludedNames,
+    public record Request(String title, String content, Predicate<UUID> exclude,
             BiConsumer<Player, Player> onPick, Consumer<Player> onTypeName, Consumer<Player> onBack) {
-
-        public Request {
-            excludedNames = excludedNames == null ? Set.of() : Set.copyOf(excludedNames);
-        }
     }
 
-    public enum FriendsMode {
-        /** Friends first, with the friend label. */
-        FIRST,
-        /** Friends are not offered at all (e.g. "Añadir amigo"). */
-        EXCLUDE
-    }
+    private static final Map<PlayerRanking.Tier, String> ENTRY_PATH = Map.of(
+            PlayerRanking.Tier.FRIEND, "entry-friend",
+            PlayerRanking.Tier.PARTY, "entry-party",
+            PlayerRanking.Tier.CLAN, "entry-clan",
+            PlayerRanking.Tier.ONLINE, "entry");
+    private static final Map<PlayerRanking.Tier, String> ENTRY_DEFAULT = Map.of(
+            PlayerRanking.Tier.FRIEND, "&2&l{player}\n&r&2Amigo",
+            PlayerRanking.Tier.PARTY, "&5&l{player}\n&r&5Grupo de Aventura",
+            PlayerRanking.Tier.CLAN, "&3&l{player}\n&r&3Clan",
+            PlayerRanking.Tier.ONLINE, "&0&l{player}\n&r&8Conectado");
 
     private final BedrockFormSupport forms;
     private final SocialPort social;
@@ -60,8 +60,7 @@ public final class PlayerPickerForms {
 
     public void open(Player viewer, Request request, int page) {
         YamlConfiguration ui = forms.ui("escoger_jugador");
-        Set<UUID> friends = new HashSet<>(social.friends(viewer));
-        List<Candidate> candidates = candidates(viewer, request, friends);
+        List<PlayerRanking.Ranked> candidates = social.rankPlayers(viewer, request.exclude());
 
         int perPage = pageSize();
         int maxPage = Math.max(0, (int) Math.ceil(candidates.size() / (double) perPage) - 1);
@@ -88,13 +87,13 @@ public final class PlayerPickerForms {
         actions.add(() -> request.onTypeName().accept(viewer));
 
         for (int i = start; i < end; i++) {
-            Candidate candidate = candidates.get(i);
-            String path = candidate.friend() ? "entry-friend" : "entry";
+            PlayerRanking.Ranked candidate = candidates.get(i);
+            String path = ENTRY_PATH.get(candidate.tier());
             Map<String, String> entryTokens = new HashMap<>(tokens);
-            entryTokens.put("player", candidate.player().getName());
-            String def = candidate.friend() ? "&2&l{player}\n&r&2Amigo" : "&0&l{player}\n&r&8Conectado";
-            forms.addButton(builder, ui, path, forms.uiText(ui, path + ".text", def, viewer, entryTokens));
-            UUID chosen = candidate.player().getUniqueId();
+            entryTokens.put("player", candidate.name());
+            forms.addButton(builder, ui, path,
+                    forms.uiText(ui, path + ".text", ENTRY_DEFAULT.get(candidate.tier()), viewer, entryTokens));
+            UUID chosen = candidate.uuid();
             actions.add(() -> {
                 Player target = Bukkit.getPlayer(chosen);
                 if (target == null || !target.isOnline()) {
@@ -123,30 +122,8 @@ public final class PlayerPickerForms {
         forms.show(viewer, builder, actions);
     }
 
-    /** Online players the viewer can see, friends first (or hidden), then alphabetically. */
-    private List<Candidate> candidates(Player viewer, Request request, Set<UUID> friends) {
-        List<Candidate> out = new ArrayList<>();
-        for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.equals(viewer) || !viewer.canSee(online)
-                    || request.excludedNames().contains(online.getName().toLowerCase(Locale.ROOT)))
-                continue;
-            boolean friend = friends.contains(online.getUniqueId());
-            if (friend && request.friendsMode() == FriendsMode.EXCLUDE)
-                continue;
-            out.add(new Candidate(online, friend));
-        }
-        out.sort(ORDER);
-        return out;
-    }
-
-    static final Comparator<Candidate> ORDER = Comparator.comparing((Candidate c) -> !c.friend())
-            .thenComparing(c -> c.player().getName(), String.CASE_INSENSITIVE_ORDER);
-
     private int pageSize() {
         int configured = forms.host().plugin().getConfig().getInt("bedrock.player-picker.page-size", 6);
         return Math.max(3, Math.min(20, configured));
-    }
-
-    record Candidate(Player player, boolean friend) {
     }
 }

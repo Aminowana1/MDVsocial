@@ -1,9 +1,12 @@
 package com.mdvcraft.mdvsocial.bedrock.port;
 
+import com.mdvcraft.mdvsocial.players.PlayerRanking;
 import org.bukkit.entity.Player;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 /** Friends and party (MMOCore) operations used by the Bedrock social forms. */
 public interface SocialPort {
@@ -41,4 +44,13 @@ public interface SocialPort {
     void invitePlayerToParty(Player player, Player target);
 
     void syncPartyPermission(Player player);
+
+    /** UUIDs of the player's party members, the player included; empty without a party. */
+    Set<UUID> partyMembers(Player player);
+
+    /**
+     * Online players to offer in a "choose a player" list: friends, party, clan,
+     * then the rest, without blocked players or the ones {@code exclude} rejects.
+     */
+    List<PlayerRanking.Ranked> rankPlayers(Player viewer, Predicate<UUID> exclude);
 }

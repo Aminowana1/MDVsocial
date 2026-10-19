@@ -18,10 +18,12 @@ public final class BlockedPlayersForms {
 
     private final BedrockFormSupport forms;
     private final BlocksPort blocks;
+    private final PlayerPickerForms picker;
 
-    public BlockedPlayersForms(BedrockFormSupport forms, BlocksPort blocks) {
+    public BlockedPlayersForms(BedrockFormSupport forms, BlocksPort blocks, PlayerPickerForms picker) {
         this.forms = forms;
         this.blocks = blocks;
+        this.picker = picker;
     }
 
     public void openList(Player player, int page) {
@@ -62,7 +64,7 @@ public final class BlockedPlayersForms {
 
         if (ui.getBoolean("buttons.block.enabled", true)) {
             forms.addButton(builder, ui, "buttons.block",
-                    forms.uiText(ui, "buttons.block.text", "&4&lBloquear jugador\n&r&8Escribe su nombre", player, tokens));
+                    forms.uiText(ui, "buttons.block.text", "&4&lBloquear jugador\n&r&8Elige o escribe un jugador.", player, tokens));
             actions.add(() -> openBlockForm(player));
         }
         if (safePage > 0) {
@@ -101,8 +103,19 @@ public final class BlockedPlayersForms {
                 () -> openList(player, returnPage)));
     }
 
+    /** "Escoger jugador" to block someone; players already blocked are never listed. */
     public void openBlockForm(Player player) {
-        openNameForm(player, true);
+        YamlConfiguration ui = forms.ui("bloqueados");
+        picker.open(player, new PlayerPickerForms.Request(
+                ui.getString("block-picker.title", "&4&lBloquear jugador &8({page}/{max_page})"),
+                ui.getString("block-picker.content", "&7Elige a quién bloquear o escribe su nombre."),
+                null,
+                (viewer, target) -> {
+                    blocks.blockByName(viewer, target.getName());
+                    openList(viewer, 0);
+                },
+                viewer -> openNameForm(viewer, true),
+                viewer -> openList(viewer, 0)), 0);
     }
 
     public void openUnblockForm(Player player) {

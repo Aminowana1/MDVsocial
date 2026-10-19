@@ -16,6 +16,17 @@ final class BedrockSocialAdapter implements SocialPort {
     }
 
     @Override
+    public java.util.Set<UUID> partyMembers(Player player) {
+        return plugin.getMMOCorePartyMemberUuids(plugin.getMMOCoreParty(player));
+    }
+
+    @Override
+    public List<com.mdvcraft.mdvsocial.players.PlayerRanking.Ranked> rankPlayers(Player viewer,
+            java.util.function.Predicate<UUID> exclude) {
+        return plugin.rankPlayers(viewer, exclude);
+    }
+
+    @Override
     public boolean isFriend(Player player, UUID targetUuid) {
         return plugin.isMMOCoreFriend(player, targetUuid);
     }

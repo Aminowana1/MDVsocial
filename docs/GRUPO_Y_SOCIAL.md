@@ -90,15 +90,43 @@ tus amigos primero.
 
 ## Escoger jugador (escoger_jugador.yml)
 
-Formulario reutilizable: botón "Escribir nombre" y debajo los jugadores
-conectados, paginados con `bedrock.player-picker.page-size` (por defecto 6).
+Todos los menús de Bedrock donde se elige a un jugador usan el mismo formulario:
+botón "Escribir nombre" y debajo los jugadores conectados, paginados con
+`bedrock.player-picker.page-size` (por defecto 6).
 
-| Uso | Amigos | Excluye |
-|---|---|---|
-| Invitar jugador (grupo) | primero, con etiqueta "Amigo" | miembros del grupo |
-| Añadir amigo | no aparecen | tus amigos |
+Orden, con su etiqueta: **amigos**, **Grupo de Aventura**, **clan** (MDVClans) y el
+resto de conectados; alfabético dentro de cada grupo. Nunca aparecen los jugadores
+que bloqueaste. Cada menú quita además los que serían redundantes:
 
-Desde código: `plugin.bedrock().picker().open(player, new PlayerPickerForms.Request(...), 0)`.
+| Menú | No lista |
+|---|---|
+| Añadir amigo | tus amigos |
+| Invitar al grupo | los miembros de tu grupo |
+| Invitar al clan | quien ya está en cualquier clan (MDVClans lo rechazaría) |
+| Bloquear jugador | (los bloqueados ya no aparecen) |
+| Solicitar viaje (TPA) | — |
+| Enviar carta | — ("Escribir nombre" sirve para desconectados) |
+| Protecciones > Agregar miembro | los miembros de la protección |
+
+Código: el orden y los filtros están en `players.PlayerRanking` (sin Bukkit, con
+tests); `MDVSocialPlugin#rankPlayers(viewer, exclude)` lo alimenta con amigos,
+grupo, clan y bloqueos, y `PlayerPickerForms` dibuja el formulario:
+`plugin.bedrock().picker().open(player, new PlayerPickerForms.Request(...), 0)`.
+
+## Invitar al clan (clan_invitar.yml)
+
+- **Bedrock:** el botón "Invitar jugador" del formulario de miembros de MDVClans
+  abre "Escoger jugador" mediante `MDVSocialAPI.openClanInvitePicker(player, onBack)`.
+  Al elegir o escribir un nombre se ejecuta `/clan invitar <nombre>` como el jugador
+  y no se reabre ningún formulario, para que se vea la respuesta de MDVClans.
+- **Java:** el menú de miembros de MDVClans tiene "Invitar jugador" (slot 51,
+  `menus.members.invite`); el nombre se escribe en el chat (`cancelar` para salir,
+  `invites.chat-input-seconds` para responder).
+- **Bloqueos** (MDVClans, `integrations.mdvsocial.respect-blocks`): no puedes invitar
+  a quien tienes bloqueado, y si él te bloqueó la invitación no llega (aviso
+  genérico). Solo afecta a invitaciones directas: jugadores bloqueados pueden
+  coincidir en un clan por otras vías.
+- MDVClans expone `getClanMemberUuids(UUID)` para ordenar a los miembros del clan.
 
 ## Servidores existentes
 

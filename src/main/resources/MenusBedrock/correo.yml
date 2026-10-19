@@ -14,3 +14,8 @@ buttons:
     text: "&6&lVolver\n&r&8Regresa a Social y Amigos."
     action: "OPEN_MENU"
     target-menu: "menuamigos"
+# "Escoger jugador" al pulsar "Enviar Carta". "Escribir nombre" permite escribir
+# a jugadores desconectados.
+recipient-picker:
+  title: "&6&lEnviar carta &8({page}/{max_page})"
+  content: "&7Elige a quién escribir o escribe su nombre."

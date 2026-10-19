@@ -5,6 +5,7 @@ import com.mdvcraft.mdvsocial.bedrock.action.BedrockNavigation;
 import com.mdvcraft.mdvsocial.bedrock.action.BuiltinBedrockActions;
 import com.mdvcraft.mdvsocial.bedrock.forms.BedrockFormSupport;
 import com.mdvcraft.mdvsocial.bedrock.forms.BlockedPlayersForms;
+import com.mdvcraft.mdvsocial.bedrock.forms.ClanInviteForms;
 import com.mdvcraft.mdvsocial.bedrock.forms.FriendsForms;
 import com.mdvcraft.mdvsocial.bedrock.forms.LinkMessages;
 import com.mdvcraft.mdvsocial.bedrock.forms.MMOCoreForms;
@@ -20,6 +21,7 @@ import com.mdvcraft.mdvsocial.bedrock.menu.BedrockMenuRepository;
 import com.mdvcraft.mdvsocial.bedrock.platform.FloodgateGateway;
 import com.mdvcraft.mdvsocial.bedrock.port.BedrockHost;
 import com.mdvcraft.mdvsocial.bedrock.port.BlocksPort;
+import com.mdvcraft.mdvsocial.bedrock.port.ClanPort;
 import com.mdvcraft.mdvsocial.bedrock.port.MailPort;
 import com.mdvcraft.mdvsocial.bedrock.port.SocialPort;
 import com.mdvcraft.mdvsocial.bedrock.port.TeleportPort;
@@ -48,13 +50,14 @@ public final class BedrockModule {
     private final FriendsForms friends;
     private final PartyForms party;
     private final PlayerPickerForms picker;
+    private final ClanInviteForms clanInvite;
     private final MMOCoreForms mmocore;
     private final BlockedPlayersForms blocked;
     private final TpaForms tpa;
     private final LinkMessages links;
 
     public BedrockModule(BedrockHost host, TitlesPort titlesPort, MailPort mailPort, SocialPort socialPort,
-            BlocksPort blocksPort, TeleportPort teleportPort) {
+            BlocksPort blocksPort, TeleportPort teleportPort, ClanPort clanPort) {
         this.host = host;
         this.gateway = new FloodgateGateway(host.plugin());
         this.sessions = new BedrockUiSessionManager(host.plugin(), gateway);
@@ -63,12 +66,13 @@ public final class BedrockModule {
         this.forms = new BedrockFormSupport(host, gateway, sessions, repository,
                 new SocialCounters(host.plugin(), socialPort, mailPort, teleportPort));
         this.titles = new TitlesForms(forms, titlesPort);
-        this.mail = new MailForms(forms, mailPort);
         this.picker = new PlayerPickerForms(forms, socialPort);
+        this.mail = new MailForms(forms, mailPort, picker);
         this.friends = new FriendsForms(forms, socialPort, picker);
         this.party = new PartyForms(forms, socialPort, picker);
         this.mmocore = new MMOCoreForms(forms, party);
-        this.blocked = new BlockedPlayersForms(forms, blocksPort);
+        this.blocked = new BlockedPlayersForms(forms, blocksPort, picker);
+        this.clanInvite = new ClanInviteForms(forms, clanPort, picker);
         this.tpa = new TpaForms(forms, teleportPort, picker);
         this.links = new LinkMessages(forms);
 
@@ -154,6 +158,10 @@ public final class BedrockModule {
     }
 
     /** Reusable "Escoger jugador" form. */
+    public ClanInviteForms clanInvite() {
+        return clanInvite;
+    }
+
     public PlayerPickerForms picker() {
         return picker;
     }

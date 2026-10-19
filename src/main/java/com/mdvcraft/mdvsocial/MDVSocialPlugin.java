@@ -78,6 +78,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import com.mdvcraft.mdvsocial.players.PlayerRanking;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -171,7 +172,7 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         databaseMaintenance.start();
         bedrock = new BedrockModule(new BedrockHostAdapter(this), new BedrockTitlesAdapter(this),
                 new BedrockMailAdapter(this), new BedrockSocialAdapter(this), new BedrockBlocksAdapter(this),
-                new BedrockTeleportAdapter(this));
+                new BedrockTeleportAdapter(this), new BedrockClanAdapter());
         bedrock.enable();
         setupEconomy();
 
@@ -6018,6 +6019,45 @@ public final class MDVSocialPlugin extends JavaPlugin implements Listener, Comma
         } catch (Throwable ignored) {
         }
         return getMMOCorePartyMemberNames(party).size();
+    }
+
+    /** UUIDs of every member of the MMOCore party, the viewer included. */
+    Set<UUID> getMMOCorePartyMemberUuids(Object party) {
+        Set<UUID> out = new HashSet<>();
+        if (party == null)
+            return out;
+        try {
+            if (party.getClass().getMethod("getMembers").invoke(party) instanceof Iterable<?> members)
+                for (Object member : members) {
+                    UUID uuid = extractUuid(member);
+                    if (uuid != null)
+                        out.add(uuid);
+                }
+        } catch (Throwable ignored) {
+        }
+        return out;
+    }
+
+    /** The viewer's friends, party, clan and block list, for {@link PlayerRanking}. */
+    PlayerRanking.Relations playerRelations(Player viewer) {
+        Object party = getMMOCoreParty(viewer);
+        List<UUID> blocked = blocks == null ? List.of() : blocks.blockedPlayers(viewer.getUniqueId());
+        return new PlayerRanking.Relations(new HashSet<>(getMMOCoreFriendUuids(viewer)),
+                getMMOCorePartyMemberUuids(party), MDVClansBridge.clanMates(viewer.getUniqueId()),
+                new HashSet<>(blocked));
+    }
+
+    /**
+     * Online players {@code viewer} can see, ordered friends, party, clan, others,
+     * without blocked players or the ones {@code exclude} rejects. Every
+     * "choose a player" list uses this.
+     */
+    List<PlayerRanking.Ranked> rankPlayers(Player viewer, java.util.function.Predicate<UUID> exclude) {
+        List<PlayerRanking.Candidate> online = new ArrayList<>();
+        for (Player other : Bukkit.getOnlinePlayers())
+            if (viewer.canSee(other))
+                online.add(new PlayerRanking.Candidate(other.getUniqueId(), other.getName()));
+        return PlayerRanking.rank(viewer.getUniqueId(), online, playerRelations(viewer), exclude);
     }
 
     List<String> getMMOCorePartyMemberNames(Object party) {

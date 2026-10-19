@@ -12,7 +12,7 @@ entry:
 buttons:
   block:
     enabled: true
-    text: "&4&lBloquear jugador\n&r&8Escribe su nombre"
+    text: "&4&lBloquear jugador\n&r&8Elige o escribe un jugador."
   previous:
     text: "&6&lPágina anterior"
   next:
@@ -26,6 +26,10 @@ unblock-confirm:
     text: "&2&lSí, desbloquear"
   back:
     text: "&6&lVolver"
+# "Escoger jugador" al pulsar "Bloquear jugador" (los ya bloqueados no aparecen).
+block-picker:
+  title: "&4&lBloquear jugador &8({page}/{max_page})"
+  content: "&7Elige a quién bloquear o escribe su nombre."
 block-form:
   title: "&c&lBloquear jugador"
   input-label: "&eNombre del jugador"

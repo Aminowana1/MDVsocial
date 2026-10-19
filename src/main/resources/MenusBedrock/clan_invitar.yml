@@ -1,0 +1,12 @@
+# "Invitar al clan" para Bedrock. Lo abre MDVClans desde su formulario de miembros
+# (botón "Invitar jugador"). Usa el selector "Escoger jugador" (escoger_jugador.yml):
+# amigos, Grupo de Aventura y clan primero; no aparecen jugadores bloqueados ni los
+# que ya están en un clan. La invitación la envía MDVClans (/clan invitar <nombre>).
+picker:
+  title: "&3&lInvitar al clan &8({page}/{max_page})"
+  content: "&7Elige a quién invitar o escribe su nombre."
+# "Escribir nombre": también sirve para jugadores desconectados (les llega por carta).
+name-form:
+  title: "&3&lInvitar al clan"
+  input-label: "&eNombre del jugador"
+  input-placeholder: "Escribe el nombre..."

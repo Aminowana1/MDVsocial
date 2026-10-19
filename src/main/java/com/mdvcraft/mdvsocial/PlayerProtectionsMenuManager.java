@@ -270,10 +270,11 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
         Protection protection = api.snapshot(api.requireOwned(p, key));
         pending.put(p.getUniqueId(), new PendingInput(key, System.currentTimeMillis() + 120_000));
         List<Entry> entries = new ArrayList<>();
-        for (Player target : Bukkit.getOnlinePlayers().stream().sorted(Comparator.comparing(Player::getName)).toList()) {
-            if (target.getUniqueId().equals(p.getUniqueId())) continue;
-            UUID uuid = target.getUniqueId();
-            entries.add(new Entry("player", () -> head(uuid), Map.of("member", target.getName(), "uuid", uuid.toString()),
+        // Same order as every player list: friends, party, clan, others; no blocked players or current members.
+        java.util.Set<UUID> members = new java.util.HashSet<>(protection.members());
+        for (var target : plugin.rankPlayers(p, members::contains)) {
+            UUID uuid = target.uuid();
+            entries.add(new Entry("player", () -> head(uuid), Map.of("member", target.name(), "uuid", uuid.toString()),
                     () -> addMember(p, key, uuid)));
         }
         Map<String, String> values = tokens(protection);

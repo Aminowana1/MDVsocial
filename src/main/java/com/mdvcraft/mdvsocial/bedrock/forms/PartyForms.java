@@ -1,6 +1,5 @@
 package com.mdvcraft.mdvsocial.bedrock.forms;
 
-import com.mdvcraft.mdvsocial.bedrock.forms.PlayerPickerForms.FriendsMode;
 import com.mdvcraft.mdvsocial.bedrock.port.SocialPort;
 import com.mdvcraft.mdvsocial.bedrock.port.SocialPort.PartyView;
 import org.bukkit.Bukkit;
@@ -11,11 +10,10 @@ import org.geysermc.cumulus.form.SimpleForm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Native Bedrock forms for the MMOCore adventure party. Without a party only
@@ -113,14 +111,11 @@ public final class PartyForms {
     /** "Escoger jugador" for party invitations; current members are not offered. */
     private void openInvitePicker(Player player, int page) {
         YamlConfiguration ui = forms.ui("party");
-        Set<String> members = new HashSet<>();
-        for (String member : social.party(player).members())
-            members.add(member.toLowerCase(Locale.ROOT));
+        Set<UUID> members = social.partyMembers(player);
         picker.open(player, new PlayerPickerForms.Request(
                 ui.getString("invite-picker.title", "&d&lInvitar al Grupo &8({page}/{max_page})"),
                 ui.getString("invite-picker.content", "&7Elige a quién invitar. Tus amigos aparecen primero."),
-                FriendsMode.FIRST,
-                members,
+                members::contains,
                 (viewer, target) -> {
                     social.invitePlayerToParty(viewer, target);
                     open(viewer);
