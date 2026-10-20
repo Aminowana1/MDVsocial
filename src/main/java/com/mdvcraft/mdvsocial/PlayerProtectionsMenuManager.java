@@ -20,7 +20,6 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.Plugin;
 import org.geysermc.cumulus.form.CustomForm;
 import org.geysermc.cumulus.form.SimpleForm;
-import org.geysermc.floodgate.api.FloodgateApi;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -150,7 +149,7 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
         List<org.bukkit.World> worlds = List.copyOf(Bukkit.getWorlds());
         p.closeInventory();
         Inventory expectedInventory = p.getOpenInventory().getTopInventory();
-        long bedrockSession = plugin.isBedrockPlayer(p) ? plugin.beginBedrockUiSession(p) : 0L;
+        long bedrockSession = plugin.isBedrockPlayer(p) ? plugin.bedrock().sessions().begin(p) : 0L;
         try {
             scanner.execute(() -> {
                 List<Object> regions;
@@ -175,7 +174,7 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
                         protections.sort(Comparator.comparing(Protection::worldName).thenComparing(r -> r.key().id()));
                         renderMain(p, page, protections);
                     });
-                    if (bedrockSession != 0L) plugin.runBedrockUiAction(p, bedrockSession, render);
+                    if (bedrockSession != 0L) plugin.bedrock().sessions().run(p, bedrockSession, render);
                     else render.run();
                 });
             });
@@ -271,10 +270,11 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
         Protection protection = api.snapshot(api.requireOwned(p, key));
         pending.put(p.getUniqueId(), new PendingInput(key, System.currentTimeMillis() + 120_000));
         List<Entry> entries = new ArrayList<>();
-        for (Player target : Bukkit.getOnlinePlayers().stream().sorted(Comparator.comparing(Player::getName)).toList()) {
-            if (target.getUniqueId().equals(p.getUniqueId())) continue;
-            UUID uuid = target.getUniqueId();
-            entries.add(new Entry("player", () -> head(uuid), Map.of("member", target.getName(), "uuid", uuid.toString()),
+        // Same order as every player list: friends, party, clan, others; no blocked players or current members.
+        java.util.Set<UUID> members = new java.util.HashSet<>(protection.members());
+        for (var target : plugin.rankPlayers(p, members::contains)) {
+            UUID uuid = target.uuid();
+            entries.add(new Entry("player", () -> head(uuid), Map.of("member", target.name(), "uuid", uuid.toString()),
                     () -> addMember(p, key, uuid)));
         }
         Map<String, String> values = tokens(protection);
@@ -292,19 +292,19 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
             return;
         }
         long revision = nextRevision(p);
-        long session = plugin.beginBedrockUiSession(p);
+        long session = plugin.bedrock().sessions().begin(p);
         YamlConfiguration config = definition(p, INPUT);
         CustomForm.Builder form = CustomForm.builder().title(color(config.getString("title", "Agregar miembro")))
                 .input(color(config.getString("label", "Nombre exacto")), config.getString("placeholder", "Nombre"), config.getString("default", ""));
         form.validResultHandler(response -> {
             String name = response.asInput(0);
-            plugin.runBedrockUiAction(p, session, () -> {
+            plugin.bedrock().sessions().run(p, session, () -> {
                 if (!current(p, revision)) return;
                 nextRevision(p);
                 execute(p, () -> addByName(p, key, name));
             });
         });
-        if (!FloodgateApi.getInstance().sendForm(p.getUniqueId(), form))
+        if (!plugin.bedrock().gateway().send(p, form.build()))
             message(p, "&cNo se pudo abrir el formulario. Vuelve a usar /protes.");
     }
 
@@ -467,7 +467,7 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
         CheckedAction previous = () -> show(p, id, originalValues, entries, fixed, page.index() - 1, headerBase, back);
         CheckedAction next = () -> show(p, id, originalValues, entries, fixed, page.index() + 1, headerBase, back);
         if (bedrock) {
-            long session = plugin.beginBedrockUiSession(p);
+            long session = plugin.bedrock().sessions().begin(p);
             SimpleForm.Builder builder = SimpleForm.builder().title(title).content(color(content));
             List<CheckedAction> actions = new ArrayList<>();
             List<Entry> buttons = new ArrayList<>(fixed);
@@ -478,22 +478,22 @@ public final class PlayerProtectionsMenuManager implements Listener, CommandExec
                 builder.button(color(replace(config.getString("items." + entry.style() + ".text", entry.style()), buttonValues)));
                 actions.add(entry.action());
             }
-            if (page.previous()) { builder.button(color(config.getString("navigation.previous", "Anterior"))); actions.add(previous); }
-            if (page.next()) { builder.button(color(config.getString("navigation.next", "Siguiente"))); actions.add(next); }
-            builder.button(color(config.getString("navigation.back", "Volver"))); actions.add(back);
+            if (page.previous()) { builder.button(color(config.getString("navigation.previous", "&6&lPágina anterior"))); actions.add(previous); }
+            if (page.next()) { builder.button(color(config.getString("navigation.next", "&6&lPágina siguiente"))); actions.add(next); }
+            builder.button(color(config.getString("navigation.back", "&6&lVolver"))); actions.add(back);
             if (config.getBoolean("show-close", true)) {
-                builder.button(color(config.getString("navigation.close", "Cerrar")));
+                builder.button(color(config.getString("navigation.close", "&4&lCerrar")));
                 actions.add(() -> pending.remove(p.getUniqueId()));
             }
             builder.validResultHandler(response -> {
                 int index = response.clickedButtonId();
-                plugin.runBedrockUiAction(p, session, () -> {
+                plugin.bedrock().sessions().run(p, session, () -> {
                     if (!current(p, revision) || index < 0 || index >= actions.size()) return;
                     nextRevision(p);
                     execute(p, actions.get(index));
                 });
             });
-            if (!FloodgateApi.getInstance().sendForm(p.getUniqueId(), builder))
+            if (!plugin.bedrock().gateway().send(p, builder.build()))
                 message(p, "&cNo se pudo abrir el formulario. Vuelve a usar /protes.");
             return;
         }

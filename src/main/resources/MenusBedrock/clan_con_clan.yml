@@ -4,41 +4,41 @@ content:
   - "&7Gestiona las funciones sociales de tu clan."
 buttons:
   resumen:
-    text: "&f&l%mdvclans_name% &8[&6%mdvclans_id%&8]\n&7Clan: &f%mdvclans_name%"
+    text: "&0&l%mdvclans_name% &8&l[&6&l%mdvclans_id%&8&l]\n&r&8Clan: &0%mdvclans_name%"
     action: "COMMAND_PLAYER"
     commands:
       - "clan chat"
   miembros:
-    text: "&a&lMiembros\n&7Consulta los integrantes"
+    text: "&2&lMiembros\n&r&8Consulta los integrantes"
     action: "COMMAND_PLAYER"
     commands:
       - "clan menu miembros"
   base:
-    text: "&5&lBases\n&7Accede a los puntos"
+    text: "&5&lBases\n&r&8Accede a los puntos"
     action: "COMMAND_PLAYER"
     commands:
       - "clan abrir bases"
   relaciones:
-    text: "&9&lRelaciones\n&7Aliados, enemigos,"
+    text: "&1&lRelaciones\n&r&8Aliados, enemigos,"
     action: "MDVCLANS_OPEN"
     clans-menu: "relaciones"
   info:
-    text: "&e&lTablero de información\n&7Mensaje del clan:"
+    text: "&6&lTablero de información\n&r&8Mensaje del clan:"
     action: "MDVCLANS_OPEN"
     clans-menu: "info"
   recursos:
-    text: "&6&lBanco y almacen\n&7Accede al banco y al"
+    text: "&6&lBanco y almacen\n&r&8Accede al banco y al"
     action: "MDVCLANS_OPEN"
     clans-menu: "almacen"
   lista:
-    text: "&f&lLista de clanes\n&7Explora otros clanes"
+    text: "&0&lLista de clanes\n&r&8Explora otros clanes"
     action: "MDVCLANS_OPEN"
     clans-menu: "lista"
   ajustes:
-    text: "&c&lAjustes del clan\n&7Opciones de administracion"
+    text: "&4&lAjustes del clan\n&r&8Opciones de administracion"
     action: "MDVCLANS_OPEN"
     clans-menu: "ajustes"
   volver:
-    text: "&6&lVolver\n&7Regresa al menú anterior."
+    text: "&6&lVolver\n&r&8Regresa al menú anterior."
     action: "OPEN_MENU"
     target-menu: "main"

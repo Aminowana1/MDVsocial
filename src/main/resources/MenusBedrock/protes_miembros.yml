@@ -3,10 +3,10 @@ managed-by: protections
 type: SIMPLE
 page-size: 6
 navigation:
-  back: '&eVolver'
-  previous: '&ePágina anterior'
-  next: '&ePágina siguiente'
-  close: '&cCerrar'
+  back: '&6&lVolver'
+  previous: '&6&lPágina anterior'
+  next: '&6&lPágina siguiente'
+  close: '&4&lCerrar'
 show-close: true
 title: '&8Miembros'
 content: ['&7Protección: &e{protection}', '&7Miembros: &e{members}', '{group_notice}']
@@ -15,10 +15,10 @@ items:
     slot: 8
     material: LIME_DYE
     name: '&aAgregar miembro'
-    text: '&aAgregar miembro'
+    text: '&2&lAgregar miembro'
     lore: ['&7Buscar un jugador o escribir su nombre.']
   member:
     material: PLAYER_HEAD
     name: '&e{member}'
-    text: "&e{member}\n&7Quitar miembro"
+    text: "&6&l{member}\n&r&8Quitar miembro"
     lore: ['&7Pulsa para quitarlo de miembros.', '&8{uuid}']

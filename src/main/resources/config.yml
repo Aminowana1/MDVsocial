@@ -8,12 +8,24 @@ storage:
     # Desde 1.6.2 los títulos/castigos persistentes usan SQLite.
     # Si existe player-data.yml se migra automáticamente al iniciar.
     database-file: 'player-data.db'
+  # player-data.db y mail-data.db usan WAL: los cambios recientes viven en los archivos
+  # -wal hasta que se vuelcan a la .db. Cada cuántos minutos volcarlos (0 = solo al apagar),
+  # para que copiar solo la .db nunca pierda más que esto.
+  checkpoint-interval-minutes: 5
+  # /mdvsocial backup guarda copias completas en plugins/MDVSocial/backups/<fecha>/,
+  # seguras aunque el servidor esté encendido. Se conservan las más recientes (0 = todas).
+  backups:
+    keep: 10
 
 messages:
   prefix: '&6&l[&5&lMDVSocial&6&l]&4> &r'
   no-permission: '&cNo tienes permiso.'
   only-players: '&cEste comando solo puede usarlo un jugador.'
   reloaded: '&aMDVSocial recargado.'
+  backup-started: '&eCreando copia de seguridad de las bases de datos...'
+  backup-done: '&aCopia de seguridad creada en &e{path}&a.'
+  backup-failed: '&cNo se pudo crear la copia de seguridad: &e{error}'
+  backup-running: '&eYa hay una copia de seguridad en curso.'
   title-equipped: '&eAhora usas el titulo {title}&e.'
   title-cleared: '&eYa no usas ningun titulo.'
   title-clear-disabled: '&cNo puedes quitar tu titulo actual. Debes tener siempre un titulo equipado.'
@@ -27,34 +39,45 @@ messages:
   given-title: '&aTitulo entregado correctamente.'
   removed-title: '&eTitulo removido correctamente.'
   boss-radius-given: '&aTitulo entregado a &e{amount} &ajugadores cercanos.'
+  title-shop-closed: '&cLa tienda de títulos está cerrada por el momento.'
   title-not-player-equippable: '&cNo puedes equiparte ese titulo.'
   mail-disabled: '&cEl sistema de cartas esta desactivado.'
   mail-recipient-prompt: '&eEscribe el nombre del destinatario en el chat. Escribe &ccancelar &epara salir.'
   mail-message-prompt: '&eAhora escribe el mensaje para &a{target}&e. Maximo &a{max} &ecaracteres. Escribe &ccancelar &epara salir.'
-  mail-block-prompt: '&eEscribe el nombre del jugador que quieres bloquear para cartas. Escribe &ccancelar &epara salir.'
-  mail-unblock-prompt: '&eEscribe el nombre del jugador que quieres desbloquear. Escribe &ccancelar &epara salir.'
   mail-cancelled: '&7Accion de carta cancelada.'
   mail-sent: '&aCarta enviada a &e{target}&a.'
   mail-received: '&eHas recibido una carta de &f{sender}&e.'
   mail-player-not-found: '&cJugador no encontrado. Intenta de nuevo o cancela escribiendo &4cancelar. &cDebe haber entrado al servidor al menos una vez.'
   mail-self: '&cNo puedes enviarte una carta a ti mismo.'
-  mail-self-block: '&cNo puedes bloquearte a ti mismo.'
   mail-empty: '&cLa carta no puede estar vacia.'
   mail-too-long: '&cLa carta es demasiado larga. Maximo: &e{max}&c caracteres.'
   mail-full: '&cNo puedes enviar la carta. El buzon de &e{target} &cesta lleno (&e{limit}&c).'
-  mail-blocked-by-target: '&cNo puedes enviar cartas a &e{target}&c.'
+  # Se usa cuando el destinatario te bloqueó. Es genérico a propósito: no revela el bloqueo.
+  mail-not-delivered: '&cNo se pudo enviar la carta a &e{target}&c.'
+  mail-cooldown: '&cEspera &e{seconds}s &cantes de enviar otra carta.'
   mail-deleted: '&eCarta eliminada.'
   mail-not-found: '&cEsa carta ya no existe.'
-  mail-blocked: '&eBloqueaste las cartas de &c{target}&e.'
-  mail-unblocked: '&aDesbloqueaste las cartas de &e{target}&a.'
-  mail-not-blocked: '&e{target} &7no estaba bloqueado.'
   mail-player-not-found-suggestions: '&cJugador no encontrado. Intenta de nuevo o cancela escribiendo &ccancelar. &7Quizas quisiste decir: &e{suggestions}&7.'
   mail-broadcast-sent: '&aCarta global &e{id} &aenviada a &e{sent} &ajugadores. &7Omitidos: &e{skipped}&7.'
   mail-broadcast-not-found: '&cNo existe una campaña de correo activa con ese ID.'
   mail-broadcast-deleted: '&aCampaña &e{id} &aeliminada de &e{removed} &abuzones.'
   mail-reply-prompt: '&eEscribe la carta que le enviaras a &a{target}&e. Maximo &a{max} &ecaracteres. Escribe &ccancelar &epara salir.'
-  mail-cannot-block-server: '&cNo puedes bloquear cartas oficiales de MDVCRAFT.'
   mail-cannot-reply-server: '&cNo puedes responder cartas oficiales de MDVCRAFT.'
+  # Jugadores bloqueados (sistema general: hoy impide recibir cartas e invitaciones de clan por carta).
+  player-block-prompt: '&eEscribe el nombre del jugador que quieres bloquear. Escribe &ccancelar &epara salir.'
+  player-unblock-prompt: '&eEscribe el nombre del jugador que quieres desbloquear. Escribe &ccancelar &epara salir.'
+  player-blocked: '&eBloqueaste a &c{target}&e. Ya no podrá enviarte cartas, invitaciones ni solicitudes.'
+  # Al bloquear a un amigo: la amistad termina (el otro jugador no recibe aviso).
+  player-blocked-unfriended: '&eBloqueaste a &c{target}&e y ya no son amigos. Ya no podrá enviarte cartas, invitaciones ni solicitudes.'
+  player-already-blocked: '&e{target} &7ya estaba bloqueado.'
+  player-unblocked: '&aDesbloqueaste a &e{target}&a.'
+  player-not-blocked: '&e{target} &7no estaba bloqueado.'
+  player-self-block: '&cNo puedes bloquearte a ti mismo.'
+  player-block-limit: '&cYa bloqueaste al máximo de jugadores (&e{max}&c).'
+  player-cannot-block-server: '&cNo puedes bloquear cartas oficiales de MDVCRAFT.'
+  blocked-list-header: '&eJugadores bloqueados &7({count}):'
+  blocked-list-empty: '&7No tienes jugadores bloqueados.'
+  blocked-list-entry: '&8- &f{target}'
   title-invalid-reset: '&eTu titulo anterior ya no estaba desbloqueado. Se equipo automaticamente {title}&e.'
   title-invalid-cleared: '&eTu titulo anterior ya no estaba desbloqueado y fue retirado.'
   punishment-title-invalid: '&cEse titulo no esta configurado como titulo de castigo.'
@@ -84,9 +107,17 @@ messages:
   friend-target-not-found: '&cEse jugador no está conectado o el nombre no es válido.'
   friend-request-accepted: '&aAceptaste la solicitud de amistad de &e{target}&a.'
   friend-request-denied: '&eRechazaste la solicitud de amistad de &c{target}&e.'
+  # Si el destinatario te bloqueó. No revela el bloqueo.
+  friend-request-not-delivered: '&cNo se pudo enviar la solicitud de amistad a &e{target}&c.'
+  # Si quien envía tiene bloqueado al destinatario.
+  friend-request-target-blocked: '&cTienes bloqueado a &e{target}&c. Desbloquéalo para poder agregarlo como amigo.'
+  friend-request-already-sent: '&eYa le enviaste una solicitud de amistad a &6{target}&e.'
+  friend-request-cooldown: '&cEspera &f{seconds}s &cantes de enviar otra solicitud de amistad.'
   party-target-not-found: '&cEse jugador no está conectado o el nombre no es válido.'
   party-request-accepted: '&aAceptaste la invitación al grupo de &e{target}&a.'
   party-request-denied: '&eRechazaste la invitación al grupo de &c{target}&e.'
+  # Al pulsar un botón de grupo o amistad del chat cuya solicitud ya se respondió, caducó o se retiró.
+  request-no-longer-available: '&7Esta acción ya no está disponible.'
   social-request-expired: '&cEsa solicitud ya expiró.'
   social-request-error: '&cNo se pudo procesar esa solicitud de MMOCore.'
   friend-removed: '&eEliminaste a &c{target} &ede tu lista de amigos.'
@@ -94,6 +125,13 @@ messages:
   party-left: '&eSaliste de tu Grupo de Aventura.'
   party-not-in-party: '&cNo perteneces a ningún Grupo de Aventura.'
   party-leave-error: '&cNo se pudo abandonar el Grupo de Aventura.'
+  party-created: '&aCreaste un nuevo Grupo de Aventura.'
+  party-create-error: '&cNo se pudo crear el Grupo de Aventura.'
+  party-command-too-many: '&cPuedes invitar como máximo a &e{max} &cjugadores a la vez.'
+  # Se usa cuando el invitado te bloqueó. Es genérico a propósito: no revela el bloqueo.
+  party-invite-not-delivered: '&cNo se pudo invitar a &e{target} &cal grupo.'
+  # Agacharse + click derecho a un jugador estando en un grupo del que no eres líder.
+  party-sneak-invite-not-leader: '&cSolo el líder del grupo puede invitar a &e{target}&c.'
   private-message-suggest: '&bHaz clic aquí para escribirle a &e{target}&b.'
 settings:
   # Menu inicial que abre /social.
@@ -102,6 +140,17 @@ settings:
 
   # Si esto esta true, la tienda de titulos usara Vault/Economy.
   use-vault-economy: true
+
+  # Cierra la tienda de titulos: no se abre (se avisa con messages.title-shop-closed)
+  # y no se puede comprar. Ponlo en false para volver a abrirla.
+  title-shop-closed: true
+
+  # Al entrar, equipa este titulo a quien tenga el permiso y siga con el titulo
+  # por defecto (forastero) o sin titulo. No cambia titulos elegidos ni castigos.
+  join-title:
+    enabled: true
+    title: aventurero
+    permission: 'group.aventurero'
 
   # Sistema de titulo obligatorio.
   # Si mandatory-title esta true, el jugador siempre tendra un titulo activo.
@@ -270,6 +319,16 @@ social-menu-item:
     - '&eClick derecho &7para abrir el menu.'
   glowing: true
   custom-model-data: 0
+
+
+scoreboard:
+  # Encabezado del grupo en el marcador de puntuación.
+  # Admite placeholders: {count} y {max}
+  group-header: 'ɢʀᴜᴘᴏ &7(&f{count}&7/&f{max}&7)'
+  # Formato de los miembros del grupo en el marcador de puntuación.
+  # Admite placeholders: {health}, {max_health} y {name}
+  group-member: '&c{health}❤ &r&f{name}'
+
   
 scoreboard-party-permission:
   enabled: true
@@ -499,12 +558,268 @@ bedrock:
     enabled: true
     dynamic-page-size: 5
 
+  # Marca de pendientes en el menú "Social y Amigos" ({friend_requests_badge},
+  # {party_invites_badge}, {unread_mail_badge}). Con 0 pendientes no se muestra nada.
+  badges:
+    format: ' ({count})'
+
+  # Selector "Escoger jugador" (Invitar al grupo, Añadir amigo).
+  player-picker:
+    # Jugadores conectados por página. Textos en MenusBedrock/escoger_jugador.yml.
+    page-size: 6
+
   party:
     # El formulario de "Invitar jugador" usa el comando oficial de MMOCore.
     # Así el jugador Java recibe una PartyInvite normal y /party accept|deny funciona.
     direct-invite-command: 'party invite {target}'
-    # Si el receptor es Java, añade botones clickables explícitos como respaldo.
-    java-fallback-buttons: true
+
+# ==========================================================
+# Solicitudes de MMOCore (invitaciones a grupo y solicitudes de amistad)
+# Detecta cualquier solicitud (menús de MDVSocial, GUI de MMOCore, otros plugins).
+# Las de jugadores que bloqueaste se retiran en silencio.
+# ==========================================================
+mmocore-requests:
+  # Cada cuánto se revisan solicitudes nuevas (20 ticks = 1 s). Las de MDVSocial
+  # se avisan al instante; esto cubre las que vienen de fuera.
+  check-interval-ticks: 20
+
+# ==========================================================
+# Avisos de invitación a Grupo de Aventura
+# Reemplazan el mensaje "party-invite" de MMOCore, que debe estar silenciado en su messages.yml.
+# ==========================================================
+party-invites:
+  enabled: true
+  # Abrir el menú del grupo al unirte a uno (el de MMOCore en Java, el formulario en Bedrock).
+  open-menu-on-join: false
+
+  # Agachado y con la mano vacía, click derecho a un jugador (en Bedrock: interactuar
+  # o mantener pulsado) para invitarlo a tu grupo. Si no tienes grupo se crea uno;
+  # dentro de un grupo solo el líder puede invitar. Permiso: mdvsocial.party.use.
+  sneak-interact:
+    enabled: true
+    # Tiempo mínimo entre dos invitaciones así (evita repetirlas al mantener el click).
+    cooldown-millis: 1500
+    # Suena el mismo sonido que la acción rápida de invitaciones
+    # (quick-accept.types.party-invite.trigger-sound, o quick-accept.trigger-sound).
+
+  # Jugadores Java. Cada línea es JSON de chat (o texto normal); se aceptan códigos &.
+  # Tokens: {player} = quien invita, {uuid} = id de la invitación (lo usa /mmocore:party accept|deny).
+  java:
+    enabled: true
+    format:
+      - '{"text":""}'
+      - '{"text":"&6&l[&5&lMDVCRAFT&6&l]  &4»&r &6{player} &ete ha invitado a su grupo."}'
+      - '[{"text":"        "},{"text":"&8[&a&lACEPTAR&8]","clickEvent":{"action":"run_command","value":"/mmocore:party accept {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick para aceptar."}},{"text":"&r             "},{"text":"&8[&c&lRECHAZAR&8]","clickEvent":{"action":"run_command","value":"/mmocore:party deny {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick para rechazar."}}]'
+      - '{"text":""}'
+
+  # Jugadores Bedrock (sin clicks en el chat). Tokens: {player}, {sneaks}, {quick_seconds}
+  # (segundos para agacharse; {seconds} también funciona, por compatibilidad).
+  bedrock:
+    enabled: true
+    # Se usa cuando quick accept está activo para invitaciones (quick-accept.types.party-invite).
+    message:
+      - ''
+      - '&6&l[&5&lMDVCRAFT&6&l]  &4»&r &6{player} &ete ha invitado a su grupo.'
+      - '&7Revísala en &fSocial y Amigos &8» &fGrupo de Aventura &8» &fInvitaciones'
+      - '&7o &eagáchate {sneaks} veces rápido &7en los próximos &e{quick_seconds}s &7para responder.'
+      - ''
+    # Se usa cuando quick accept está desactivado.
+    message-without-quick-accept:
+      - ''
+      - '&6&l[&5&lMDVCRAFT&6&l]  &4»&r &6{player} &ete ha invitado a su grupo.'
+      - '&7Revísala en &fSocial y Amigos &8» &fGrupo de Aventura &8» &fInvitaciones'
+      - ''
+    # Si quien invita es tu amigo, el quick accept acepta directamente sin pedir confirmación.
+    skip-confirmation-for-friends: true
+
+# ==========================================================
+# Solicitudes de amistad
+# Reemplazan el mensaje "friend-request" de MMOCore, que debe estar silenciado en su messages.yml.
+# - Si el destinatario te bloqueó, no le llega (aviso genérico friend-request-not-delivered).
+# - Si tú lo bloqueaste, no se envía: friend-request-target-blocked te pide desbloquearlo.
+# - Bloquear a un amigo termina la amistad y retira las solicitudes pendientes entre ambos.
+# - Una solicitud repetida no se duplica; si el otro ya te había enviado una, se aceptan y quedan como amigos.
+# ==========================================================
+friend-requests:
+  enabled: true
+  # Espera entre solicitudes enviadas desde MDVSocial (0 = sin espera).
+  # Permiso para saltarla: mdvsocial.friends.cooldown.bypass
+  send-cooldown-seconds: 10
+
+  # Jugadores Java. Tokens: {player} = quien la envía, {uuid} = id de la solicitud
+  # (lo usa /mmocore:friends accept|deny).
+  java:
+    enabled: true
+    format:
+      - '{"text":""}'
+      - '{"text":"&6&l[&5&lMDVCRAFT&6&l]  &4»&r &6{player} &ete ha enviado una solicitud de amistad."}'
+      - '[{"text":"        "},{"text":"&8[&a&lACEPTAR&8]","clickEvent":{"action":"run_command","value":"/mmocore:friends accept {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick para aceptar."}},{"text":"&r             "},{"text":"&8[&c&lRECHAZAR&8]","clickEvent":{"action":"run_command","value":"/mmocore:friends deny {uuid}"},"hoverEvent":{"action":"show_text","value":"&eClick para rechazar."}}]'
+      - '{"text":""}'
+
+  # Jugadores Bedrock (sin clicks en el chat). Tokens: {player}, {sneaks}, {quick_seconds}
+  # (segundos para agacharse; {seconds} también funciona, por compatibilidad).
+  bedrock:
+    enabled: true
+    # Se usa cuando quick accept está activo para amistad (quick-accept.types.friend-request).
+    message:
+      - ''
+      - '&6&l[&5&lMDVCRAFT&6&l]  &4»&r &6{player} &ete ha enviado una solicitud de amistad.'
+      - '&7Revísala en &fSocial y Amigos &8» &fAmigos y Solicitudes'
+      - '&7o &eagáchate {sneaks} veces rápido &7en los próximos &e{quick_seconds}s &7para responder.'
+      - ''
+    # Se usa cuando quick accept está desactivado.
+    message-without-quick-accept:
+      - ''
+      - '&6&l[&5&lMDVCRAFT&6&l]  &4»&r &6{player} &ete ha enviado una solicitud de amistad.'
+      - '&7Revísala en &fSocial y Amigos &8» &fAmigos y Solicitudes'
+      - ''
+    # true: el quick accept acepta directamente. false: abre "Solicitud de X" para confirmar.
+    skip-confirmation: false
+
+# ==========================================================
+# Quick accept: agacharse varias veces rápido para responder una solicitud.
+# Sistema genérico: cada tipo puede sobrescribir cualquier valor en types.<tipo>.
+# ==========================================================
+quick-accept:
+  enabled: true
+  # Solo para jugadores Bedrock (Java ya tiene botones clicables en el chat).
+  bedrock-only: true
+  # Agachadas necesarias.
+  sneaks-required: 2
+  # Segundos que dura la oportunidad desde que llega la solicitud.
+  window-seconds: 30
+  # Tiempo máximo (ms) entre levantarse y volver a agacharse. Si se supera, se empieza de cero.
+  # También cuentan las agachadas que otro plugin cancela y las que el servidor no llegó a ver.
+  max-sneak-gap-millis: 700
+  # Sonido de ui-core.sounds al completar el gesto (vacío = ninguno).
+  trigger-sound: 'confirm'
+  messages:
+    # Al terminar el tiempo sin responder (vacío = no avisar).
+    expired: ''
+  types:
+    party-invite:
+      enabled: true
+      # Ejemplo de ajuste solo para invitaciones:
+      # sneaks-required: 3
+      # window-seconds: 20
+    friend-request:
+      enabled: true
+    tpa:
+      enabled: true
+      # sneaks-required: 3
+
+# ==========================================================
+# TPA: solicitudes para viajar hasta otro jugador.
+# Comandos: /tpa <jugador|aceptar|rechazar|cancelar|ayuda>, /tpaccept, /tpdeny,
+# /aceptartp, /rechazartp, /tpacancel. Permiso: mdvsocial.tpa.
+# Si el destinatario te bloqueó, la solicitud no llega (aviso genérico).
+# Antes estaba en MDVTools; al arrancar se importa sola si aquí no existe la sección.
+# ==========================================================
+tpa:
+  enabled: true
+  # Prefijo de los mensajes de TPA.
+  prefix: "&6&l[&5&lMDVCRAFT&6&l]  &4»  &r"
+  request-timeout-seconds: 60
+  cooldown-seconds: 15
+
+  # Espera total después de aceptar antes de teletransportar al solicitante (0 = al instante).
+  teleport-delay-seconds: 4
+
+  # Durante este margen inicial el jugador todavía puede moverse.
+  # Con 4 segundos totales y 1 de gracia, quedan 3 segundos inmóvil.
+  movement-grace-seconds: 1
+
+  cancel-delay-on-move: true
+  cancel-delay-on-damage: true
+  cancel-delay-on-attack: true
+
+  invulnerability-after-teleport-seconds: 5
+  invulnerability-cancel-on-attack: true
+  allow-cross-world: true
+
+  # Si quien pide es de tu Grupo de Aventura, la solicitud se acepta sola y se avisa a los dos
+  # (mensajes party-auto-accepted y party-auto-accepted-target).
+  party-auto-accept:
+    # true = tratarlas como cualquier otra solicitud.
+    ignore: false
+
+  # Aviso a quien recibe la solicitud.
+  # Tokens: {player} = quien la envía, {uuid} = su UUID, {seconds} = segundos para responder.
+  notice:
+    # Java: cada línea es JSON de chat (o texto normal); se aceptan códigos &.
+    java:
+      enabled: true
+      format:
+        - '{"text":"&6&l[&5&lMDVCRAFT&6&l]  &4»  &r&6{player} &equiere teletransportarse hacia ti. &7Expira en &f{seconds} segundos&7."}'
+        - '[{"text":"        "},{"text":"&a&l[ACEPTAR]","clickEvent":{"action":"run_command","value":"/tpa aceptarsolicitud {uuid}"},"hoverEvent":{"action":"show_text","value":"&aAceptar esta solicitud de {player}"}},{"text":"       "},{"text":"&c&l[RECHAZAR]","clickEvent":{"action":"run_command","value":"/tpa rechazarsolicitud {uuid}"},"hoverEvent":{"action":"show_text","value":"&cRechazar esta solicitud de {player}"}}]'
+    # Bedrock (sin clicks en el chat). Tokens extra: {sneaks} y {quick_seconds} (del quick accept).
+    bedrock:
+      enabled: true
+      # Se usa cuando quick accept está activo para TPA (quick-accept.types.tpa).
+      message:
+        - '&6&l[&5&lMDVCRAFT&6&l]  &4»  &r&6{player} &equiere teletransportarse hacia ti.'
+        - '&7Respóndela en &fSocial y Amigos &8» &fViajes (TPA)'
+        - '&7o &eagáchate {sneaks} veces rápido &7en los próximos &e{quick_seconds}s &7para responder.'
+      # Se usa cuando quick accept está desactivado.
+      message-without-quick-accept:
+        - '&6&l[&5&lMDVCRAFT&6&l]  &4»  &r&6{player} &equiere teletransportarse hacia ti.'
+        - '&7Respóndela en &fSocial y Amigos &8» &fViajes (TPA) &7o con &f/tpa aceptar&7.'
+      # Si quien la envía es tu amigo, el quick accept acepta directamente sin pedir confirmación.
+      skip-confirmation-for-friends: true
+
+  # /tpa ayuda
+  help:
+    - "&6&lTPA &7comandos:"
+    - "&e/tpa <jugador> &7- Solicita teletransportarte."
+    - "&e/tpa aceptar &7- Acepta la solicitud más reciente."
+    - "&e/tpa rechazar &7- Rechaza la solicitud más reciente."
+    - "&e/tpa cancelar &7- Cancela tu solicitud enviada."
+
+  # Mensajes. Tokens entre llaves ({player}); también se acepta el formato antiguo %player%.
+  # Un mensaje vacío ('') no se envía.
+  messages:
+    disabled: "&cEl sistema de TPA está desactivado."
+    only-players: "&cEste comando solo puede usarlo un jugador."
+    no-permission: "&cNo tienes permiso para usar el TPA."
+    player-not-found: "&cJugador no encontrado o desconectado."
+    cannot-self: "&cNo puedes enviarte una solicitud a ti mismo."
+    cross-world-disabled: "&cNo puedes usar TPA entre mundos distintos."
+    request-sent: "&eSolicitud de teletransporte enviada a &6{target}&e. &7Expira en &f{seconds} segundos&7."
+    # Si el destinatario te bloqueó. No revela el bloqueo.
+    request-not-delivered: "&cNo se pudo enviar la solicitud de teletransporte a &f{target}&c."
+    request-expired: "&cLa solicitud de teletransporte ha expirado."
+    request-expired-target: "&7La solicitud de &f{player} &7ha expirado."
+    request-denied: "&cSolicitud de teletransporte rechazada."
+    request-denied-target: "&eRechazaste la solicitud de &f{player}&e."
+    request-accepted: "&aTeletransporte completado."
+    request-accepted-target: "&aAceptaste la solicitud de &f{player}&a."
+    request-cancelled: "&eCancelaste tu solicitud de teletransporte."
+    # Aceptadas solas por ser del mismo grupo (tpa.party-auto-accept).
+    party-auto-accepted: "&a{target} es de tu grupo: tu solicitud se aceptó automáticamente."
+    party-auto-accepted-target: "&a{player} es de tu grupo: su solicitud de teletransporte se aceptó automáticamente."
+    request-cancelled-target: "&7{player} canceló su solicitud de teletransporte."
+    request-cancelled-disconnect: "&7La solicitud fue cancelada porque el jugador se desconectó."
+    target-disconnected: "&cEl jugador objetivo se desconectó."
+    requester-offline: "&cEl jugador que envió la solicitud ya no está conectado."
+    no-pending-request: "&cNo tienes solicitudes de teletransporte pendientes."
+    request-not-valid: "&cEsa solicitud ya no es válida o ha expirado."
+    no-outgoing-request: "&cNo tienes una solicitud enviada pendiente."
+    cooldown: "&cDebes esperar &f{seconds}s &cantes de enviar otra solicitud."
+    teleport-failed: "&cNo se pudo completar el teletransporte."
+    warmup-started: "&eTeletransporte aceptado. Tienes &f{grace_seconds}s &epara detenerte; después no te muevas durante &f{movement_lock_seconds}s&e. Entrar en combate cancela la espera."
+    warmup-started-target: "&7{player} se teletransportará hacia ti en &f{seconds} segundos&7."
+    warmup-cancelled-move: "&cEl teletransporte fue cancelado porque te moviste."
+    warmup-cancelled-damage: "&cEl teletransporte fue cancelado porque recibiste daño."
+    warmup-cancelled-attack: "&cEl teletransporte fue cancelado porque atacaste."
+    warmup-cancelled-target: "&7El teletransporte de &f{player} &7fue cancelado."
+    invulnerable: "&aTienes protección temporal durante &f{seconds}s&a."
+    invulnerability-ended-on-attack: "&cTu protección temporal terminó al atacar."
+
+# /grupo [jugador...]: crea un Grupo de Aventura e invita hasta 5 jugadores.
+party-command:
+  # Menú que se abre en Java tras /grupo sin nombres. Vacío = no abrir nada.
+  # En Bedrock siempre se abre el formulario nativo del grupo.
+  java-menu-command: 'party'
 
 interactive-chat:
   enabled: true
@@ -589,6 +904,50 @@ social-friend-options:
     when-no-party: create-and-invite
     max-members: 5  
   sound: open  
+# ==========================================================
+# Jugadores bloqueados (general, no solo cartas)
+# Comandos: /bloquear <jugador>, /desbloquear <jugador>, /bloqueados
+# Impide: recibir cartas, invitaciones de clan por carta e invitaciones a grupos.
+# API: MDVSocialAPI.isBlocked(dueño, objetivo)
+# ==========================================================
+blocked-players:
+  # Máximo de jugadores que cada uno puede bloquear (0 = sin límite).
+  max-entries: 200
+  # Comandos de invitación de MMOCore que también respetan los bloqueos si el
+  # jugador los escribe a mano (las invitaciones de MDVSocial ya se revisan).
+  party-invite-commands:
+    - 'party invite'
+    - 'mmocore:party invite'
+  # Textos del menú Java. Bedrock usa MenusBedrock/bloqueados.yml.
+  menu:
+    title: '&8&lJugadores Bloqueados &7({count})'
+    entry:
+      name: '&f{target}'
+      lore:
+        - ''
+        - '&7No puede enviarte cartas.'
+        - ''
+        - '&eClick para desbloquear.'
+    empty:
+      name: '&7No tienes jugadores bloqueados'
+      lore:
+        - ''
+        - '&7Los jugadores bloqueados'
+        - '&7no pueden enviarte cartas.'
+    block:
+      name: '&c&lBloquear jugador'
+      lore:
+        - ''
+        - '&7Escribe el nombre del jugador'
+        - '&7que quieres bloquear.'
+        - ''
+        - '&eClick para comenzar.'
+    back: '&6&lVolver'
+    back-lore:
+      - '&7Regresa al menú de amigos.'
+    previous: '&ePágina anterior'
+    next: '&ePágina siguiente'
+
 mail:
   enabled: true
 
@@ -603,6 +962,10 @@ mail:
 
   # Límite máximo de caracteres por carta.
   max-message-length: 180
+
+  # Segundos de espera entre cartas de un mismo jugador (0 = sin espera).
+  # Permiso para saltarla: mdvsocial.mail.cooldown.bypass
+  send-cooldown-seconds: 30
 
   # Si está false, solo se puede mandar carta a jugadores que ya entraron al servidor.
   allow-unknown-targets: false
@@ -628,7 +991,8 @@ mail:
     # false: la bienvenida llega solo al buzón, sin avisos en el chat.
     notify-in-chat: false
   never-expires-text: 'no expira'
-  # Permisos para expandir buzón.
+  # Permisos para expandir buzón. Si el destinatario está desconectado se usa
+  # el último límite que tuvo conectado (se actualiza al entrar al servidor).
   mailbox-size-permissions:
     mdvsocial.mailbox.15: 15
     mdvsocial.mailbox.25: 25
@@ -637,6 +1001,7 @@ mail:
     
   clan-invites:
     ignore-mailbox-limit: true
+    # Las invitaciones de clan por carta tampoco llegan si el invitado bloqueó a quien invita.
     
     
   # Formato de fecha visible en las cartas.
@@ -1039,706 +1404,8 @@ mmoitems-browser:
   excluded-items: []
   
   
-# ==========================================================
-# Titulos
-# id:
-#   display: nombre visible
-#   prefix: prefijo para PlaceholderAPI
-#   material: item del menu
-#   custom-head-texture: ''  # opcional, base64 texture de cabeza
-#   purchasable: true/false
-#   price: 500
-#   unlock-permission: 'mdvsocial.title.noble' # opcional, para VIP/rangos
-#   hidden: true/false # si no aparece en menus
-#   player-equippable: true/false # si el jugador puede equiparlo manualmente
-#   lore: ...
-# ==========================================================
-
-titles:
-  forastero:
-    display: '&7Forastero'
-    prefix: '&7&l[Forastero]&r&e'
-    material: GRAY_DYE
-    purchasable: false
-    hidden: true
-    player-equippable: false
-    lore:
-      - '&7Titulo base para jugadores sin raza.'
-      - '&8No aparece en menus y no puede reequiparse.'
-
-  aventurero:
-    display: '&aAventurero'
-    prefix: '&7&l[&l&aAventurero&7&l]&r&e'
-    material: IRON_SWORD
-    purchasable: false
-    lore:
-      - '&7Titulo base tras elegir raza.'
-      - '&7Se equipa automaticamente al comenzar.'
-  caballero_rango:
-    display: '&9Caballero'
-    prefix: '&1&l[&r&9Caballero&1&l]&r&9'
-    material: IRON_HELMET
-    purchasable: false
-    unlock-permission: 'mdvsocial.title.caballero'
-    player-equippable: true
-    lore:
-      - '&7Título exclusivo del rango Caballero.'
-      - '&7Un distintivo reservado para quienes'
-      - '&7apoyan su aventura con honor.'
-
-  campeon_rango:
-    display: '&4Campeón'
-    prefix: '&c&l[&r&4Campeón&c&l]&r&4'
-    material: DIAMOND_SWORD
-    purchasable: false
-    unlock-permission: 'mdvsocial.title.campeon'
-    player-equippable: true
-    lore:
-      - '&7Título exclusivo del rango Campeón.'
-      - '&7Un reconocimiento para quienes'
-      - '&7destacan entre los aventureros.'
-
-  noble_rango:
-    display: '&6Noble'
-    prefix: '&6&l[&r&eNoble&6&l]&r&e'
-    material: GOLDEN_HELMET
-    purchasable: false
-    unlock-permission: 'mdvsocial.title.noble'
-    player-equippable: true
-    lore:
-      - '&7Título exclusivo del rango Noble.'
-      - '&7Representa prestigio, influencia'
-      - '&7y reconocimiento dentro del reino.'
-
-  heroe_rango:
-    display: '&5H&dé&5r&do&5e'
-    prefix: '&6&l[&5&kI&r&dHéroe&5&kI&6&l]&r&d'
-    material: NETHER_STAR
-    purchasable: false
-    unlock-permission: 'mdvsocial.title.heroe'
-    player-equippable: true
-    lore:
-      - '&7Título exclusivo del rango Héroe.'
-      - '&7Un nombre reservado para quienes'
-      - '&7ya forman parte de la leyenda.'
-  vagabundo:
-    display: '&7Vagabundo'
-    prefix: '&7&l[&r&8Vagabundo&7&l]&r&e'
-    material: LEATHER_BOOTS
-    purchasable: true
-    price: 1
-    lore:
-      - '&7Para los que caminan sin bandera.'
-      - '&ePrecio: &61 denar'
-
-  mercader:
-    display: '&eMercader'
-    prefix: '&7&l[&r&eMercader&7&l]&r&e'
-    material: EMERALD
-    purchasable: true
-    price: 15
-    lore:
-      - '&7Vendedor de caminos, tratos y rumores.'
-      - '&ePrecio: &615 denares'
-
-  mercenario:
-    display: '&cMercenario'
-    prefix: '&7&l[&r&cMercenario&7&l]&r&e'
-    material: IRON_SWORD
-    purchasable: true
-    price: 35
-    lore:
-      - '&7Su espada responde al mejor pago.'
-      - '&ePrecio: &635 denares'
-
-  granjero:
-    display: '&aGranjero'
-    prefix: '&7&l[&r&2Granjero&7&l]&r&e'
-    material: WHEAT
-    purchasable: true
-    price: 10
-    lore:
-      - '&7El campo tambien alimenta aventuras.'
-      - '&ePrecio: &610 denares'
-
-  tabernero:
-    display: '&eTabernero'
-    prefix: '&7&l[&r&eTabernero&7&l]&r&e'
-    material: BARREL
-    purchasable: true
-    price: 15
-    lore:
-      - '&7Sirve bebidas, escucha historias y guarda secretos.'
-      - '&ePrecio: &615 denares'
-
-  lenador:
-    display: '&aLeñador'
-    prefix: '&7&l[&r&aLeñador&7&l]&r&e'
-    material: IRON_AXE
-    purchasable: true
-    price: 10
-    lore:
-      - '&7Conoce el bosque golpe a golpe.'
-      - '&ePrecio: &610 denares'
-
-  minero:
-    display: '&8Minero'
-    prefix: '&7&l[&r&8Minero&7&l]&r&e'
-    material: IRON_PICKAXE
-    purchasable: true
-    price: 10
-    lore:
-      - '&7Busca fortuna bajo piedra y oscuridad.'
-      - '&ePrecio: &610 denares'
-
-  pescador:
-    display: '&bPescador'
-    prefix: '&7&l[&r&bPescador&7&l]&r&e'
-    material: FISHING_ROD
-    purchasable: true
-    price: 10
-    lore:
-      - '&7Paciente ante rios, mares y tormentas.'
-      - '&ePrecio: &610 denares'
-
-  cazador:
-    display: '&aCazador'
-    prefix: '&7&l[&r&aCazador&7&l]&r&e'
-    material: BOW
-    purchasable: true
-    price: 20
-    lore:
-      - '&7Rastreador de bestias y caminos.'
-      - '&ePrecio: &620 denares'
-
-  bandido:
-    display: '&8Bandido'
-    prefix: '&7&l[&r&8Bandido&7&l]&r&e'
-    material: CROSSBOW
-    purchasable: true
-    price: 25
-    lore:
-      - '&7Vive entre emboscadas, botines y caminos rotos.'
-      - '&ePrecio: &625 denares'
-
-  saqueador:
-    display: '&cSaqueador'
-    prefix: '&7&l[&r&cSaqueador&7&l]&r&e'
-    material: IRON_AXE
-    purchasable: true
-    price: 40
-    lore:
-      - '&7Toma lo que quiere y desaparece entre el caos.'
-      - '&ePrecio: &640 denares'
-
-  curandero:
-    display: '&bCurandero'
-    prefix: '&7&l[&r&bCurandero&7&l]&r&e'
-    material: HONEY_BOTTLE
-    purchasable: true
-    price: 15
-    lore:
-      - '&7Sana heridas con remedios, fe y paciencia.'
-      - '&ePrecio: &615 denares'
-
-  herrero:
-    display: '&7Herrero'
-    prefix: '&7&l[&r&7Herrero&7&l]&r&e'
-    material: ANVIL
-    purchasable: true
-    price: 20
-    lore:
-      - '&7Forja armas, herramientas y destinos.'
-      - '&ePrecio: &620 denares'
-
-  picaro:
-    display: '&8Pícaro'
-    prefix: '&7&l[&r&8Pícaro&7&l]&r&e'
-    material: IRON_NUGGET
-    purchasable: true
-    price: 20
-    lore:
-      - '&7Sonrie primero, roba despues.'
-      - '&ePrecio: &620 denares'
-
-  sacerdote:
-    display: '&fSacerdote'
-    prefix: '&7&l[&r&fSacerdote&7&l]&r&e'
-    material: AMETHYST_SHARD
-    purchasable: true
-    price: 20
-    lore:
-      - '&7Guia almas, promesas y silencios.'
-      - '&ePrecio: &620 denares'
-
-  alquimista:
-    display: '&bAlquimista'
-    prefix: '&7&l[&r&bAlquimista&7&l]&r&e'
-    material: BREWING_STAND
-    purchasable: true
-    price: 25
-    lore:
-      - '&7Mezcla frascos, venenos y pequeñas esperanzas.'
-      - '&ePrecio: &625 denares'
-
-  escriba:
-    display: '&fEscriba'
-    prefix: '&7&l[&r&fEscriba&7&l]&r&e'
-    material: WRITABLE_BOOK
-    purchasable: true
-    price: 10
-    lore:
-      - '&7Guarda nombres, deudas y viejas historias.'
-      - '&ePrecio: &610 denares'
-
-  bardo:
-    display: '&eBardo'
-    prefix: '&7&l[&r&eBardo&7&l]&r&e'
-    material: NOTE_BLOCK
-    purchasable: true
-    price: 15
-    lore:
-      - '&7Canta victorias que quizas nunca ocurrieron.'
-      - '&ePrecio: &615 denares'
-
-  escudero:
-    display: '&7Escudero'
-    prefix: '&7&l[&r&7Escudero&7&l]&r&e'
-    material: SHIELD
-    purchasable: true
-    price: 10
-    lore:
-      - '&7Aun aprende, pero ya carga el peso del acero.'
-      - '&ePrecio: &610 denares'
-
-  guardia:
-    display: '&9Guardia'
-    prefix: '&7&l[&r&9Guardia&7&l]&r&e'
-    material: IRON_HELMET
-    purchasable: true
-    price: 15
-    lore:
-      - '&7Vigila puertas, caminos y malas intenciones.'
-      - '&ePrecio: &615 denares'
-
-  centinela:
-    display: '&bCentinela'
-    prefix: '&7&l[&r&bCentinela&7&l]&r&e'
-    material: SPYGLASS
-    purchasable: true
-    price: 25
-    lore:
-      - '&7Ve amenazas antes de que lleguen.'
-      - '&ePrecio: &625 denares'
-
-  peregrino:
-    display: '&fPeregrino'
-    prefix: '&7&l[&r&fPeregrino&7&l]&r&e'
-    material: LANTERN
-    purchasable: true
-    price: 10
-    lore:
-      - '&7Viaja con fe, cansancio y una luz pequeña.'
-      - '&ePrecio: &610 denares'
-
-  ermitaño:
-    display: '&8Ermitaño'
-    prefix: '&7&l[&r&8Ermitaño&7&l]&r&e'
-    material: MOSS_BLOCK
-    purchasable: true
-    price: 15
-    lore:
-      - '&7Prefiere el silencio antes que las multitudes.'
-      - '&ePrecio: &615 denares'
-
-  marinero:
-    display: '&3Marinero'
-    prefix: '&7&l[&r&3Marinero&7&l]&r&e'
-    material: OAK_BOAT
-    purchasable: true
-    price: 15
-    lore:
-      - '&7Conoce mareas, puertos y promesas rotas.'
-      - '&ePrecio: &615 denares'
-
-  contrabandista:
-    display: '&eContrabandista'
-    prefix: '&7&l[&r&eContrabandista&7&l]&r&e'
-    material: GOLD_NUGGET
-    purchasable: true
-    price: 35
-    lore:
-      - '&7Nada entra ni sale sin que lo sepa.'
-      - '&ePrecio: &635 denares'
-
-  domador:
-    display: '&aDomador'
-    prefix: '&7&l[&r&aDomador&7&l]&r&e'
-    material: LEAD
-    purchasable: true
-    price: 15
-    lore:
-      - '&7La bestia obedece cuando reconoce firmeza.'
-      - '&ePrecio: &615 denares'
-
-  arriero:
-    display: '&eArriero'
-    prefix: '&7&l[&r&eArriero&7&l]&r&e'
-    material: SADDLE
-    purchasable: true
-    price: 15
-    lore:
-      - '&7Mueve carga, animales y secretos por el camino.'
-      - '&ePrecio: &615 denares'
-
-  duelista:
-    display: '&cDuelista'
-    prefix: '&7&l[&r&cDuelista&7&l]&r&e'
-    material: IRON_SWORD
-    purchasable: true
-    price: 45
-    lore:
-      - '&7No busca pelea, pero nunca la rechaza.'
-      - '&ePrecio: &645 denares'
-
-  arcanista:
-    display: '&3Arcanista'
-    prefix: '&7&l[&r&3Arcanista&7&l]&r&e'
-    material: ENCHANTED_BOOK
-    purchasable: true
-    price: 50
-    lore:
-      - '&7Estudia lo oculto sin prometer entenderlo.'
-      - '&ePrecio: &650 denares'
-
-  boticario:
-    display: '&bBoticario'
-    prefix: '&7&l[&r&bBoticario&7&l]&r&e'
-    material: POTION
-    purchasable: true
-    price: 15
-    lore:
-      - '&7Tiene remedios para dolores y excusas.'
-      - '&ePrecio: &615 denares'
-
-  explorador:
-    display: '&bExplorador'
-    prefix: '&7&l[&r&bExplorador&7&l]&r&e'
-    material: COMPASS
-    purchasable: true
-    price: 10
-    lore:
-      - '&7Camina donde otros no se atreven.'
-      - '&ePrecio: &610 denares'
-
-  soldado:
-    display: '&9Soldado'
-    prefix: '&7&l[&r&9Soldado&7&l]&r&e'
-    material: IRON_CHESTPLATE
-    purchasable: true
-    price: 20
-    lore:
-      - '&7Disciplina, acero y obediencia.'
-      - '&ePrecio: &620 denares'
-
-  hechicero:
-    display: '&3Hechicero'
-    prefix: '&7&l[&r&3Hechicero&7&l]&r&e'
-    material: BLAZE_ROD
-    purchasable: true
-    price: 50
-    lore:
-      - '&7Domina fuerzas que otros apenas entienden.'
-      - '&ePrecio: &650 denares'
-
-
-  pecador:
-    display: '&4Pecador'
-    prefix: '&4[Pecador]&r '
-    material: REDSTONE
-    purchasable: false
-    hidden: true
-    player-equippable: false
-    punishment: true
-    lore:
-      - '&cTitulo obligatorio aplicado por el staff.'
-
-  esclavo:
-    display: '&8Esclavo'
-    prefix: '&8[Esclavo]&r '
-    material: CHAIN
-    purchasable: false
-    hidden: true
-    player-equippable: false
-    punishment: true
-    lore:
-      - '&cTitulo obligatorio aplicado por el staff.'
-
-  admin_staff:
-    display: '&c&lAdministrador'
-    prefix: '&4&l[&cAdministrador&4&l]&r&c'
-    material: NETHER_STAR
-    purchasable: false
-    unlock-permission: 'mdvsocial.title.staff.admin'
-    player-equippable: true
-    lore:
-      - '&7Título exclusivo de la administración.'
-      - '&7Representa la máxima autoridad'
-      - '&7dentro de MDVCRAFT.'
-
-  moderador_staff:
-    display: '&5&lModerador'
-    prefix: '&8&l[&5Moderador&8&l]&r&d'
-    material: AMETHYST_SHARD
-    purchasable: false
-    unlock-permission: 'mdvsocial.title.staff.moderador'
-    player-equippable: true
-    lore:
-      - '&7Título exclusivo del equipo'
-      - '&7encargado de moderar y mantener'
-      - '&7el orden dentro de MDVCRAFT.'
-  pomberito_staff:
-    display: '&2&lPombero'
-    prefix: '&8&l[&2Pomberito&8&l]&r&a'
-    material: AMETHYST_SHARD
-    purchasable: false
-    hidden: true
-    unlock-permission: 'mdvsocial.title.staff.pombero'
-    player-equippable: true
-    lore:
-      - '&7Título exclusivo del equipo'
-      - '&7encargado de moderar y mantener'
-      - '&7el orden dentro de MDVCRAFT.'
-
-  helper_staff:
-    display: '&b&lHelper'
-    prefix: '&3&l[&bHelper&3&l]&r&b'
-    material: HEART_OF_THE_SEA
-    purchasable: false
-    hidden: true
-    unlock-permission: 'mdvsocial.title.staff.helper'
-    player-equippable: true
-    lore:
-      - '&7Título exclusivo de quienes'
-      - '&7orientan y ayudan a los jugadores'
-      - '&7durante sus aventuras.'
-  dios_personal:
-    display: '&d&l✦ &b&lD&f&li&d&lo&b&ls &d&l✦'
-    prefix: '&5&l[&d&kI&r &b&lD&f&li&d&lo&b&ls &d&kI&r&5&l]&r&f'
-    material: NETHER_STAR
-    purchasable: false
-    hidden: true
-    unlock-permission: 'mdvsocial.title.personal.dios'
-    player-equippable: true
-    lore:
-      - ''
-      - '&d&l✦ &f&lTítulo Celestial &d&l✦'
-      - ''
-      - '&7Una presencia más allá de los mortales,'
-      - '&7forjada entre estrellas y eternidad.'
-      - ''
-      - '&bLas leyes del mundo se doblegan'
-      - '&fante quien porta este título.'
-      - ''
-      - '&5&lExclusivo del creador de MDVCRAFT.'
-ranks:
-  aventurero:
-    display: '&aAventurero'
-    material: IRON_SWORD
-    permission: 'group.aventurero'
-    page: 1
-    slot: 10
-    lore:
-      - '&7Rango base obtenido después'
-      - '&7de elegir una raza.'
-      - ''
-      - '&aBeneficios actuales:'
-      - '&7■ &f1 hogar personal'
-      - '&7■ &f1 protección simultánea'
-      - '&7■ &fBuzón de 10 cartas'
-      - '&7■ &fTítulo: &aAventurero'
-      - '&7■ &fBolsa de muerte estándar'
-      - ''
-      - '&aMisiones y contratos:'
-      - '&7■ &fContratos normales'
-      - '&7■ &fDiarios: &a3'
-      - '&7■ &fContratos de 3 días: &92'
-      - '&7■ &fContratos de 5 días: &51'
-      - '&7■ &fContratos semanales: &61'
-      - ''
-      - '&7Estado: {status}'
-
-  caballero:
-    display: '&9&lCaballero'
-    material: IRON_HELMET
-    permission: 'mdvsocial.rank.caballero'
-    page: 1
-    slot: 12
-    lore:
-      - '&7Primer rango de apoyo a MDVCRAFT.'
-      - '&7Para aventureros honorables.'
-      - ''
-      - '&9Beneficios actuales:'
-      - '&7■ &f2 hogares personales'
-      - '&7■ &f2 protecciones simultáneas'
-      - '&7■ &fBuzón de 15 cartas'
-      - '&7■ &fTítulo exclusivo: &9Caballero'
-      - '&7■ &fPrefijo azul y nombre verde'
-      - '&7■ &fMesa de trabajo portátil /craft'
-      - '&7■ &fKit de suministros cada 15 días'
-      - '&7■ &fBonificadores comunitarios de EXP'
-      - '&7■ &fBolsa de muerte azul exclusiva'
-      - ''
-      - '&9Misiones y contratos:'
-      - '&7■ &fDesbloquea contratos &9Caballero'
-      - '&7■ &fDiarios: &a3'
-      - '&7■ &fContratos de 3 días: &92'
-      - '&7■ &fContratos de 5 días: &51'
-      - '&7■ &fContratos semanales: &61'
-      - ''
-      - '&7Estado: {status}'
-
-  campeon:
-    display: '&4&lCampeón'
-    material: DIAMOND_SWORD
-    permission: 'mdvsocial.rank.campeon'
-    page: 1
-    slot: 14
-    lore:
-      - '&7Rango reservado para quienes'
-      - '&7destacan entre otros aventureros.'
-      - ''
-      - '&4Beneficios actuales:'
-      - '&7■ &f3 hogares personales'
-      - '&7■ &f2 protecciones simultáneas'
-      - '&7■ &fCambio libre de aspecto /skin'
-      - '&7■ &fBuzón de 25 cartas'
-      - '&7■ &fTítulo exclusivo: &4Campeón'
-      - '&7■ &fPrefijo rojo y nombre cian'
-      - '&7■ &fMesa de trabajo portátil /craft'
-      - '&7■ &fCofre de Ender portátil /ec'
-      - '&7■ &fKit mejorado cada 15 días'
-      - '&7■ &fBonificadores comunitarios de EXP'
-      - '&7■ &fBolsa de muerte roja exclusiva'
-      - ''
-      - '&4Misiones y contratos:'
-      - '&7■ &fContratos &9Caballero'
-      - '&7■ &fDiarios: &a4'
-      - '&7■ &fContratos de 3 días: &93'
-      - '&7■ &fContratos de 5 días: &52'
-      - '&7■ &fContratos semanales: &62'
-      - ''
-      - '&7Estado: {status}'
-
-  noble:
-    display: '&6&lNoble'
-    material: GOLDEN_HELMET
-    permission: 'mdvsocial.rank.noble'
-    page: 1
-    slot: 16
-    lore:
-      - '&7Un rango de prestigio, riqueza'
-      - '&7y reconocimiento dentro del reino.'
-      - ''
-      - '&6Beneficios actuales:'
-      - '&7■ &f4 hogares personales'
-      - '&7■ &f3 protecciones simultáneas'
-      - '&7■ &fCambio libre de aspecto /skin'
-      - '&7■ &fBuzón de 35 cartas'
-      - '&7■ &fTítulo exclusivo: &6Noble'
-      - '&7■ &fPrefijo dorado'
-      - '&7■ &fNombre dorado'
-      - '&7■ &fMesa de trabajo portátil /craft'
-      - '&7■ &fCofre de Ender portátil /ec'
-      - '&7■ &fKit avanzado cada 15 días'
-      - '&7■ &fBonificadores de EXP y profesiones'
-      - '&7■ &fBolsa de muerte dorada exclusiva'
-      - ''
-      - '&6Misiones y contratos:'
-      - '&7■ &fContratos &9Caballero &fy &6Noble'
-      - '&7■ &fDiarios: &a4'
-      - '&7■ &fContratos de 3 días: &93'
-      - '&7■ &fContratos de 5 días: &52'
-      - '&7■ &fContratos semanales: &62'
-      - ''
-      - '&7Estado: {status}'
-
-  embajador:
-    display: '&2&lEmbajador'
-    material: EMERALD
-    permission: 'mdvsocial.rank.embajador'
-    page: 1
-    slot: 19
-    lore:
-      - '&7Reconocimiento para quienes'
-      - '&7ayudaron a crecer la comunidad'
-      - '&7invitando nuevos aventureros.'
-      - ''
-      - '&2Beneficios actuales:'
-      - '&7■ &f2 hogares personales'
-      - '&7■ &f2 protecciones simultáneas'
-      - '&7■ &fMesa de trabajo portátil /craft'
-      - '&7■ &fCofre de Ender portátil /ec'
-      - ''
-      - '&8Rango especial de reconocimiento.'
-      - ''
-      - '&7Estado: {status}'
-
-  heroe:
-    display: '&6&lHéroe'
-    material: NETHER_STAR
-    permission: 'mdvsocial.rank.heroe'
-    page: 1
-    slot: 32
-    lore:
-      - '&7El máximo rango disponible.'
-      - '&7Su nombre inspira nuevas historias.'
-      - ''
-      - '&5Beneficios actuales:'
-      - '&7■ &f4 hogares personales'
-      - '&7■ &f4 protecciones simultáneas'
-      - '&7■ &fCambio libre de aspecto /skin'
-      - '&7■ &fBuzón de 50 cartas'
-      - '&7■ &fTítulo exclusivo: &5H&dé&5r&do&5e'
-      - '&7■ &fPrefijo dorado y morado'
-      - '&7■ &fNombre morado'
-      - '&7■ &fMesa de trabajo portátil /craft'
-      - '&7■ &fCofre de Ender portátil /ec'
-      - '&7■ &fKit superior cada 15 días'
-      - '&7■ &fBonificadores superiores de EXP'
-      - '&7■ &fBolsa de muerte heroica exclusiva'
-      - ''
-      - '&5Misiones y contratos:'
-      - '&7■ &fContratos &9Caballero &fy &6Noble'
-      - '&7■ &fDiarios: &a5'
-      - '&7■ &fContratos de 3 días: &94'
-      - '&7■ &fContratos de 5 días: &53'
-      - '&7■ &fContratos semanales: &63'
-      - ''
-      - '&7Estado: {status}'
-
-  creador:
-    display: '&d&lCreador'
-    material: SPYGLASS
-    permission: 'mdvsocial.rank.creador'
-    page: 1
-    slot: 28
-    lore:
-      - '&7Rango destinado a quienes'
-      - '&7crean contenido y comparten'
-      - '&7sus aventuras en MDVCRAFT.'
-      - ''
-      - '&dBeneficios actuales:'
-      - '&7■ &f2 hogares personales'
-      - '&7■ &f2 protecciones simultáneas'
-      - '&7■ &fCambio libre de aspecto /skin'
-      - '&7■ &fMesa de trabajo portátil /craft'
-      - '&7■ &fCofre de Ender portátil /ec'
-      - ''
-      - '&8Disponible mientras forme parte'
-      - '&8del programa de creadores.'
-      - ''
-      - '&7Estado: {status}'
+# 'titles' está en titles.yml.
+# 'ranks' está en ranks.yml.
       
  
 # ----------------------------------------------------------
@@ -1747,7 +1414,7 @@ ranks:
 shop:
   java:
     message: |
-      &6&lTienda online
+      &2&lTienda online
       &fVisita nuestra tienda:
       {shop}
     link-text: "&b&n[Abrir tienda]"
@@ -1755,7 +1422,7 @@ shop:
     # Formulario Bedrock que se abre con /tienda.
     menu: tienda
     # Fallback si Floodgate o el formulario no pueden abrirse.
-    fallback-message: "&6&lTienda online\\n&fVisita nuestra tienda: &b{shop}"
+    fallback-message: "&2&lTienda online &fVisita nuestra tienda: &b{shop}"
     
   missing-url: "&cLa tienda online no esta configurada."
   player-only: "&cEste comando solo puede ejecutarlo un jugador."
@@ -1767,7 +1434,7 @@ shop:
 discord:
   java:
     message: |
-      &6&lDiscord
+      &9&lDiscord
       &fUnete a nuestra comunidad:
       {discord}
     link-text: "&b&n[Unirse a Discord]"
@@ -1775,10 +1442,12 @@ discord:
     # Formulario Bedrock que se abre con /discord.
     menu: discord
     # Fallback si Floodgate o el formulario no pueden abrirse.
-    fallback-message: "&6&lDiscord\\n&fUnete a nuestra comunidad: &b{discord}"
+    fallback-message: "&9&lDiscord &fUnete a nuestra comunidad: &b{discord}"
   missing-url: "&cEl Discord no esta configurado."
   player-only: "&cEste comando solo puede ejecutarlo un jugador."
-  url: ""
+  url: "https://discord.gg/W92HhQXUUq"
+  
+  
 protections-menu:
   enabled: true
   # Devuelve el item original tras eliminar correctamente. Respeta no_drop de ProtectionStones.

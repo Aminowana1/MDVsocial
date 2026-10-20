@@ -1,0 +1,57 @@
+type: "DYNAMIC_TPA"
+# Formulario "Viajes (TPA)". Tokens: {request_count}, {target} (a quién enviaste tu solicitud).
+title: "&a&lViajes (TPA)"
+content:
+  - "&7Pide viajar hasta otro jugador o responde a quien quiere venir."
+  - "&7Solicitudes recibidas: &e{request_count}"
+# Se añade al contenido si tienes una solicitud enviada.
+outgoing-line: "&7Solicitud enviada a &f{target}"
+
+buttons:
+  request:
+    text: "&2&lSolicitar viaje\n&r&8Elige o escribe un jugador."
+    image:
+      type: "URL"
+      data: ""
+  requests:
+    text: "&6&lSolicitudes ({request_count})\n&r&8Acepta o rechaza viajes."
+    image:
+      type: "URL"
+      data: ""
+  cancel:
+    text: "&4&lCancelar mi solicitud\n&r&8Enviada a {target}."
+    image:
+      type: "URL"
+      data: ""
+  back:
+    text: "&6&lVolver"
+
+# Selector "Escoger jugador" (tus amigos aparecen primero).
+picker:
+  title: "&a&lSolicitar viaje &8({page}/{max_page})"
+  content: "&7¿Hasta quién quieres viajar? Tus amigos aparecen primero."
+
+name-form:
+  title: "&a&lSolicitar viaje"
+  input-label: "&eNombre del jugador"
+  input-placeholder: "Escribe el nombre..."
+
+# Tokens: {player} (quien quiere venir), {seconds} (segundos para responder).
+requests-menu:
+  title: "&e&lSolicitudes de viaje"
+  content: "&7Quieren viajar hasta ti: &f{request_count}"
+  empty: "&7No tienes solicitudes pendientes."
+  request:
+    text: "&2&l{player}\n&r&8Expira en {seconds}s"
+    image:
+      type: "URL"
+      data: ""
+  back: "&6&lVolver"
+  detail:
+    title: "&a&lViaje de {player}"
+    content: "&f{player} &7quiere teletransportarse hasta ti."
+    accept: "&2&lSí, aceptar"
+    deny: "&4&lNo, rechazar"
+    back: "&6&lVolver"
+    # Botón del formulario abierto con quick accept (en vez de "Volver").
+    later: "&8&lMás tarde"

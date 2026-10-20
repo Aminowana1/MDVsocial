@@ -1,0 +1,26 @@
+# Selector reutilizable "Escoger jugador": lo usan todos los menús donde se elige a un
+# jugador (amigos, grupo, TPA, clan, cartas, bloquear). El título y el texto superior
+# los pone cada menú que lo abre.
+# Orden: amigos, Grupo de Aventura, clan y el resto de conectados. Nunca aparecen los
+# jugadores que bloqueaste ni los que ya no tiene sentido ofrecer (p. ej. tus amigos
+# en "Añadir amigo" o los de tu grupo en "Invitar al grupo").
+# Jugadores por página: bedrock.player-picker.page-size en config.yml.
+# Tokens: {player} en las entradas; {page}, {max_page}, {count} en todo el menú.
+type-name:
+  text: "&6&lEscribir nombre\n&r&8Busca a un jugador por su nombre."
+entry-friend:
+  text: "&2&l{player}\n&r&2Amigo"
+entry-party:
+  text: "&5&l{player}\n&r&5Grupo de Aventura"
+entry-clan:
+  text: "&3&l{player}\n&r&3Clan"
+entry:
+  text: "&0&l{player}\n&r&8Conectado"
+empty: "&8No hay otros jugadores conectados."
+buttons:
+  previous:
+    text: "&6&lPágina anterior"
+  next:
+    text: "&6&lPágina siguiente"
+  back:
+    text: "&6&lVolver"

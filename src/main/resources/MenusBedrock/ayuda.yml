@@ -4,63 +4,63 @@ content:
   - "&7Selecciona una opción."
 buttons:
   ayuda_general:
-    text: "&d&lGuía de MDVCRAFT\n&7Consulta los sistemas básicos"
+    text: "&5&lGuía de MDVCRAFT\n&r&8Consulta los sistemas básicos"
     action: "COMMAND_PLAYER"
     commands:
       - "ayuda"
   economia:
-    text: "&e&lEconomía\n&7Dinero, pagos, depósitos"
+    text: "&6&lEconomía\n&r&8Dinero, pagos, depósitos"
     action: "COMMAND_PLAYER"
     commands:
       - "economia"
   viajes:
-    text: "&a&lViajes\n&7Teletransportes, warps,"
+    text: "&2&lViajes\n&r&8Teletransportes, warps,"
     action: "COMMAND_PLAYER"
     commands:
       - "viajes"
   hogares:
-    text: "&b&lHogares\n&7Crea y administra tus"
+    text: "&3&lHogares\n&r&8Crea y administra tus"
     action: "COMMAND_PLAYER"
     commands:
       - "hogares"
   comercios:
-    text: "&2&lComercios\n&7Realiza tratos seguros"
+    text: "&2&lComercios\n&r&8Realiza tratos seguros"
     action: "COMMAND_PLAYER"
     commands:
       - "comercios"
   protecciones:
-    text: "&9&lProtecciones\n&7Protege tu base y"
+    text: "&1&lProtecciones\n&r&8Protege tu base y"
     action: "COMMAND_PLAYER"
     commands:
       - "prote"
   recetas:
-    text: "&d&lRecetas y Crafteos\n&7Consulta recetas custom"
+    text: "&5&lRecetas y Crafteos\n&r&8Consulta recetas custom"
     action: "COMMAND_PLAYER"
     commands:
       - "recetas"
   personaje:
-    text: "&e&lPersonaje\n&7Raza, atributos y perfil"
+    text: "&6&lPersonaje\n&r&8Raza, atributos y perfil"
     action: "COMMAND_PLAYER"
     commands:
       - "perfil"
   suministros:
-    text: "&b&lSuministros\n&7Revisa los kits disponibles"
+    text: "&3&lSuministros\n&r&8Revisa los kits disponibles"
     action: "COMMAND_PLAYER"
     commands:
       - "suministros"
   warps:
-    text: "&3&lLugares Disponibles\n&7Consulta lugares principales"
+    text: "&3&lLugares Disponibles\n&r&8Consulta lugares principales"
     action: "OPEN_MENU"
     target-menu: "warps"
   consejos:
-    text: "&6&lConsejos Rápidos\n&8Esta sección es informativa."
+    text: "&6&lConsejos Rápidos\n&r&8Esta sección es informativa."
   ayuda_clan:
-    text: "&5&lAyuda de Clanes\n&7Comandos principales para"
+    text: "&5&lAyuda de Clanes\n&r&8Comandos principales para"
     action: "OPEN_CONDITIONAL_MENU"
     condition-placeholder: "%mdvclans_is_in_clan%"
     condition-equals: "true"
     true-menu: "clan_con_clan"
     false-menu: "clan_sin_clan"
   volver:
-    text: "&6&lVolver\n&7Regresa al menú anterior."
+    text: "&6&lVolver\n&r&8Regresa al menú anterior."
     action: "BACK"

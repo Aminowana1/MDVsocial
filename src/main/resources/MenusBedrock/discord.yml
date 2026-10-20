@@ -7,6 +7,6 @@ content:
 
 buttons:
   abrir:
-    text: "&9&lOkay"
+    text: "&1&lOkay"
     action: "OPEN_DISCORD"
     sound: "open"

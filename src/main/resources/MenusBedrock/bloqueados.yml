@@ -1,0 +1,40 @@
+# Formulario dinámico "Jugadores Bloqueados" (se abre con la acción OPEN_BLOCKED_PLAYERS).
+# Tokens: {count}, {page}, {max_page}; en la lista y la confirmación también {target}.
+title: "&c&lJugadores Bloqueados &8({page}/{max_page})"
+content:
+  - "&7Bloqueados: &f{count}"
+  - "&7Toca un jugador para desbloquearlo."
+content-empty:
+  - "&7No tienes jugadores bloqueados."
+  - "&7Los jugadores bloqueados no pueden enviarte cartas."
+entry:
+  text: "&0&l{target}\n&r&8Toca para desbloquear"
+buttons:
+  block:
+    enabled: true
+    text: "&4&lBloquear jugador\n&r&8Elige o escribe un jugador."
+  previous:
+    text: "&6&lPágina anterior"
+  next:
+    text: "&6&lPágina siguiente"
+  back:
+    text: "&6&lVolver\n&r&8Regresa a Social y Amigos."
+unblock-confirm:
+  title: "&a&lDesbloquear a {target}"
+  content: "&7¿Quieres desbloquear a &f{target}&7? Podrá volver a enviarte cartas."
+  confirm:
+    text: "&2&lSí, desbloquear"
+  back:
+    text: "&6&lVolver"
+# "Escoger jugador" al pulsar "Bloquear jugador" (los ya bloqueados no aparecen).
+block-picker:
+  title: "&4&lBloquear jugador &8({page}/{max_page})"
+  content: "&7Elige a quién bloquear o escribe su nombre."
+block-form:
+  title: "&c&lBloquear jugador"
+  input-label: "&eNombre del jugador"
+  input-placeholder: "Escribe el nombre..."
+unblock-form:
+  title: "&a&lDesbloquear jugador"
+  input-label: "&eNombre del jugador"
+  input-placeholder: "Escribe el nombre..."

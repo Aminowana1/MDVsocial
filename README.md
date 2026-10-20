@@ -111,6 +111,19 @@ Estos placeholders usan MMOCore si está activo. Si el jugador no está en party
 - `%mdvsocial_party_in_group%`
 - `%mdvsocial_party_spacer%`
 
+El encabezado y las líneas normales de miembros se personalizan en `config.yml`:
+
+```yaml
+scoreboard:
+  group-header: 'ɢʀᴜᴘᴏ &7(&f{count}&7/&f{max}&7)'
+  group-member: '&c{health}❤ &r&f{name}'
+```
+
+`group-header` admite `{count}` y `{max}`. `group-member` admite `{health}`,
+`{max_health}` y `{name}`; para miembros desconectados, los valores de salud
+se muestran como `--`. Los placeholders con sufijos explícitos como
+`party_member_1_health` y `party_member_1_name` conservan sus formatos propios.
+
 El máximo se lee desde:
 
 ```yaml

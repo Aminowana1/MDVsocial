@@ -5,29 +5,29 @@ content:
 
 rank:
   owned:
-    text: "{rank_display}\n&aObtenido"
+    text: "{rank_display}\n&r&2Obtenido"
     image:
       type: "URL"
       data: ""
   locked:
-    text: "{rank_display}\n&cNo obtenido"
+    text: "{rank_display}\n&r&4No obtenido"
     image:
       type: "URL"
       data: ""
 
 buttons:
   previous:
-    text: "&ePágina anterior"
+    text: "&6&lPágina anterior"
     image:
       type: "URL"
       data: ""
   next:
-    text: "&ePágina siguiente"
+    text: "&6&lPágina siguiente"
     image:
       type: "URL"
       data: ""
   back:
-    text: "&6Volver a Títulos"
+    text: "&6&lVolver a Títulos"
     image:
       type: "URL"
       data: ""

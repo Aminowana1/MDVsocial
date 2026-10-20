@@ -4,26 +4,26 @@ content:
   - "&7Selecciona una opción."
 buttons:
   perfil:
-    text: "&e&lEstadísticas\n&7Consulta tu nivel, raza,"
+    text: "&6&lEstadísticas\n&r&8Consulta tu nivel, raza,"
     action: "OPEN_MMOCORE_PROFILE"
     commands:
       - "perfil"
   atributos:
-    text: "&d&lAtributos\n&7Gasta puntos para fortalecer"
+    text: "&5&lAtributos\n&r&8Gasta puntos para fortalecer"
     action: "OPEN_MMOCORE_ATTRIBUTES"
     commands:
       - "atributos"
   razas:
-    text: "&a&lRazas\n&7Revisa o cambia la raza"
+    text: "&2&lRazas\n&r&8Revisa o cambia la raza"
     action: "OPEN_MMOCORE_CLASSES"
     commands:
       - "class"
   aspecto:
-    text: "&d&lAspectos\n&7Cambia tu estilo visual"
+    text: "&5&lAspectos\n&r&8Cambia tu estilo visual"
     action: "COMMAND_PLAYER"
     commands:
       - "aspecto"
     close-on-click: true
   volver:
-    text: "&6&lVolver\n&7Regresa al menú anterior."
+    text: "&6&lVolver\n&r&8Regresa al menú anterior."
     action: "BACK"

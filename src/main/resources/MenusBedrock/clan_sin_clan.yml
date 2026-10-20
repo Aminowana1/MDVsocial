@@ -4,15 +4,15 @@ content:
   - "&7Gestiona las funciones sociales de tu clan."
 buttons:
   lista:
-    text: "&f&lLista de clanes\n&7Mira los clanes existentes."
+    text: "&0&lLista de clanes\n&r&8Mira los clanes existentes."
     action: "MDVCLANS_OPEN"
     clans-menu: "lista_sinclan"
   crear:
-    text: "&a&lCrear clan\n&7Inicia la creacion de un clan."
+    text: "&2&lCrear clan\n&r&8Inicia la creacion de un clan."
     action: "COMMAND_PLAYER"
     commands:
       - "clan crear"
   volver:
-    text: "&6&lVolver\n&7Regresa al menú anterior."
+    text: "&6&lVolver\n&r&8Regresa al menú anterior."
     action: "OPEN_MENU"
     target-menu: "main"

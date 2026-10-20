@@ -1,5 +1,5 @@
 type: "DYNAMIC_FRIENDS"
-title: "&a&lLista de Amigos"
+title: "&a&lAmigos y Solicitudes"
 content:
   - "&7Amigos: &f{friend_count}"
   - "&7Solicitudes pendientes: &e{request_count}"
@@ -7,12 +7,12 @@ content:
 
 friend:
   online:
-    text: "&a● &f{friend_name}\n&r&8Conectado"
+    text: "&2&l● &0&l{friend_name}\n&r&8Conectado"
     image:
       type: "URL"
       data: ""
   offline:
-    text: "&8● &7{friend_name}\n&r&8Desconectado"
+    text: "&8&l● &8&l{friend_name}\n&r&8Desconectado"
     image:
       type: "URL"
       data: ""
@@ -20,22 +20,26 @@ friend:
 buttons:
   add:
     enabled: true
-    text: "&a&lAñadir amigo\n&r&8Escribe el nombre del jugador."
+    text: "&2&lAñadir amigo\n&r&8Elige o escribe un jugador."
     image:
       type: "URL"
       data: ""
   requests:
     enabled: true
-    text: "&e&lSolicitudes ({request_count})\n&r&8Acepta o rechaza solicitudes."
+    text: "&6&lSolicitudes ({request_count})\n&r&8Acepta o rechaza solicitudes."
     image:
       type: "URL"
       data: ""
   previous:
-    text: "&ePágina anterior"
+    text: "&6&lPágina anterior"
   next:
-    text: "&ePágina siguiente"
+    text: "&6&lPágina siguiente"
   back:
-    text: "&6Volver"
+    text: "&6&lVolver"
+# Selector de jugadores para "Añadir amigo" (no muestra a tus amigos).
+add-picker:
+  title: "&a&lAñadir amigo &8({page}/{max_page})"
+  content: "&7Elige un jugador conectado o escribe su nombre."
 add-form:
   title: "&a&lAñadir amigo"
   input-label: "&eNombre del jugador"
@@ -46,11 +50,13 @@ requests-menu:
   content: "&7Solicitudes pendientes: &f{request_count}"
   empty: "&7No tienes solicitudes de amistad pendientes."
   request:
-    text: "&e{creator}\n&r&8Toca para responder."
-  back: "&6Volver a Amigos"
+    text: "&6&l{creator}\n&r&8Toca para responder."
+  back: "&6&lVolver a Amigos"
   detail:
     title: "&e&lSolicitud de {creator}"
     content: "&7¿Quieres aceptar la solicitud de amistad de &f{creator}&7?"
-    accept: "&aAceptar solicitud"
-    deny: "&cRechazar solicitud"
-    back: "&6Volver"
+    accept: "&2&lSí, aceptar"
+    deny: "&4&lNo, rechazar"
+    back: "&6&lVolver"
+    # Botón del formulario abierto con quick accept (en vez de "Volver").
+    later: "&8&lMás tarde"

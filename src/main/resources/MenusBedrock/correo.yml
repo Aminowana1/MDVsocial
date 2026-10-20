@@ -1,20 +1,21 @@
 type: "SIMPLE"
-title: "&8&lCorreo"
+title: "&8&lCartas y Buzón"
 content:
-  - "&7Lee, envía y administra tus cartas."
+  - "&7Lee tus cartas o envía una nueva."
 buttons:
-  bloquear:
-    text: "&c&lBloquear cartas\n&7Impide que un jugador"
-    action: "START_MAIL_BLOCK"
-    close-on-click: true
   buzon:
-    text: "&6&lVer Cartas\n&7Revisa las cartas que"
+    text: "&6&lVer Cartas ({unread_mail})\n&r&8Revisa las cartas que"
     action: "OPEN_MAILBOX"
-  desbloquear:
-    text: "&a&lDesbloquear jugador\n&7Permite que un jugador"
-    action: "START_MAIL_UNBLOCK"
+  enviar:
+    text: "&6&lEnviar Carta\n&r&8Escribe una carta a otro"
+    action: "START_MAIL_SEND"
     close-on-click: true
   volver:
-    text: "&6&lVolver\n&7Regresa al menú social."
+    text: "&6&lVolver\n&r&8Regresa a Social y Amigos."
     action: "OPEN_MENU"
     target-menu: "menuamigos"
+# "Escoger jugador" al pulsar "Enviar Carta". "Escribir nombre" permite escribir
+# a jugadores desconectados.
+recipient-picker:
+  title: "&6&lEnviar carta &8({page}/{max_page})"
+  content: "&7Elige a quién escribir o escribe su nombre."

@@ -5,33 +5,33 @@ content:
   - "&7Selecciona una opción."
 buttons:
   misiones:
-    text: "&6&lMisiones\n&7Crea, modifica y prueba misiones"
+    text: "&6&lMisiones\n&r&8Crea, modifica y prueba misiones"
     action: "COMMAND_PLAYER"
     commands:
       - "mdvquest admin"
     permission: "mdvquest.editor"
     hide-without-permission: true
   recetas:
-    text: "&6&lCrear recetas\n&7Abre exclusivamente el creador"
+    text: "&6&lCrear recetas\n&r&8Abre exclusivamente el creador"
     action: "COMMAND_PLAYER"
     commands:
       - "mdvrecetas editor"
     permission: "mdvrecetas.editor"
     hide-without-permission: true
   objetos:
-    text: "&6&lBiblioteca de MMOItems\n&7Explora todos los MMOItems"
+    text: "&6&lBiblioteca de MMOItems\n&r&8Explora todos los MMOItems"
     action: "OPEN_MMOITEMS_BROWSER"
     permission: "mdvsocial.item-browser"
     hide-without-permission: true
   creativo:
-    text: "&a&lModo creativo\n&7Cambia tu modo de juego"
+    text: "&2&lModo creativo\n&r&8Cambia tu modo de juego"
     action: "COMMAND_PLAYER"
     commands:
       - "gmc"
     permission: "essentials.gamemode.creative"
     hide-without-permission: true
   staff:
-    text: "&b&lModo Staff\n&7Activa o desactiva las herramientas"
+    text: "&3&lModo Staff\n&r&8Activa o desactiva las herramientas"
     action: "COMMAND_PLAYER"
     commands:
       - "staff"
@@ -39,7 +39,7 @@ buttons:
     permission: "mdvsocial.admin-menu"
     hide-without-permission: true
   volver:
-    text: "&eVolver al menú social\n&7Regresa al menú principal."
+    text: "&6&lVolver al menú social\n&r&8Regresa al menú principal."
     action: "COMMAND_PLAYER"
     commands:
       - "social"

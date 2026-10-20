@@ -4,12 +4,12 @@ title: '&8Confirmar eliminación'
 show-close: false
 content: ['&7{action}: &e{target}', '{warning}', '{group_notice}']
 navigation:
-  back: '&eVolver / Cancelar'
+  back: '&6&lVolver / Cancelar'
 items:
   confirm:
     material: RED_CONCRETE
     name: '&cConfirmar'
-    text: '&cConfirmar'
+    text: '&4&lConfirmar'
     lore:
       - '&7{action}: &e{target}'
       - '{warning}'

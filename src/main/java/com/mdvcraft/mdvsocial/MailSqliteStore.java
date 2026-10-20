@@ -77,6 +77,26 @@ final class MailSqliteStore implements AutoCloseable {
             return ids;
         }
         int residentCount() { return cache.size(); }
+        /**
+         * Block lists stored inside mailboxes by versions before the general block
+         * system (mailbox.<uuid>.blocked). Only mailboxes that mention it are parsed.
+         */
+        Map<String, List<String>> legacyBlockLists() {
+            flush();
+            Map<String, List<String>> out = new LinkedHashMap<>();
+            try (PreparedStatement ps = reader.prepareStatement(
+                    "SELECT section_key, yaml FROM mail_sections WHERE section_key LIKE 'mailbox.%' AND yaml LIKE '%blocked:%'");
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    YamlConfiguration yaml = new YamlConfiguration();
+                    try { yaml.loadFromString(rs.getString(2)); }
+                    catch (Exception e) { logger.warning("Buzon ilegible al migrar bloqueos: " + rs.getString(1)); continue; }
+                    List<String> blocked = yaml.getStringList("blocked");
+                    if (!blocked.isEmpty()) out.put(rs.getString(1).substring(8), blocked);
+                }
+            } catch (SQLException e) { throw new IllegalStateException("Cannot read legacy block lists", e); }
+            return out;
+        }
     }
 
     private record Update(String yaml) {}
@@ -188,13 +208,36 @@ final class MailSqliteStore implements AutoCloseable {
         } catch (SQLException e) { connection.rollback(); throw e; }
         finally { connection.setAutoCommit(true); }
     }
+    /** Copies the -wal into mail-data.db, on the writer thread (it owns the connection). */
+    void checkpoint() throws Exception {
+        onWriter(() -> SqliteMaintenance.checkpoint(connection));
+    }
+    /**
+     * Self-contained copy in {@code target}. Runs after the writes already queued, so
+     * flush the cache first to include every change.
+     */
+    void backupTo(File target) throws Exception {
+        onWriter(() -> SqliteMaintenance.backup(connection, target));
+    }
+    private interface SqlTask { void run() throws Exception; }
+    private void onWriter(SqlTask task) throws Exception {
+        try {
+            writer.submit(() -> { task.run(); return null; }).get(60, TimeUnit.SECONDS);
+        } catch (ExecutionException e) {
+            throw e.getCause() instanceof Exception cause ? cause : e;
+        }
+    }
     @Override public void close() throws Exception {
         if (cache != null) cache.flush();
         synchronized (pending) { closing = true; }
         writer.shutdown();
         if (!writer.awaitTermination(30, TimeUnit.SECONDS)) throw new IllegalStateException("Mail writer timeout; connection retained");
         if (reader != null) reader.close();
-        if (connection != null) connection.close();
+        if (connection != null) {
+            try { SqliteMaintenance.checkpoint(connection); }
+            catch (SQLException e) { logger.warning("No se pudo volcar el WAL de mail-data.db al cerrar: " + e.getMessage()); }
+            connection.close();
+        }
         synchronized (pending) { if (failure != null) throw new IllegalStateException("Mail persistence failed", failure); }
     }
 }

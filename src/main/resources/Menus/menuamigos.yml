@@ -1,0 +1,63 @@
+title: '&8&lAmigos'
+size: 27
+items:
+  lista:
+    slot: 10
+    material: PLAYER_HEAD
+    name: '&a&lLista de Amigos'
+    lore:
+      - ''
+      - '&7Consulta tu lista de amigos.'
+      - ''
+      - '&eClick para abrir.'
+    action: COMMAND_PLAYER
+    commands:
+      - 'friends'
+
+  party:
+    slot: 12
+    material: GOLDEN_SWORD
+    name: '&d&lGrupo de Aventura'
+    lore:
+      - ''
+      - '&7Crea una party para explorar'
+      - '&7junto a tus amigos.'
+      - ''
+      - '&eClick para abrir.'
+    action: COMMAND_PLAYER
+    commands:
+      - 'party'
+
+  correo:
+    slot: 14
+    material: WRITABLE_BOOK
+    name: '&6&lCartas y Buzón'
+    lore:
+      - ''
+      - '&7Lee tus cartas o escribe'
+      - '&7una nueva a otro jugador.'
+      - ''
+      - '&eClick para abrir.'
+    action: OPEN_MENU
+    target-menu: correo
+
+  bloqueados:
+    slot: 16
+    material: BARRIER
+    name: '&c&lJugadores Bloqueados'
+    lore:
+      - ''
+      - '&7Revisa a quién bloqueaste'
+      - '&7o bloquea a un jugador.'
+      - ''
+      - '&eClick para abrir.'
+    action: OPEN_BLOCKED_PLAYERS
+
+  volver:
+    slot: 22
+    material: ARROW
+    name: '&6&lVolver'
+    lore:
+      - '&7Regresa al menu principal.'
+    action: OPEN_MENU
+    target-menu: main

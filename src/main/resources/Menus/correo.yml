@@ -14,7 +14,7 @@ items:
     action: OPEN_MAILBOX
 
   enviar:
-    slot: 13
+    slot: 15
     material: WRITABLE_BOOK
     name: '&e&lEnviar carta'
     lore:
@@ -24,32 +24,6 @@ items:
       - ''
       - '&eClick para comenzar.'
     action: START_MAIL_SEND
-    close-on-click: true
-
-  bloquear:
-    slot: 15
-    material: RED_DYE
-    name: '&c&lBloquear cartas'
-    lore:
-      - ''
-      - '&7Bloquea a un jugador para'
-      - '&7que no pueda enviarte cartas.'
-      - ''
-      - '&eClick para escribir su nombre.'
-    action: START_MAIL_BLOCK
-    close-on-click: true
-
-  desbloquear:
-    slot: 16
-    material: LIME_DYE
-    name: '&a&lDesbloquear jugador'
-    lore:
-      - ''
-      - '&7Permite que un jugador bloqueado'
-      - '&7vuelva a enviarte cartas.'
-      - ''
-      - '&eClick para escribir su nombre.'
-    action: START_MAIL_UNBLOCK
     close-on-click: true
 
   volver:

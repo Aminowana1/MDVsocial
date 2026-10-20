@@ -4,46 +4,46 @@ content:
   - "&7Opciones disponibles para &f{target}&7."
 buttons:
   perfil:
-    text: "&e&lPerfil de {target}\n&7Estado: {target_status}"
+    text: "&6&lPerfil de {target}\n&r&8Estado: {target_status}"
     close-on-click: true
   perfil_accion_secundaria:
-    text: "&b&lMensaje privado\n&7Escribir a {target}"
+    text: "&3&lMensaje privado\n&r&8Escribir a {target}"
     action: "SUGGEST_MSG_TARGET"
   solicitud_amistad:
-    text: "&b&lEnviar solicitud de amistad\n&7Envía una solicitud a"
+    text: "&3&lEnviar solicitud de amistad\n&r&8Envía una solicitud a"
     action: "INVITE_FRIEND_TARGET"
     close-on-click: true
     visible-when: "online_not_friend"
   amistad_existente:
-    text: "&a&lYa son amigos\n&7{target} ya forma parte"
+    text: "&2&lYa son amigos\n&r&8{target} ya forma parte"
     visible-when: "friend"
   amistad_desconectada:
-    text: "&8&lAmistad no disponible\n&7Las solicitudes de amistad"
+    text: "&8&lAmistad no disponible\n&r&8Las solicitudes de amistad"
     visible-when: "offline_not_friend"
   clan_invite:
-    text: "&5&lInvitar al clan\n&7Envía una invitación a"
+    text: "&5&lInvitar al clan\n&r&8Envía una invitación a"
     action: "COMMAND_PLAYER"
     commands:
       - "clan invitar {target}"
     close-on-click: true
   carta:
-    text: "&6&lEnviar carta\n&7Escribe una carta para"
+    text: "&6&lEnviar carta\n&r&8Escribe una carta para"
     action: "START_MAIL_SEND_TARGET"
     close-on-click: true
   party:
-    text: "&d&lInvitar al grupo\n&7Invita a &e{target} &7a tu"
+    text: "&5&lInvitar al grupo\n&r&8Invita a &6{target} &8a tu"
     action: "INVITE_PARTY_TARGET"
     close-on-click: true
     visible-when: "online_not_self"
   party_offline:
-    text: "&8&lGrupo no disponible\n&7El jugador debe estar"
+    text: "&8&lGrupo no disponible\n&r&8El jugador debe estar"
     visible-when: "offline"
   tpa:
-    text: "&a&lSolicitar viaje\n&7Envía una solicitud de TPA"
+    text: "&2&lSolicitar viaje\n&r&8Envía una solicitud de TPA"
     action: "COMMAND_PLAYER"
     commands:
       - "tpa {target}"
     visible-when: "online_not_self"
   tpa_offline:
-    text: "&8&lViaje no disponible\n&7El jugador no está"
+    text: "&8&lViaje no disponible\n&r&8El jugador no está"
     visible-when: "offline"

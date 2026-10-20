@@ -3,10 +3,10 @@ managed-by: protections
 type: SIMPLE
 page-size: 6
 navigation:
-  back: '&eVolver'
-  previous: '&ePágina anterior'
-  next: '&ePágina siguiente'
-  close: '&cCerrar'
+  back: '&6&lVolver'
+  previous: '&6&lPágina anterior'
+  next: '&6&lPágina siguiente'
+  close: '&4&lCerrar'
 show-close: true
 title: '&8Tus protecciones'
 content:
@@ -18,7 +18,7 @@ items:
   protection:
     preserve-lore: true
     # Sin material ni name: conserva el ítem original de ProtectionStones.
-    text: "{item_name}\n&7{world} · {x}, {y}, {z}"
+    text: "{item_name}\n&r&8{world} · {x}, {y}, {z}"
     lore:
       - ''
       - '&7Protección: &e{protection}'

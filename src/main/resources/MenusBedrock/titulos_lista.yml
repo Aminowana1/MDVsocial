@@ -8,7 +8,7 @@ sections:
       - "&8Toca uno para equiparlo."
     empty: "&7No tienes títulos disponibles en esta sección."
     entry:
-      text: "{title_display}\n{status}"
+      text: "{title_display}\n&r&8{status}"
       image:
         type: "URL"
         data: ""
@@ -20,7 +20,7 @@ sections:
       - "&8Toca uno para comprarlo."
     empty: "&7No hay títulos disponibles para comprar."
     entry:
-      text: "{title_display}\n&6{price} monedas"
+      text: "{title_display}\n&r&6{price} monedas"
       image:
         type: "URL"
         data: ""
@@ -32,24 +32,24 @@ sections:
       - "&8Consulta sus requisitos."
     empty: "&7No tienes títulos bloqueados."
     entry:
-      text: "{title_display}\n{requirement}"
+      text: "{title_display}\n&r&8{requirement}"
       image:
         type: "URL"
         data: ""
 
 buttons:
   previous:
-    text: "&ePágina anterior"
+    text: "&6&lPágina anterior"
     image:
       type: "URL"
       data: ""
   next:
-    text: "&ePágina siguiente"
+    text: "&6&lPágina siguiente"
     image:
       type: "URL"
       data: ""
   back:
-    text: "&6Volver a Títulos"
+    text: "&6&lVolver a Títulos"
     image:
       type: "URL"
       data: ""

@@ -1,5 +1,5 @@
 name: MDVSocial
-version: 1.6.14
+version: 2.2.1
 main: com.mdvcraft.mdvsocial.MDVSocialPlugin
 api-version: '1.21'
 author: MDVCRAFT
@@ -28,6 +28,33 @@ commands:
     description: Envia y administra cartas de MDVSocial.
     usage: /carta
     aliases: [cartas]
+  grupo:
+    description: Crea un Grupo de Aventura e invita hasta 5 jugadores.
+    usage: /grupo [jugador1] [jugador2] ...
+    aliases: [grupoaventura]
+  tpa:
+    description: Solicita teletransportarte hacia otro jugador.
+    usage: /tpa <jugador|aceptar|rechazar|cancelar|ayuda>
+  tpaccept:
+    description: Acepta la solicitud de TPA más reciente.
+  tpdeny:
+    description: Rechaza la solicitud de TPA más reciente.
+  aceptartp:
+    description: Alias para aceptar TPA.
+  rechazartp:
+    description: Alias para rechazar TPA.
+  tpacancel:
+    description: Cancela tu solicitud de TPA enviada.
+  bloquear:
+    description: Bloquea a un jugador. No podrá enviarte cartas.
+    usage: /bloquear <jugador>
+  desbloquear:
+    description: Desbloquea a un jugador.
+    usage: /desbloquear <jugador>
+  bloqueados:
+    description: Muestra tus jugadores bloqueados.
+    usage: /bloqueados
+    aliases: [bloqueos]
   tienda:
     description: Abre la tienda online de MDVCRAFT.
     usage: /tienda
@@ -81,6 +108,21 @@ permissions:
     default: true
   mdvsocial.mail.delete:
     description: Permite eliminar cartas propias.
+    default: true
+  mdvsocial.mail.cooldown.bypass:
+    description: Permite enviar cartas sin esperar entre envios.
+    default: op
+  mdvsocial.party.use:
+    description: Permite usar /grupo.
+    default: true
+  mdvsocial.friends.cooldown.bypass:
+    description: Permite enviar solicitudes de amistad sin esperar entre envios.
+    default: op
+  mdvsocial.tpa:
+    description: Permite usar el TPA (/tpa, /tpaccept, /tpdeny...).
+    default: true
+  mdvsocial.block.use:
+    description: Permite bloquear y desbloquear jugadores.
     default: true
 
   mdvsocial.homes.use:

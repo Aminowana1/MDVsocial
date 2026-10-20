@@ -33,8 +33,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.profile.PlayerProfile;
 import org.bukkit.profile.PlayerTextures;
 import org.geysermc.cumulus.form.SimpleForm;
-import org.geysermc.cumulus.util.FormImage;
-import org.geysermc.floodgate.api.FloodgateApi;
 
 import java.io.File;
 import java.io.IOException;
@@ -298,14 +296,14 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
                 if (withinLimit) {
                     addBedrockHomeButton(builder, ui, "buttons.create",
                             bedrockHomeText(ui, "buttons.create.text",
-                                    "&aCrear &f{home_name}\n&7Guardar ubicación actual",
+                                    "&2&lCrear &0&l{home_name}\n&r&8Guardar ubicación actual",
                                     player, missing, i, displayed, maxHomes));
                     int number = i;
                     actions.add(() -> runHomeCommand(player, setCommand, generated, number, true));
                 } else {
                     addBedrockHomeButton(builder, ui, "buttons.locked-slot",
                             bedrockHomeText(ui, "buttons.locked-slot.text",
-                                    "&8Espacio {home_number} bloqueado\n&7Aumenta tu límite de hogares",
+                                    "&8&lEspacio {home_number} bloqueado\n&r&8Aumenta tu límite de hogares",
                                     player, missing.withLocked(true), i, displayed, maxHomes));
                     actions.add(() -> openBedrockHomesMenu(player));
                 }
@@ -315,14 +313,14 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
             int number = i;
             if (home.locked) {
                 addBedrockHomeButton(builder, ui, "buttons.locked-home",
-                        bedrockHomeText(ui, "buttons.locked-home.text", "&c{home_name}\n&7Hogar suspendido",
+                        bedrockHomeText(ui, "buttons.locked-home.text", "&4&l{home_name}\n&r&8Hogar suspendido",
                                 player, home, i, displayed, maxHomes));
                 HomeData selected = home;
                 actions.add(() -> openBedrockLockedHome(player, selected, number));
             } else {
                 addBedrockHomeButton(builder, ui, "buttons.home",
                         bedrockHomeText(ui, "buttons.home.text",
-                                "&6{home_name}\n&7{home_world} {home_x}, {home_y}, {home_z}",
+                                "&6&l{home_name}\n&r&8{home_world} {home_x}, {home_y}, {home_z}",
                                 player, home, i, displayed, maxHomes));
                 HomeData selected = home;
                 actions.add(() -> openBedrockHomeActions(player, selected, number));
@@ -330,16 +328,11 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
         }
 
         addBedrockHomeButton(builder, ui, "buttons.back",
-                bedrockHomeText(ui, "buttons.back.text", "&6Volver a MDVSocial",
+                bedrockHomeText(ui, "buttons.back.text", "&6&lVolver a MDVSocial",
                         player, null, 0, displayed, maxHomes));
         actions.add(() -> Bukkit.dispatchCommand(player, "social"));
 
-        builder.validResultHandler(response -> Bukkit.getScheduler().runTask(plugin, () -> {
-            int index = response.clickedButtonId();
-            if (index >= 0 && index < actions.size())
-                actions.get(index).run();
-        }));
-        sendBedrockForm(player, builder);
+        plugin.bedrock().forms().show(player, builder, actions);
     }
 
     private void openBedrockHomeActions(Player player, HomeData home, int number) {
@@ -353,24 +346,20 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
                         List.of("&7Mundo: &f{home_world}", "&7X: &f{home_x}  &7Y: &f{home_y}  &7Z: &f{home_z}"),
                         player, home, number, homes, maxHomes));
         addBedrockHomeButton(builder, ui, "home-actions.teleport",
-                bedrockHomeText(ui, "home-actions.teleport", "&aTeletransportarse", player, home, number, homes,
+                bedrockHomeText(ui, "home-actions.teleport", "&2&lTeletransportarse", player, home, number, homes,
                         maxHomes));
         addBedrockHomeButton(builder, ui, "home-actions.update",
-                bedrockHomeText(ui, "home-actions.update", "&eActualizar ubicación", player, home, number, homes,
+                bedrockHomeText(ui, "home-actions.update", "&6&lActualizar ubicación", player, home, number, homes,
                         maxHomes));
         addBedrockHomeButton(builder, ui, "home-actions.delete",
-                bedrockHomeText(ui, "home-actions.delete", "&cEliminar hogar", player, home, number, homes, maxHomes));
+                bedrockHomeText(ui, "home-actions.delete", "&4&lEliminar hogar", player, home, number, homes, maxHomes));
         addBedrockHomeButton(builder, ui, "home-actions.back",
-                bedrockHomeText(ui, "home-actions.back", "&6Volver", player, home, number, homes, maxHomes));
-        builder.validResultHandler(response -> Bukkit.getScheduler().runTask(plugin, () -> {
-            switch (response.clickedButtonId()) {
-                case 0 -> runHomeCommand(player, teleportCommand, home.name, number, true);
-                case 1 -> runHomeCommand(player, setCommand, home.name, number, true);
-                case 2 -> confirmBedrockDeleteHome(player, home, number);
-                default -> openBedrockHomesMenu(player);
-            }
-        }));
-        sendBedrockForm(player, builder);
+                bedrockHomeText(ui, "home-actions.back", "&6&lVolver", player, home, number, homes, maxHomes));
+        plugin.bedrock().forms().show(player, builder, List.of(
+                () -> runHomeCommand(player, teleportCommand, home.name, number, true),
+                () -> runHomeCommand(player, setCommand, home.name, number, true),
+                () -> confirmBedrockDeleteHome(player, home, number),
+                () -> openBedrockHomesMenu(player)));
     }
 
     private void openBedrockLockedHome(Player player, HomeData home, int number) {
@@ -387,19 +376,14 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
         List<Runnable> actions = new ArrayList<>();
         if (allowDeleteLocked) {
             addBedrockHomeButton(builder, ui, "locked-menu.delete",
-                    bedrockHomeText(ui, "locked-menu.delete", "&cEliminar hogar suspendido", player, home, number,
+                    bedrockHomeText(ui, "locked-menu.delete", "&4&lEliminar hogar suspendido", player, home, number,
                             homes, maxHomes));
             actions.add(() -> confirmBedrockDeleteHome(player, home, number));
         }
         addBedrockHomeButton(builder, ui, "locked-menu.back",
-                bedrockHomeText(ui, "locked-menu.back", "&6Volver", player, home, number, homes, maxHomes));
+                bedrockHomeText(ui, "locked-menu.back", "&6&lVolver", player, home, number, homes, maxHomes));
         actions.add(() -> openBedrockHomesMenu(player));
-        builder.validResultHandler(response -> Bukkit.getScheduler().runTask(plugin, () -> {
-            int index = response.clickedButtonId();
-            if (index >= 0 && index < actions.size())
-                actions.get(index).run();
-        }));
-        sendBedrockForm(player, builder);
+        plugin.bedrock().forms().show(player, builder, actions);
     }
 
     private void confirmBedrockDeleteHome(Player player, HomeData home, int number) {
@@ -413,21 +397,16 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
                         "&7Esta acción elimina el hogar de EssentialsX. ¿Continuar?", player, home, number, homes,
                         maxHomes));
         addBedrockHomeButton(builder, ui, "delete-confirm.confirm",
-                bedrockHomeText(ui, "delete-confirm.confirm", "&cSí, eliminar", player, home, number, homes, maxHomes));
+                bedrockHomeText(ui, "delete-confirm.confirm", "&4&lSí, eliminar", player, home, number, homes, maxHomes));
         addBedrockHomeButton(builder, ui, "delete-confirm.cancel",
-                bedrockHomeText(ui, "delete-confirm.cancel", "&aNo, volver", player, home, number, homes, maxHomes));
-        builder.validResultHandler(response -> Bukkit.getScheduler().runTask(plugin, () -> {
-            if (response.clickedButtonId() == 0)
-                runHomeCommand(player, deleteCommand, home.name, number, true);
-            else
-                openBedrockHomesMenu(player);
-        }));
-        sendBedrockForm(player, builder);
+                bedrockHomeText(ui, "delete-confirm.cancel", "&2&lNo, volver", player, home, number, homes, maxHomes));
+        plugin.bedrock().forms().show(player, builder, List.of(
+                () -> runHomeCommand(player, deleteCommand, home.name, number, true),
+                () -> openBedrockHomesMenu(player)));
     }
 
     private YamlConfiguration bedrockHomesUi() {
-        YamlConfiguration config = plugin.getBedrockMenuConfig("homes");
-        return config == null ? new YamlConfiguration() : config;
+        return plugin.bedrock().forms().ui("homes");
     }
 
     private String bedrockHomeLines(YamlConfiguration ui, String path, List<String> defaults,
@@ -458,23 +437,7 @@ public final class PlayerHomesMenuManager implements Listener, CommandExecutor, 
     }
 
     private void addBedrockHomeButton(SimpleForm.Builder builder, YamlConfiguration ui, String path, String text) {
-        String data = ui.getString(path + ".image.data", "");
-        if (data == null || data.isBlank()) {
-            builder.button(text);
-            return;
-        }
-        String type = ui.getString(path + ".image.type", "URL");
-        builder.button(text, "PATH".equalsIgnoreCase(type) ? FormImage.Type.PATH : FormImage.Type.URL, data);
-    }
-
-    private boolean sendBedrockForm(Player player, SimpleForm.Builder builder) {
-        try {
-            return FloodgateApi.getInstance().sendForm(player.getUniqueId(), builder);
-        } catch (Throwable ex) {
-            plugin.getLogger().warning("No se pudo enviar formulario de hogares a " + player.getName()
-                    + ": " + ex.getMessage());
-            return false;
-        }
+        plugin.bedrock().forms().addButton(builder, ui, path, text);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
